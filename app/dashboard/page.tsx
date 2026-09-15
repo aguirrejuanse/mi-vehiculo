@@ -25,23 +25,23 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tus vehículos</h1>
+        <h1 className="text-2xl font-black tracking-tight uppercase">
+          Tus <span className="text-rb-red">vehículos</span>
+        </h1>
         <Link
           href="/dashboard/vehiculos/nuevo"
-          className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background"
+          className="rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
         >
           Nuevo vehículo
         </Link>
       </div>
 
       {myVehicles.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-black/10 py-24 text-center dark:border-white/10">
-          <p className="text-zinc-600 dark:text-zinc-400">
-            Todavía no tenés vehículos cargados.
-          </p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-sm border border-dashed border-surface-border py-24 text-center">
+          <p className="text-rb-muted">Todavía no tenés vehículos cargados.</p>
           <Link
             href="/dashboard/vehiculos/nuevo"
-            className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background"
+            className="rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
           >
             Cargar mi primer vehículo
           </Link>
@@ -51,12 +51,28 @@ export default async function DashboardPage() {
           {myVehicles.map((vehicle) => (
             <li
               key={vehicle.id}
-              className="rounded-lg border border-black/10 p-4 dark:border-white/10"
+              className="flex flex-col gap-3 rounded-sm border border-surface-border bg-surface/40 p-4"
             >
-              <p className="font-medium">{vehicle.name}</p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
-              </p>
+              <div>
+                <p className="font-bold">{vehicle.name}</p>
+                <p className="text-sm text-rb-muted">
+                  {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
+                </p>
+              </div>
+              <div className="flex gap-3 text-xs font-bold tracking-wide uppercase">
+                <Link
+                  href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
+                  className="text-rb-yellow transition-colors hover:text-foreground"
+                >
+                  + Mantenimiento
+                </Link>
+                <Link
+                  href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
+                  className="text-rb-yellow transition-colors hover:text-foreground"
+                >
+                  + Registro
+                </Link>
+              </div>
             </li>
           ))}
         </ul>

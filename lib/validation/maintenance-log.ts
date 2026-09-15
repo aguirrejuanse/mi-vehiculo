@@ -1,0 +1,53 @@
+import { z } from "zod";
+import { emptyToUndefined } from "@/lib/validation/action-state";
+
+export const maintenanceLogSchema = z.object({
+  vehicleId: z.uuid({ error: "Vehículo inválido." }),
+  maintenanceTypeId: z.uuid({ error: "Elegí qué mantenimiento hiciste." }),
+  performedAtValue: z.preprocess(
+    emptyToUndefined,
+    z
+      .string({ error: "Ingresá el valor del odómetro." })
+      .refine((value) => !Number.isNaN(Number(value)), {
+        error: "Tiene que ser un número.",
+      })
+      .refine((value) => Number(value) >= 0, {
+        error: "No puede ser negativo.",
+      }),
+  ),
+  performedAtDate: z
+    .string({ error: "Elegí una fecha." })
+    .refine((value) => !Number.isNaN(new Date(value).getTime()), {
+      error: "Fecha inválida.",
+    }),
+  notes: z.preprocess(
+    emptyToUndefined,
+    z.string().max(500, { error: "Máximo 500 caracteres." }).optional(),
+  ),
+});
+
+export type MaintenanceLogInput = z.infer<typeof maintenanceLogSchema>;
+
+export function validateMaintenanceLogFields(formData: FormData) {
+  const parsed = maintenanceLogSchema.safeParse({
+    vehicleId: formData.get("vehicleId"),
+    maintenanceTypeId: formData.get("maintenanceTypeId"),
+    performedAtValue: formData.get("performedAtValue"),
+    performedAtDate: formData.get("performedAtDate"),
+    notes: formData.get("notes"),
+  });
+
+  if (parsed.success) return null;
+
+  const fieldErrors: Partial<Record<keyof MaintenanceLogInput, string>> = {};
+  for (const issue of parsed.error.issues) {
+    const key = issue.path[0];
+    if (
+      typeof key === "string" &&
+      !fieldErrors[key as keyof MaintenanceLogInput]
+    ) {
+      fieldErrors[key as keyof MaintenanceLogInput] = issue.message;
+    }
+  }
+  return fieldErrors;
+}
