@@ -32,9 +32,17 @@ export default async function VehicleDetailPage({
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight uppercase">
-            {vehicle.name}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-black tracking-tight uppercase">
+              {vehicle.name}
+            </h1>
+            <Link
+              href={`/dashboard/vehiculos/${vehicle.id}/editar`}
+              className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+            >
+              Editar
+            </Link>
+          </div>
           <p className="text-sm text-rb-muted">
             {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
           </p>
