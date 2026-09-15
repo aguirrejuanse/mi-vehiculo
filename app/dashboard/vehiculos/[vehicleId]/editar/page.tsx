@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { VehicleEditForm } from "@/app/dashboard/vehiculos/[vehicleId]/editar/vehicle-edit-form";
+import { BackLink } from "@/components/ui/back-link";
+import { PageTitle } from "@/components/ui/page-title";
 
 export const dynamic = "force-dynamic";
 
@@ -17,15 +18,10 @@ export default async function EditVehiclePage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <Link
-        href={`/dashboard/vehiculos/${vehicle.id}`}
-        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
-      >
-        ← {vehicle.name}
-      </Link>
-      <h1 className="text-2xl font-black tracking-tight uppercase">
-        Editar <span className="text-rb-red">vehículo</span>
-      </h1>
+      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>
+        {vehicle.name}
+      </BackLink>
+      <PageTitle highlight="vehículo">Editar</PageTitle>
       <VehicleEditForm vehicle={vehicle} />
     </div>
   );

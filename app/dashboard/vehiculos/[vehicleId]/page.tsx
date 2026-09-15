@@ -4,6 +4,9 @@ import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
 import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-logs";
+import { BackLink } from "@/components/ui/back-link";
+import { LinkButton } from "@/components/ui/link-button";
+import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -23,12 +26,7 @@ export default async function VehicleDetailPage({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-10">
-      <Link
-        href="/dashboard"
-        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
-      >
-        ← Tus vehículos
-      </Link>
+      <BackLink href="/dashboard">Tus vehículos</BackLink>
 
       <div className="flex items-center justify-between">
         <div>
@@ -54,12 +52,12 @@ export default async function VehicleDetailPage({
           >
             + Mantenimiento
           </Link>
-          <Link
+          <LinkButton
             href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-            className="rounded-sm bg-rb-red px-4 py-2 text-white transition-colors hover:bg-rb-red-hover"
+            bare
           >
             + Registro
-          </Link>
+          </LinkButton>
         </div>
       </div>
 
@@ -74,35 +72,46 @@ export default async function VehicleDetailPage({
               Todavía no hay registros de mantenimiento para este vehículo.
             </p>
             {maintenanceTypes.length === 0 ? (
-              <Link
+              <LinkButton
                 href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-                className="rounded-sm bg-rb-red px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
+                size="md"
               >
                 Cargar mantenimiento
-              </Link>
+              </LinkButton>
             ) : (
-              <Link
+              <LinkButton
                 href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-                className="rounded-sm bg-rb-red px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
+                size="md"
               >
                 Cargar registro
-              </Link>
+              </LinkButton>
             )}
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
             {logs.map((log) => (
-              <li
-                key={log.id}
-                className="flex flex-col gap-1 rounded-sm border border-surface-border bg-surface/40 p-4"
-              >
+              <Card as="li" key={log.id} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                   <p className="font-bold">{log.maintenanceType.name}</p>
-                  <p className="text-xs text-rb-muted">
-                    {new Date(log.performedAtDate).toLocaleDateString(
-                      "es-AR",
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-rb-muted">
+                      {new Date(log.performedAtDate).toLocaleDateString(
+                        "es-AR",
+                      )}
+                    </p>
+                    {log.editedAt ? (
+                      <span className="text-xs font-bold tracking-widest text-rb-muted uppercase">
+                        Editado
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar`}
+                        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+                      >
+                        Editar
+                      </Link>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <p className="text-sm text-rb-muted">
                   {log.performedAtValue} {vehicle.metricUnit}
@@ -110,7 +119,7 @@ export default async function VehicleDetailPage({
                 {log.notes && (
                   <p className="text-sm text-foreground">{log.notes}</p>
                 )}
-              </li>
+              </Card>
             ))}
           </ul>
         )}

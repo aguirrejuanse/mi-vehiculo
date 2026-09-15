@@ -7,6 +7,7 @@ import { TextField } from "@/components/ui/text-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
+import { Card } from "@/components/ui/card";
 import type { Vehicle } from "@/db/schema";
 
 const VEHICLE_TYPES = [
@@ -26,11 +27,13 @@ export function VehicleEditForm({ vehicle }: { vehicle: Vehicle }) {
     useActionFormState(updateVehicleAction, validateVehicleUpdateFields);
 
   return (
-    <form
+    <Card
+      as="form"
       action={formAction}
       onSubmit={handleSubmit}
       noValidate
-      className="flex flex-col gap-5 rounded-sm border border-surface-border bg-surface/40 p-6"
+      padding="md"
+      className="flex flex-col gap-5"
     >
       <input type="hidden" name="vehicleId" value={vehicle.id} />
 
@@ -96,6 +99,6 @@ export function VehicleEditForm({ vehicle }: { vehicle: Vehicle }) {
         label="Guardar cambios"
         pendingLabel="Guardando..."
       />
-    </form>
+    </Card>
   );
 }

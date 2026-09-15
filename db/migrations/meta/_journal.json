@@ -8,6 +8,13 @@
       "when": 1789440351186,
       "tag": "0000_modern_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789475729867,
+      "tag": "0001_parched_epoch",
+      "breakpoints": true
     }
   ]
 }

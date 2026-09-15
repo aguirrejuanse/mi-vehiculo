@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { MaintenanceTypeForm } from "@/app/dashboard/vehiculos/[vehicleId]/mantenimientos/nuevo/maintenance-type-form";
+import { BackLink } from "@/components/ui/back-link";
+import { PageTitle } from "@/components/ui/page-title";
 
 export const dynamic = "force-dynamic";
 
@@ -17,19 +18,14 @@ export default async function NewMaintenanceTypePage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <Link
-        href={`/dashboard/vehiculos/${vehicle.id}`}
-        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
-      >
-        ← {vehicle.name}
-      </Link>
+      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>
+        {vehicle.name}
+      </BackLink>
       <div className="flex flex-col gap-1">
         <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
           {vehicle.name}
         </p>
-        <h1 className="text-2xl font-black tracking-tight uppercase">
-          Nuevo <span className="text-rb-red">mantenimiento</span>
-        </h1>
+        <PageTitle highlight="mantenimiento">Nuevo</PageTitle>
       </div>
       <MaintenanceTypeForm
         vehicleId={vehicle.id}

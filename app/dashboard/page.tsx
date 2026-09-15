@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { vehicles } from "@/db/schema";
+import { LinkButton } from "@/components/ui/link-button";
+import { PageTitle } from "@/components/ui/page-title";
 
 // This page reads live, per-user data (Clerk auth + Neon query) on every
 // request, so it must not be statically prerendered at build time.
@@ -25,26 +27,18 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-6 py-10">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black tracking-tight uppercase">
-          Tus <span className="text-rb-red">vehículos</span>
-        </h1>
-        <Link
-          href="/dashboard/vehiculos/nuevo"
-          className="rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
-        >
+        <PageTitle highlight="vehículos">Tus</PageTitle>
+        <LinkButton href="/dashboard/vehiculos/nuevo">
           Nuevo vehículo
-        </Link>
+        </LinkButton>
       </div>
 
       {myVehicles.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-sm border border-dashed border-surface-border py-24 text-center">
           <p className="text-rb-muted">Todavía no tenés vehículos cargados.</p>
-          <Link
-            href="/dashboard/vehiculos/nuevo"
-            className="rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
-          >
+          <LinkButton href="/dashboard/vehiculos/nuevo">
             Cargar mi primer vehículo
-          </Link>
+          </LinkButton>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -54,6 +54,7 @@ export const maintenanceLogs = pgTable("maintenance_logs", {
   performedAtDate: timestamp("performed_at_date").notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  editedAt: timestamp("edited_at"),
 });
 
 export const vehiclesRelations = relations(vehicles, ({ many }) => ({

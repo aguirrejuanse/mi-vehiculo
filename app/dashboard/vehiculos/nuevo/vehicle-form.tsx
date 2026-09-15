@@ -7,6 +7,7 @@ import { TextField } from "@/components/ui/text-field";
 import { SelectField } from "@/components/ui/select-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
+import { Card } from "@/components/ui/card";
 
 const VEHICLE_TYPES = [
   { value: "moto", label: "Moto" },
@@ -25,11 +26,13 @@ export function VehicleForm() {
     useActionFormState(createVehicleAction, validateVehicleFields);
 
   return (
-    <form
+    <Card
+      as="form"
       action={formAction}
       onSubmit={handleSubmit}
       noValidate
-      className="flex flex-col gap-5 rounded-sm border border-surface-border bg-surface/40 p-6"
+      padding="md"
+      className="flex flex-col gap-5"
     >
       <TextField
         label="Nombre"
@@ -97,6 +100,6 @@ export function VehicleForm() {
         label="Guardar vehículo"
         pendingLabel="Guardando..."
       />
-    </form>
+    </Card>
   );
 }

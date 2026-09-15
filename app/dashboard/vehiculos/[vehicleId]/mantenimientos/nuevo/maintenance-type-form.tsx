@@ -6,6 +6,7 @@ import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
+import { Card } from "@/components/ui/card";
 
 export function MaintenanceTypeForm({
   vehicleId,
@@ -21,11 +22,13 @@ export function MaintenanceTypeForm({
     );
 
   return (
-    <form
+    <Card
+      as="form"
       action={formAction}
       onSubmit={handleSubmit}
       noValidate
-      className="flex flex-col gap-5 rounded-sm border border-surface-border bg-surface/40 p-6"
+      padding="md"
+      className="flex flex-col gap-5"
     >
       <input type="hidden" name="vehicleId" value={vehicleId} />
 
@@ -53,6 +56,6 @@ export function MaintenanceTypeForm({
         label="Guardar mantenimiento"
         pendingLabel="Guardando..."
       />
-    </form>
+    </Card>
   );
 }

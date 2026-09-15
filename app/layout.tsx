@@ -43,12 +43,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <nav className="flex items-center gap-4">
               <Show when="signed-out">
                 <SignInButton>
-                  <button className="text-sm font-semibold tracking-wide text-rb-muted transition-colors hover:text-foreground">
+                  <button className="cursor-pointer text-sm font-semibold tracking-wide text-rb-muted transition-colors hover:text-foreground">
                     Iniciar sesión
                   </button>
                 </SignInButton>
                 <SignUpButton>
-                  <button className="rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-wide uppercase text-white transition-colors hover:bg-rb-red-hover">
+                  <button className="cursor-pointer rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-wide uppercase text-white transition-colors hover:bg-rb-red-hover">
                     Crear cuenta
                   </button>
                 </SignUpButton>
