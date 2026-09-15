@@ -1,7 +1,11 @@
-import Link from "next/link";
-import { Show, SignInButton } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
+import { SignUpButton } from "@clerk/nextjs";
 
-export default function Home() {
+export default async function Home() {
+  const { userId } = await auth();
+  if (userId) redirect("/dashboard");
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center">
       <div className="flex max-w-xl flex-col gap-4">
@@ -15,22 +19,11 @@ export default function Home() {
         </p>
       </div>
 
-      <Show when="signed-out">
-        <SignInButton>
-          <button className="rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover">
-            Empezar
-          </button>
-        </SignInButton>
-      </Show>
-
-      <Show when="signed-in">
-        <Link
-          href="/dashboard"
-          className="rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
-        >
-          Ir al dashboard
-        </Link>
-      </Show>
+      <SignUpButton forceRedirectUrl="/dashboard/vehiculos/nuevo">
+        <button className="rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover">
+          Crear tu vehículo
+        </button>
+      </SignUpButton>
     </div>
   );
 }
