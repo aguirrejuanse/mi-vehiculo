@@ -11,7 +11,7 @@ Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
 1. Instalar dependencias:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Completar `.env.local` (ya existe con placeholders, copiá `.env.local.example`
@@ -26,8 +26,8 @@ Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
 3. Generar y aplicar las migraciones contra tu base de Neon:
 
    ```bash
-   npm run db:generate
-   npm run db:migrate
+   pnpm db:generate
+   pnpm db:migrate
    ```
 
    (`db:push` sincroniza el schema directo sin generar archivos de migración,
@@ -36,7 +36,7 @@ Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
 4. Levantar el servidor de desarrollo:
 
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ## Estructura
@@ -45,7 +45,7 @@ Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
   sus relaciones.
 - `db/index.ts` — cliente Drizzle (lazy, no rompe el build si falta
   `DATABASE_URL`).
-- `middleware.ts` — protege todo excepto `/` con Clerk.
+- `proxy.ts` — protege todo excepto `/` con Clerk (en Next.js 16 reemplaza a `middleware.ts`).
 - `app/dashboard/` — área autenticada; lista los vehículos del usuario
   (filtrados por `userId` de Clerk).
 - `app/dashboard/vehiculos/nuevo/` — placeholder, falta el formulario real.
