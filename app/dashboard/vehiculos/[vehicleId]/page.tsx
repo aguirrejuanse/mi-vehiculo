@@ -99,18 +99,20 @@ export default async function VehicleDetailPage({
                         "es-AR",
                       )}
                     </p>
-                    {log.editedAt ? (
-                      <span className="text-xs font-bold tracking-widest text-rb-muted uppercase">
-                        Editado
-                      </span>
-                    ) : (
+                    {log.editCount > 0 && (
                       <Link
-                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar`}
+                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial`}
                         className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
                       >
-                        Editar
+                        Editado ({log.editCount})
                       </Link>
                     )}
+                    <Link
+                      href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar`}
+                      className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+                    >
+                      Editar
+                    </Link>
                   </div>
                 </div>
                 <p className="text-sm text-rb-muted">

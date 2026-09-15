@@ -5,7 +5,6 @@ import { getMaintenanceLogWithTypeForVehicle } from "@/db/queries/maintenance-lo
 import { MaintenanceLogEditForm } from "@/app/dashboard/vehiculos/[vehicleId]/registros/[logId]/editar/maintenance-log-edit-form";
 import { BackLink } from "@/components/ui/back-link";
 import { PageTitle } from "@/components/ui/page-title";
-import { Card } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
@@ -29,23 +28,11 @@ export default async function EditMaintenanceLogPage({
       </BackLink>
       <PageTitle highlight="registro">Editar</PageTitle>
 
-      {log.editedAt ? (
-        <Card padding="md" className="flex flex-col gap-4">
-          <p className="text-sm text-rb-muted">
-            Este registro ya fue editado una vez y no se puede modificar de
-            nuevo.
-          </p>
-          <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>
-            Volver al vehículo
-          </BackLink>
-        </Card>
-      ) : (
-        <MaintenanceLogEditForm
-          vehicleId={vehicle.id}
-          metricUnitLabel={vehicle.metricUnit}
-          log={log}
-        />
-      )}
+      <MaintenanceLogEditForm
+        vehicleId={vehicle.id}
+        metricUnitLabel={vehicle.metricUnit}
+        log={log}
+      />
     </div>
   );
 }

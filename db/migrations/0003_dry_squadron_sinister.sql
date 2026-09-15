@@ -1,0 +1,1 @@
+ALTER TABLE "maintenance_logs" DROP COLUMN "edited_at";

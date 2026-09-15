@@ -17,9 +17,6 @@ import {
   type ActionState,
 } from "@/lib/validation/action-state";
 
-const ALREADY_EDITED_MESSAGE =
-  "Este registro ya fue editado una vez y no se puede modificar de nuevo.";
-
 export async function updateMaintenanceLogAction(
   _prevState: ActionState<MaintenanceLogUpdateInput>,
   formData: FormData,
@@ -56,10 +53,6 @@ export async function updateMaintenanceLogAction(
     return { status: "error", message: "No encontramos ese registro." };
   }
 
-  if (log.editedAt) {
-    return { status: "error", message: ALREADY_EDITED_MESSAGE };
-  }
-
   try {
     const updated = await updateMaintenanceLog(log.id, vehicle.id, {
       performedAtValue: parsed.data.performedAtValue,
@@ -68,8 +61,7 @@ export async function updateMaintenanceLogAction(
     });
 
     if (!updated) {
-      // Lost a race against a concurrent edit of the same log.
-      return { status: "error", message: ALREADY_EDITED_MESSAGE };
+      return { status: "error", message: "No encontramos ese registro." };
     }
   } catch {
     return {
@@ -79,5 +71,8 @@ export async function updateMaintenanceLogAction(
   }
 
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
+  revalidatePath(
+    `/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial`,
+  );
   redirect(`/dashboard/vehiculos/${vehicle.id}`);
 }
