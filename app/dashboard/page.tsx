@@ -49,30 +49,16 @@ export default async function DashboardPage() {
       ) : (
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {myVehicles.map((vehicle) => (
-            <li
-              key={vehicle.id}
-              className="flex flex-col gap-3 rounded-sm border border-surface-border bg-surface/40 p-4"
-            >
-              <div>
+            <li key={vehicle.id}>
+              <Link
+                href={`/dashboard/vehiculos/${vehicle.id}`}
+                className="flex flex-col gap-1 rounded-sm border border-surface-border bg-surface/40 p-4 transition-colors hover:border-rb-red"
+              >
                 <p className="font-bold">{vehicle.name}</p>
                 <p className="text-sm text-rb-muted">
                   {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
                 </p>
-              </div>
-              <div className="flex gap-3 text-xs font-bold tracking-wide uppercase">
-                <Link
-                  href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-                  className="text-rb-yellow transition-colors hover:text-foreground"
-                >
-                  + Mantenimiento
-                </Link>
-                <Link
-                  href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-                  className="text-rb-yellow transition-colors hover:text-foreground"
-                >
-                  + Registro
-                </Link>
-              </div>
+              </Link>
             </li>
           ))}
         </ul>

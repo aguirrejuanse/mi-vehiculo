@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
@@ -16,6 +17,12 @@ export default async function NewMaintenanceTypePage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
+      <Link
+        href={`/dashboard/vehiculos/${vehicle.id}`}
+        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+      >
+        ← {vehicle.name}
+      </Link>
       <div className="flex flex-col gap-1">
         <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
           {vehicle.name}
