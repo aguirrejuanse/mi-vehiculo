@@ -70,6 +70,6 @@ export async function createMaintenanceLogAction(
     };
   }
 
-  revalidatePath("/dashboard");
-  redirect("/dashboard");
+  revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
+  redirect(`/dashboard/vehiculos/${vehicle.id}`);
 }

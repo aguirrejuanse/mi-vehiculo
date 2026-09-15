@@ -34,8 +34,9 @@ export async function createVehicleAction(
     };
   }
 
+  let vehicle;
   try {
-    await createVehicle({
+    vehicle = await createVehicle({
       userId,
       name: parsed.data.name,
       type: parsed.data.type,
@@ -51,5 +52,5 @@ export async function createVehicleAction(
   }
 
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+  redirect(`/dashboard/vehiculos/${vehicle.id}`);
 }
