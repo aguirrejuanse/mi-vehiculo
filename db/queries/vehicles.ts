@@ -21,3 +21,16 @@ export async function getVehicleForUser(
 export async function listVehiclesForUser(userId: string): Promise<Vehicle[]> {
   return db.select().from(vehicles).where(eq(vehicles.userId, userId));
 }
+
+export async function updateVehicle(
+  vehicleId: string,
+  userId: string,
+  input: Partial<NewVehicle>,
+): Promise<Vehicle> {
+  const [vehicle] = await db
+    .update(vehicles)
+    .set(input)
+    .where(and(eq(vehicles.id, vehicleId), eq(vehicles.userId, userId)))
+    .returning();
+  return vehicle;
+}

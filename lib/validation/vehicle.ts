@@ -62,3 +62,34 @@ export function validateVehicleFields(formData: FormData) {
   }
   return fieldErrors;
 }
+
+export const vehicleUpdateSchema = vehicleSchema.extend({
+  vehicleId: z.uuid({ error: "Vehículo inválido." }),
+});
+
+export type VehicleUpdateInput = z.infer<typeof vehicleUpdateSchema>;
+
+export function validateVehicleUpdateFields(formData: FormData) {
+  const parsed = vehicleUpdateSchema.safeParse({
+    vehicleId: formData.get("vehicleId"),
+    name: formData.get("name"),
+    type: formData.get("type"),
+    metricUnit: formData.get("metricUnit"),
+    currentValue: formData.get("currentValue"),
+    usageRatePerWeek: formData.get("usageRatePerWeek"),
+  });
+
+  if (parsed.success) return null;
+
+  const fieldErrors: Partial<Record<keyof VehicleUpdateInput, string>> = {};
+  for (const issue of parsed.error.issues) {
+    const key = issue.path[0];
+    if (
+      typeof key === "string" &&
+      !fieldErrors[key as keyof VehicleUpdateInput]
+    ) {
+      fieldErrors[key as keyof VehicleUpdateInput] = issue.message;
+    }
+  }
+  return fieldErrors;
+}
