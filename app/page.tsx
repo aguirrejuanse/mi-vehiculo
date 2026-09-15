@@ -3,12 +3,12 @@ import { Show, SignInButton } from "@clerk/nextjs";
 
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 bg-zinc-50 px-6 text-center dark:bg-black">
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 text-center">
       <div className="flex max-w-xl flex-col gap-4">
-        <h1 className="text-4xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Mi Vehículo
+        <h1 className="text-4xl font-black tracking-tight uppercase">
+          Mi <span className="text-rb-red">Vehículo</span>
         </h1>
-        <p className="text-lg text-zinc-600 dark:text-zinc-400">
+        <p className="text-lg text-rb-muted">
           Cargá tus vehículos, definí los mantenimientos periódicos (aceite,
           cadena, filtros...) y llevá el control de cuándo tocan según horas o
           kilómetros recorridos.
@@ -17,7 +17,7 @@ export default function Home() {
 
       <Show when="signed-out">
         <SignInButton>
-          <button className="rounded-full bg-foreground px-6 py-3 text-base font-medium text-background">
+          <button className="rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover">
             Empezar
           </button>
         </SignInButton>
@@ -26,7 +26,7 @@ export default function Home() {
       <Show when="signed-in">
         <Link
           href="/dashboard"
-          className="rounded-full bg-foreground px-6 py-3 text-base font-medium text-background"
+          className="rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
         >
           Ir al dashboard
         </Link>

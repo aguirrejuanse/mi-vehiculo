@@ -89,4 +89,6 @@ export const maintenanceLogsRelations = relations(
 export type Vehicle = typeof vehicles.$inferSelect;
 export type NewVehicle = typeof vehicles.$inferInsert;
 export type MaintenanceType = typeof maintenanceTypes.$inferSelect;
+export type NewMaintenanceType = typeof maintenanceTypes.$inferInsert;
 export type MaintenanceLog = typeof maintenanceLogs.$inferSelect;
+export type NewMaintenanceLog = typeof maintenanceLogs.$inferInsert;

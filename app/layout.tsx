@@ -32,26 +32,32 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         lang="es"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col">
-          <header className="flex items-center justify-between border-b border-black/10 px-6 py-4 dark:border-white/10">
-            <Link href="/" className="font-semibold">
-              Mi Vehículo
+        <body className="min-h-full flex flex-col bg-background text-foreground">
+          <header className="flex items-center justify-between border-b border-surface-border px-6 py-4">
+            <Link
+              href="/"
+              className="text-sm font-black tracking-widest uppercase"
+            >
+              Mi <span className="text-rb-red">Vehículo</span>
             </Link>
             <nav className="flex items-center gap-4">
               <Show when="signed-out">
                 <SignInButton>
-                  <button className="text-sm font-medium">
+                  <button className="text-sm font-semibold tracking-wide text-rb-muted transition-colors hover:text-foreground">
                     Iniciar sesión
                   </button>
                 </SignInButton>
                 <SignUpButton>
-                  <button className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background">
+                  <button className="rounded-sm bg-rb-red px-4 py-2 text-sm font-bold tracking-wide uppercase text-white transition-colors hover:bg-rb-red-hover">
                     Crear cuenta
                   </button>
                 </SignUpButton>
               </Show>
               <Show when="signed-in">
-                <Link href="/dashboard" className="text-sm font-medium">
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-semibold tracking-wide uppercase text-rb-muted transition-colors hover:text-foreground"
+                >
                   Dashboard
                 </Link>
                 <UserButton />
