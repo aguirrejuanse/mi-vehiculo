@@ -69,41 +69,44 @@ export async function updateMaintenanceLog(
 ): Promise<MaintenanceLog | null> {
   // Editing is no longer limited to once: every edit snapshots the current
   // (about-to-be-overwritten) values into maintenance_log_edits before the
-  // update, so the full history can be reconstructed. Insert + update run
-  // in one transaction so the history entry and the new values stay in sync.
-  return db.transaction(async (tx) => {
-    const [current] = await tx
-      .select()
-      .from(maintenanceLogs)
-      .where(
-        and(
-          eq(maintenanceLogs.id, logId),
-          eq(maintenanceLogs.vehicleId, vehicleId),
-        ),
-      );
+  // update, so the full history can be reconstructed.
+  //
+  // Not wrapped in a db.transaction: the neon-http driver has no transaction
+  // support (it throws on db.transaction()). Sequential writes are fine here
+  // since a single owner editing the same log twice at the exact same instant
+  // is not a realistic case for this app; worst case is a duplicated snapshot
+  // in the history, never data loss.
+  const [current] = await db
+    .select()
+    .from(maintenanceLogs)
+    .where(
+      and(
+        eq(maintenanceLogs.id, logId),
+        eq(maintenanceLogs.vehicleId, vehicleId),
+      ),
+    );
 
-    if (!current) return null;
+  if (!current) return null;
 
-    await tx.insert(maintenanceLogEdits).values({
-      maintenanceLogId: current.id,
-      previousPerformedAtValue: current.performedAtValue,
-      previousPerformedAtDate: current.performedAtDate,
-      previousNotes: current.notes,
-    });
-
-    const [updated] = await tx
-      .update(maintenanceLogs)
-      .set({ ...input, lastEditedAt: new Date() })
-      .where(
-        and(
-          eq(maintenanceLogs.id, logId),
-          eq(maintenanceLogs.vehicleId, vehicleId),
-        ),
-      )
-      .returning();
-
-    return updated ?? null;
+  await db.insert(maintenanceLogEdits).values({
+    maintenanceLogId: current.id,
+    previousPerformedAtValue: current.performedAtValue,
+    previousPerformedAtDate: current.performedAtDate,
+    previousNotes: current.notes,
   });
+
+  const [updated] = await db
+    .update(maintenanceLogs)
+    .set({ ...input, lastEditedAt: new Date() })
+    .where(
+      and(
+        eq(maintenanceLogs.id, logId),
+        eq(maintenanceLogs.vehicleId, vehicleId),
+      ),
+    )
+    .returning();
+
+  return updated ?? null;
 }
 
 export async function listMaintenanceLogEdits(
