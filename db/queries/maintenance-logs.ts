@@ -65,6 +65,7 @@ export async function getMaintenanceLogWithTypeForVehicle(
 export async function updateMaintenanceLog(
   logId: string,
   vehicleId: string,
+  editedBy: string,
   input: Pick<NewMaintenanceLog, "performedAtValue" | "performedAtDate" | "notes">,
 ): Promise<MaintenanceLog | null> {
   // Editing is no longer limited to once: every edit snapshots the current
@@ -90,6 +91,7 @@ export async function updateMaintenanceLog(
 
   await db.insert(maintenanceLogEdits).values({
     maintenanceLogId: current.id,
+    editedBy,
     previousPerformedAtValue: current.performedAtValue,
     previousPerformedAtDate: current.performedAtDate,
     previousNotes: current.notes,

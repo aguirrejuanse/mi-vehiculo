@@ -54,7 +54,7 @@ export async function updateMaintenanceLogAction(
   }
 
   try {
-    const updated = await updateMaintenanceLog(log.id, vehicle.id, {
+    const updated = await updateMaintenanceLog(log.id, vehicle.id, userId, {
       performedAtValue: parsed.data.performedAtValue,
       performedAtDate: new Date(parsed.data.performedAtDate),
       notes: parsed.data.notes ?? null,

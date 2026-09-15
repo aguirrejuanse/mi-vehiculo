@@ -69,6 +69,8 @@ export const maintenanceLogEdits = pgTable("maintenance_log_edits", {
   maintenanceLogId: uuid("maintenance_log_id")
     .notNull()
     .references(() => maintenanceLogs.id, { onDelete: "cascade" }),
+  // Clerk user id of whoever made the edit (not a local foreign key)
+  editedBy: text("edited_by").notNull(),
   editedAt: timestamp("edited_at").notNull().defaultNow(),
   previousPerformedAtValue: numeric("previous_performed_at_value").notNull(),
   previousPerformedAtDate: timestamp("previous_performed_at_date").notNull(),

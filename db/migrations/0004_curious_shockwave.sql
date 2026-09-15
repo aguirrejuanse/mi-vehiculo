@@ -1,0 +1,1 @@
+ALTER TABLE "maintenance_log_edits" ADD COLUMN "edited_by" text NOT NULL;
