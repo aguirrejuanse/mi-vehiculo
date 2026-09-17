@@ -4,9 +4,11 @@ import { updateMaintenanceLogAction } from "@/app/dashboard/vehiculos/[vehicleId
 import { validateMaintenanceLogUpdateFields } from "@/lib/validation/maintenance-log";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
+import { DateTimeField } from "@/components/ui/date-time-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
+import { toDateTimeLocalValue } from "@/lib/format";
 import type { MaintenanceLogWithType } from "@/db/queries/maintenance-logs";
 
 export function MaintenanceLogEditForm({
@@ -24,7 +26,7 @@ export function MaintenanceLogEditForm({
       validateMaintenanceLogUpdateFields,
     );
 
-  const dateValue = new Date(log.performedAtDate).toISOString().slice(0, 10);
+  const dateValue = toDateTimeLocalValue(log.performedAtDate);
 
   return (
     <Card
@@ -52,10 +54,9 @@ export function MaintenanceLogEditForm({
         error={fieldErrors?.performedAtValue}
       />
 
-      <TextField
-        label="Fecha"
+      <DateTimeField
+        label="Fecha y hora"
         name="performedAtDate"
-        type="date"
         defaultValue={dateValue}
         error={fieldErrors?.performedAtDate}
       />
