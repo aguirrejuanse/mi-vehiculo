@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
 import { MaintenanceLogForm } from "@/app/dashboard/vehiculos/[vehicleId]/registros/nuevo/maintenance-log-form";
+import { BackLink } from "@/components/ui/back-link";
+import { LinkButton } from "@/components/ui/link-button";
+import { PageTitle } from "@/components/ui/page-title";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +22,14 @@ export default async function NewMaintenanceLogPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <Link
-        href={`/dashboard/vehiculos/${vehicle.id}`}
-        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
-      >
-        ← {vehicle.name}
-      </Link>
+      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>
+        {vehicle.name}
+      </BackLink>
       <div className="flex flex-col gap-1">
         <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
           {vehicle.name}
         </p>
-        <h1 className="text-2xl font-black tracking-tight uppercase">
-          Nuevo <span className="text-rb-red">registro</span>
-        </h1>
+        <PageTitle highlight="registro">Nuevo</PageTitle>
       </div>
 
       {maintenanceTypes.length === 0 ? (
@@ -40,12 +37,13 @@ export default async function NewMaintenanceLogPage({
           <p className="text-sm text-rb-muted">
             Todavía no cargaste tipos de mantenimiento para este vehículo.
           </p>
-          <Link
+          <LinkButton
             href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-            className="mx-auto rounded-sm bg-rb-red px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover"
+            size="md"
+            className="mx-auto"
           >
             Cargar mantenimiento
-          </Link>
+          </LinkButton>
         </div>
       ) : (
         <MaintenanceLogForm

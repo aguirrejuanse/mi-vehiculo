@@ -8,6 +8,34 @@
       "when": 1789440351186,
       "tag": "0000_modern_gravity",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789475729867,
+      "tag": "0001_parched_epoch",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789479090108,
+      "tag": "0002_known_moonstone",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789479097319,
+      "tag": "0003_dry_squadron_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789479912697,
+      "tag": "0004_curious_shockwave",
+      "breakpoints": true
     }
   ]
 }

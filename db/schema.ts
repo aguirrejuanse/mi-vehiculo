@@ -54,6 +54,27 @@ export const maintenanceLogs = pgTable("maintenance_logs", {
   performedAtDate: timestamp("performed_at_date").notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  // Timestamp of the most recent edit, if any. Unlike the old `editedAt`
+  // flag, this does not gate further edits — it's only a quick "last
+  // edited on X" indicator without joining maintenance_log_edits.
+  lastEditedAt: timestamp("last_edited_at"),
+});
+
+// Full edit history for a maintenance log. Each row is a snapshot of the
+// values a log had BEFORE a given edit overwrote them, so the complete
+// history can be reconstructed: the current values live on
+// maintenanceLogs, and every prior version lives here.
+export const maintenanceLogEdits = pgTable("maintenance_log_edits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  maintenanceLogId: uuid("maintenance_log_id")
+    .notNull()
+    .references(() => maintenanceLogs.id, { onDelete: "cascade" }),
+  // Clerk user id of whoever made the edit (not a local foreign key)
+  editedBy: text("edited_by").notNull(),
+  editedAt: timestamp("edited_at").notNull().defaultNow(),
+  previousPerformedAtValue: numeric("previous_performed_at_value").notNull(),
+  previousPerformedAtDate: timestamp("previous_performed_at_date").notNull(),
+  previousNotes: text("previous_notes"),
 });
 
 export const vehiclesRelations = relations(vehicles, ({ many }) => ({
@@ -74,7 +95,7 @@ export const maintenanceTypesRelations = relations(
 
 export const maintenanceLogsRelations = relations(
   maintenanceLogs,
-  ({ one }) => ({
+  ({ one, many }) => ({
     vehicle: one(vehicles, {
       fields: [maintenanceLogs.vehicleId],
       references: [vehicles.id],
@@ -82,6 +103,17 @@ export const maintenanceLogsRelations = relations(
     maintenanceType: one(maintenanceTypes, {
       fields: [maintenanceLogs.maintenanceTypeId],
       references: [maintenanceTypes.id],
+    }),
+    edits: many(maintenanceLogEdits),
+  }),
+);
+
+export const maintenanceLogEditsRelations = relations(
+  maintenanceLogEdits,
+  ({ one }) => ({
+    maintenanceLog: one(maintenanceLogs, {
+      fields: [maintenanceLogEdits.maintenanceLogId],
+      references: [maintenanceLogs.id],
     }),
   }),
 );
@@ -92,3 +124,5 @@ export type MaintenanceType = typeof maintenanceTypes.$inferSelect;
 export type NewMaintenanceType = typeof maintenanceTypes.$inferInsert;
 export type MaintenanceLog = typeof maintenanceLogs.$inferSelect;
 export type NewMaintenanceLog = typeof maintenanceLogs.$inferInsert;
+export type MaintenanceLogEdit = typeof maintenanceLogEdits.$inferSelect;
+export type NewMaintenanceLogEdit = typeof maintenanceLogEdits.$inferInsert;

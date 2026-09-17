@@ -1,0 +1,1 @@
+ALTER TABLE "maintenance_logs" ADD COLUMN "edited_at" timestamp;

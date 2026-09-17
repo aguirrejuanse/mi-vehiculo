@@ -20,7 +20,7 @@ export default async function Home() {
       </div>
 
       <SignUpButton forceRedirectUrl="/dashboard/vehiculos/nuevo">
-        <button className="rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover">
+        <button className="cursor-pointer rounded-sm bg-rb-red px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-rb-red-hover">
           Crear tu vehículo
         </button>
       </SignUpButton>

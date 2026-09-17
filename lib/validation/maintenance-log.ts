@@ -51,3 +51,40 @@ export function validateMaintenanceLogFields(formData: FormData) {
   }
   return fieldErrors;
 }
+
+export const maintenanceLogUpdateSchema = z.object({
+  logId: z.uuid({ error: "Registro inválido." }),
+  vehicleId: z.uuid({ error: "Vehículo inválido." }),
+  performedAtValue: maintenanceLogSchema.shape.performedAtValue,
+  performedAtDate: maintenanceLogSchema.shape.performedAtDate,
+  notes: maintenanceLogSchema.shape.notes,
+});
+
+export type MaintenanceLogUpdateInput = z.infer<
+  typeof maintenanceLogUpdateSchema
+>;
+
+export function validateMaintenanceLogUpdateFields(formData: FormData) {
+  const parsed = maintenanceLogUpdateSchema.safeParse({
+    logId: formData.get("logId"),
+    vehicleId: formData.get("vehicleId"),
+    performedAtValue: formData.get("performedAtValue"),
+    performedAtDate: formData.get("performedAtDate"),
+    notes: formData.get("notes"),
+  });
+
+  if (parsed.success) return null;
+
+  const fieldErrors: Partial<Record<keyof MaintenanceLogUpdateInput, string>> =
+    {};
+  for (const issue of parsed.error.issues) {
+    const key = issue.path[0];
+    if (
+      typeof key === "string" &&
+      !fieldErrors[key as keyof MaintenanceLogUpdateInput]
+    ) {
+      fieldErrors[key as keyof MaintenanceLogUpdateInput] = issue.message;
+    }
+  }
+  return fieldErrors;
+}
