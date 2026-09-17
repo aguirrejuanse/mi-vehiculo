@@ -2,9 +2,9 @@
 
 import { useRef } from "react";
 import { FieldError } from "@/components/ui/field-error";
-import { toDateTimeLocalValue } from "@/lib/format";
+import { toDateInputValue } from "@/lib/format";
 
-export function DateTimeField({
+export function DateField({
   label,
   name,
   defaultValue,
@@ -30,7 +30,7 @@ export function DateTimeField({
           type="button"
           onClick={() => {
             if (inputRef.current) {
-              inputRef.current.value = toDateTimeLocalValue(new Date());
+              inputRef.current.value = toDateInputValue(new Date());
             }
           }}
           className="cursor-pointer text-xs font-bold tracking-widest text-rb-red uppercase transition-colors hover:text-foreground"
@@ -42,7 +42,7 @@ export function DateTimeField({
         ref={inputRef}
         id={name}
         name={name}
-        type="datetime-local"
+        type="date"
         defaultValue={defaultValue}
         className={`rounded-sm border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-rb-red ${
           error ? "border-rb-red" : "border-surface-border"

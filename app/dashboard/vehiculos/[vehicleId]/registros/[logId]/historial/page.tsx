@@ -5,7 +5,7 @@ import {
   getMaintenanceLogWithTypeForVehicle,
   listMaintenanceLogEdits,
 } from "@/db/queries/maintenance-logs";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, formatTime } from "@/lib/format";
 import { BackLink } from "@/components/ui/back-link";
 import { PageTitle } from "@/components/ui/page-title";
 import { Card } from "@/components/ui/card";
@@ -46,11 +46,12 @@ export default async function MaintenanceLogHistoryPage({
           {edits.map((edit) => (
             <Card key={edit.id} as="li" padding="md" className="flex flex-col gap-1">
               <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
-                Antes del {formatDate(edit.editedAt)}
+                Antes del {formatDateTime(edit.editedAt)}
               </p>
               <p className="text-sm text-rb-muted">
                 {edit.previousPerformedAtValue} {vehicle.metricUnit} ·{" "}
-                {formatDateTime(edit.previousPerformedAtDate)}
+                {formatDate(edit.previousPerformedAtDate)} ·{" "}
+                {formatTime(edit.editedAt)}
               </p>
               {edit.previousNotes && (
                 <p className="text-sm text-foreground">

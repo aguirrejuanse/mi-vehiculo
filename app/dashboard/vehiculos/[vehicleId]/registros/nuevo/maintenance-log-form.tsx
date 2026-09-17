@@ -5,11 +5,11 @@ import { validateMaintenanceLogFields } from "@/lib/validation/maintenance-log";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
 import { SelectField } from "@/components/ui/select-field";
-import { DateTimeField } from "@/components/ui/date-time-field";
+import { DateField } from "@/components/ui/date-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
-import { toDateTimeLocalValue } from "@/lib/format";
+import { toDateInputValue } from "@/lib/format";
 import type { MaintenanceType } from "@/db/schema";
 
 export function MaintenanceLogForm({
@@ -63,10 +63,10 @@ export function MaintenanceLogForm({
         error={fieldErrors?.performedAtValue}
       />
 
-      <DateTimeField
-        label="Fecha y hora"
+      <DateField
+        label="Fecha"
         name="performedAtDate"
-        defaultValue={toDateTimeLocalValue(new Date())}
+        defaultValue={toDateInputValue(new Date())}
         error={fieldErrors?.performedAtDate}
       />
 

@@ -4,11 +4,10 @@ import { updateMaintenanceLogAction } from "@/app/dashboard/vehiculos/[vehicleId
 import { validateMaintenanceLogUpdateFields } from "@/lib/validation/maintenance-log";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
-import { DateTimeField } from "@/components/ui/date-time-field";
+import { DateField } from "@/components/ui/date-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
-import { toDateTimeLocalValue } from "@/lib/format";
 import type { MaintenanceLogWithType } from "@/db/queries/maintenance-logs";
 
 export function MaintenanceLogEditForm({
@@ -26,7 +25,10 @@ export function MaintenanceLogEditForm({
       validateMaintenanceLogUpdateFields,
     );
 
-  const dateValue = toDateTimeLocalValue(log.performedAtDate);
+  // Uses UTC getters (not local) to stay consistent with the write path: the date
+  // string submitted from this form is parsed as UTC midnight (`new Date("YYYY-MM-DD")`),
+  // so reading it back with UTC getters round-trips correctly without a day shift.
+  const dateValue = new Date(log.performedAtDate).toISOString().slice(0, 10);
 
   return (
     <Card
@@ -54,8 +56,8 @@ export function MaintenanceLogEditForm({
         error={fieldErrors?.performedAtValue}
       />
 
-      <DateTimeField
-        label="Fecha y hora"
+      <DateField
+        label="Fecha"
         name="performedAtDate"
         defaultValue={dateValue}
         error={fieldErrors?.performedAtDate}

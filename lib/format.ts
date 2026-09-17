@@ -2,6 +2,13 @@ export function formatDate(date: Date | string): string {
   return new Date(date).toLocaleDateString("es-AR");
 }
 
+export function formatTime(date: Date | string): string {
+  return new Date(date).toLocaleTimeString("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function formatDateTime(date: Date | string): string {
   return new Date(date).toLocaleString("es-AR", {
     dateStyle: "short",
@@ -9,13 +16,12 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
-// Formats a Date as the local "YYYY-MM-DDTHH:mm" value a <input type="datetime-local">
-// expects. Deliberately uses local getters (not toISOString, which is UTC) so the
-// displayed value matches the wall-clock time the maintenance was performed at.
-export function toDateTimeLocalValue(date: Date | string): string {
-  const d = new Date(date);
+// Formats a fresh Date (e.g. `new Date()`, never a value round-tripped through the
+// DB) as the local "YYYY-MM-DD" value a <input type="date"> expects. Only safe for
+// values that were never parsed from a date-only string, since those are stored as
+// UTC midnight — reading them back with local getters can shift the day in
+// negative-UTC-offset timezones like Argentina's.
+export function toDateInputValue(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
