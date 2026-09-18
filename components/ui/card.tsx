@@ -23,7 +23,7 @@ export function Card<T extends ElementType = "div">({
 
   return (
     <Component
-      className={`rounded-sm border border-surface-border bg-surface/40 ${PADDING_CLASSES[padding]} ${className ?? ""}`}
+      className={`rounded-2xl border border-surface-border bg-surface shadow-sm ${PADDING_CLASSES[padding]} ${className ?? ""}`}
       {...props}
     />
   );

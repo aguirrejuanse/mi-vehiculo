@@ -34,8 +34,8 @@ export default async function DashboardPage() {
       </div>
 
       {myVehicles.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-sm border border-dashed border-surface-border py-24 text-center">
-          <p className="text-rb-muted">Todavía no tenés vehículos cargados.</p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-surface-border py-24 text-center">
+          <p className="text-muted">Todavía no tenés vehículos cargados.</p>
           <LinkButton href="/dashboard/vehiculos/nuevo">
             Cargar mi primer vehículo
           </LinkButton>
@@ -46,10 +46,10 @@ export default async function DashboardPage() {
             <li key={vehicle.id}>
               <Link
                 href={`/dashboard/vehiculos/${vehicle.id}`}
-                className="flex flex-col gap-1 rounded-sm border border-surface-border bg-surface/40 p-4 transition-colors hover:border-rb-red"
+                className="flex flex-col gap-1 rounded-2xl border border-surface-border bg-surface-2 p-4 transition-colors hover:border-primary"
               >
                 <p className="font-bold">{vehicle.name}</p>
-                <p className="text-sm text-rb-muted">
+                <p className="text-sm text-muted">
                   {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
                 </p>
               </Link>

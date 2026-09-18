@@ -22,7 +22,7 @@ export function DateField({
       <div className="flex items-center justify-between">
         <label
           htmlFor={name}
-          className="text-xs font-bold tracking-widest text-rb-muted uppercase"
+          className="text-xs font-bold tracking-widest text-muted uppercase"
         >
           {label}
         </label>
@@ -33,7 +33,7 @@ export function DateField({
               inputRef.current.value = toDateInputValue(new Date());
             }
           }}
-          className="cursor-pointer text-xs font-bold tracking-widest text-rb-red uppercase transition-colors hover:text-foreground"
+          className="cursor-pointer text-xs font-bold tracking-widest text-primary uppercase transition-colors hover:text-foreground"
         >
           Hoy
         </button>
@@ -44,8 +44,8 @@ export function DateField({
         name={name}
         type="date"
         defaultValue={defaultValue}
-        className={`rounded-sm border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-rb-red ${
-          error ? "border-rb-red" : "border-surface-border"
+        className={`rounded-xl border bg-surface-2 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-surface ${
+          error ? "border-danger" : "border-surface-border"
         }`}
         aria-invalid={Boolean(error)}
       />

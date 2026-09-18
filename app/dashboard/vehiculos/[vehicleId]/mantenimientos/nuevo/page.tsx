@@ -22,7 +22,7 @@ export default async function NewMaintenanceTypePage({
         {vehicle.name}
       </BackLink>
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
+        <p className="text-xs font-bold tracking-widest text-muted uppercase">
           {vehicle.name}
         </p>
         <PageTitle highlight="mantenimiento">Nuevo</PageTitle>

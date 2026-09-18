@@ -33,11 +33,11 @@ export default async function MaintenanceLogHistoryPage({
         {vehicle.name}
       </BackLink>
       <PageTitle highlight="registro">Historial del</PageTitle>
-      <p className="text-sm text-rb-muted">{log.maintenanceType.name}</p>
+      <p className="text-sm text-muted">{log.maintenanceType.name}</p>
 
       {edits.length === 0 ? (
         <Card padding="md">
-          <p className="text-sm text-rb-muted">
+          <p className="text-sm text-muted">
             Este registro todavía no fue editado.
           </p>
         </Card>
@@ -45,10 +45,10 @@ export default async function MaintenanceLogHistoryPage({
         <ul className="flex flex-col gap-3">
           {edits.map((edit) => (
             <Card key={edit.id} as="li" padding="md" className="flex flex-col gap-1">
-              <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
+              <p className="text-xs font-bold tracking-widest text-muted uppercase">
                 Antes del {formatDateTime(edit.editedAt)}
               </p>
-              <p className="text-sm text-rb-muted">
+              <p className="text-sm text-muted">
                 {edit.previousPerformedAtValue} {vehicle.metricUnit} ·{" "}
                 {formatDate(edit.previousPerformedAtDate)} ·{" "}
                 {formatTime(edit.editedAt)}

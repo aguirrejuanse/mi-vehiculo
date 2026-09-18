@@ -28,7 +28,7 @@ export function LinkButton({
   ...props
 }: LinkButtonProps) {
   const classes = [
-    "rounded-sm bg-rb-red text-white transition-colors hover:bg-rb-red-hover",
+    "rounded-xl bg-primary text-white transition-colors hover:bg-primary-hover",
     SIZE_CLASSES[size],
     !bare && "text-sm font-bold tracking-widest uppercase",
     className,
