@@ -18,15 +18,15 @@ export function TextField({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={name}
-        className="text-xs font-bold tracking-widest text-rb-muted uppercase"
+        className="text-xs font-bold tracking-widest text-muted uppercase"
       >
         {label}
       </label>
       <input
         id={name}
         name={name}
-        className={`rounded-sm border bg-surface px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-rb-red ${
-          error ? "border-rb-red" : "border-surface-border"
+        className={`rounded-xl border bg-surface-2 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-surface ${
+          error ? "border-danger" : "border-surface-border"
         } ${className ?? ""}`}
         aria-invalid={Boolean(error)}
         {...props}

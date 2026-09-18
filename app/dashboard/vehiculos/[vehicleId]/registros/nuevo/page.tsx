@@ -26,15 +26,15 @@ export default async function NewMaintenanceLogPage({
         {vehicle.name}
       </BackLink>
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
+        <p className="text-xs font-bold tracking-widest text-muted uppercase">
           {vehicle.name}
         </p>
         <PageTitle highlight="registro">Nuevo</PageTitle>
       </div>
 
       {maintenanceTypes.length === 0 ? (
-        <div className="flex flex-col gap-4 rounded-sm border border-dashed border-surface-border p-6 text-center">
-          <p className="text-sm text-rb-muted">
+        <div className="flex flex-col gap-4 rounded-2xl border border-dashed border-surface-border p-6 text-center">
+          <p className="text-sm text-muted">
             Todavía no cargaste tipos de mantenimiento para este vehículo.
           </p>
           <LinkButton

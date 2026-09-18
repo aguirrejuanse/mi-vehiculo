@@ -42,7 +42,7 @@ export function MaintenanceLogEditForm({
       <input type="hidden" name="vehicleId" value={vehicleId} />
       <input type="hidden" name="logId" value={log.id} />
 
-      <p className="text-xs font-bold tracking-widest text-rb-muted uppercase">
+      <p className="text-xs font-bold tracking-widest text-muted uppercase">
         {log.maintenanceType.name}
       </p>
 

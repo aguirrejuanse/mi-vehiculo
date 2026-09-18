@@ -37,19 +37,19 @@ export default async function VehicleDetailPage({
             </h1>
             <Link
               href={`/dashboard/vehiculos/${vehicle.id}/editar`}
-              className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+              className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
             >
               Editar
             </Link>
           </div>
-          <p className="text-sm text-rb-muted">
+          <p className="text-sm text-muted">
             {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
           </p>
         </div>
         <div className="flex gap-3 text-xs font-bold tracking-widest uppercase">
           <Link
             href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-            className="rounded-sm border border-surface-border px-4 py-2 text-rb-yellow transition-colors hover:text-foreground"
+            className="rounded-2xl border border-surface-border px-4 py-2 text-accent transition-colors hover:text-foreground"
           >
             + Mantenimiento
           </Link>
@@ -63,13 +63,13 @@ export default async function VehicleDetailPage({
       </div>
 
       <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-bold tracking-widest text-rb-muted uppercase">
+        <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
           Historial
         </h2>
 
         {logs.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-sm border border-dashed border-surface-border py-16 text-center">
-            <p className="text-sm text-rb-muted">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-border py-16 text-center">
+            <p className="text-sm text-muted">
               Todavía no hay registros de mantenimiento para este vehículo.
             </p>
             {maintenanceTypes.length === 0 ? (
@@ -95,27 +95,27 @@ export default async function VehicleDetailPage({
                 <div className="flex items-center justify-between">
                   <p className="font-bold">{log.maintenanceType.name}</p>
                   <div className="flex items-center gap-3">
-                    <p className="text-xs text-rb-muted">
+                    <p className="text-xs text-muted">
                       {formatDate(log.performedAtDate)} ·{" "}
                       {formatTime(log.lastEditedAt ?? log.createdAt)}
                     </p>
                     {log.editCount > 0 && (
                       <Link
                         href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial`}
-                        className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+                        className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
                       >
                         Editado ({log.editCount})
                       </Link>
                     )}
                     <Link
                       href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar`}
-                      className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+                      className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
                     >
                       Editar
                     </Link>
                   </div>
                 </div>
-                <p className="text-sm text-rb-muted">
+                <p className="text-sm text-muted">
                   {log.performedAtValue} {vehicle.metricUnit}
                 </p>
                 {log.notes && (

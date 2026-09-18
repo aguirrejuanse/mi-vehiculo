@@ -8,7 +8,7 @@ type BackLinkProps = LinkProps & {
 export function BackLink({ children, ...props }: BackLinkProps) {
   return (
     <Link
-      className="text-xs font-bold tracking-widest text-rb-muted uppercase transition-colors hover:text-foreground"
+      className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
       {...props}
     >
       ← {children}
