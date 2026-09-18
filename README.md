@@ -48,10 +48,13 @@ Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
 - `proxy.ts` — protege todo excepto `/` con Clerk (en Next.js 16 reemplaza a `middleware.ts`).
 - `app/dashboard/` — área autenticada; lista los vehículos del usuario
   (filtrados por `userId` de Clerk).
-- `app/dashboard/vehiculos/nuevo/` — placeholder, falta el formulario real.
+- `app/dashboard/vehiculos/` — alta/edición de vehículos, tipos de
+  mantenimiento y registro de mantenimientos realizados, con historial de
+  ediciones.
 
-## Pendiente
+## Docs
 
-- Formulario de alta de vehículo (`app/dashboard/vehiculos/nuevo`).
-- CRUD de tipos de mantenimiento y registro de mantenimientos realizados.
-- Cálculo de "próximo mantenimiento" usando `usageRatePerWeek`.
+- `docs/ROADMAP.md` — qué falta de v1 y los horizontes futuros (grupos,
+  vehículo compartido, taller B2B, etc.).
+- `docs/PRODUCT.md` — análisis de producto: evento core, North Star
+  Metric y métricas de soporte.
