@@ -4,6 +4,7 @@ import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
 import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-logs";
+import { SUBTYPE_LABELS } from "@/lib/validation/vehicle";
 import { formatDate, formatTime } from "@/lib/format";
 import { BackLink } from "@/components/ui/back-link";
 import { LinkButton } from "@/components/ui/link-button";
@@ -43,7 +44,9 @@ export default async function VehicleDetailPage({
             </Link>
           </div>
           <p className="text-sm text-muted">
-            {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
+            {vehicle.type}
+            {vehicle.subtype ? ` · ${SUBTYPE_LABELS[vehicle.subtype]}` : ""} ·{" "}
+            {vehicle.currentValue} {vehicle.metricUnit}
           </p>
         </div>
         <div className="flex gap-3 text-xs font-bold tracking-widest uppercase">

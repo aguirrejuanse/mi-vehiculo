@@ -1,7 +1,10 @@
 "use client";
 
 import { updateVehicleAction } from "@/app/dashboard/vehiculos/[vehicleId]/editar/actions";
-import { validateVehicleUpdateFields } from "@/lib/validation/vehicle";
+import {
+  validateVehicleUpdateFields,
+  SUBTYPE_LABELS,
+} from "@/lib/validation/vehicle";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
 import { SelectField } from "@/components/ui/select-field";
@@ -10,12 +13,12 @@ import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
 import type { Vehicle } from "@/db/schema";
 
-const VEHICLE_TYPES = [
-  { value: "moto", label: "Moto" },
-  { value: "auto", label: "Auto" },
-  { value: "bicicleta", label: "Bicicleta" },
-  { value: "monopatin", label: "Monopatín" },
-];
+const VEHICLE_TYPE_LABELS: Record<string, string> = {
+  moto: "Moto",
+  auto: "Auto",
+  bicicleta: "Bicicleta",
+  monopatin: "Monopatín",
+};
 
 const METRIC_UNITS = [
   { value: "horas", label: "Horas" },
@@ -44,18 +47,19 @@ export function VehicleEditForm({ vehicle }: { vehicle: Vehicle }) {
         error={fieldErrors?.name}
       />
 
-      <SelectField
-        label="Tipo de vehículo"
-        name="type"
-        defaultValue={vehicle.type}
-        error={fieldErrors?.type}
-      >
-        {VEHICLE_TYPES.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </SelectField>
+      {/* type/subtype are the vehicle's locked identity (server-enforced —
+          see vehicleUpdateSchema.omit) and are shown read-only, not as
+          editable inputs, so there is no field to submit a changed value
+          from. */}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs font-bold tracking-widest text-muted uppercase">
+          Tipo de vehículo
+        </span>
+        <p className="rounded-xl border border-surface-border bg-surface-2 px-3 py-2.5 text-sm text-foreground">
+          {VEHICLE_TYPE_LABELS[vehicle.type]}
+          {vehicle.subtype ? ` · ${SUBTYPE_LABELS[vehicle.subtype]}` : ""}
+        </p>
+      </div>
 
       <SelectField
         label="Unidad de medida"

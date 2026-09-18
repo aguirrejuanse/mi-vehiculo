@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { vehicles } from "@/db/schema";
+import { SUBTYPE_LABELS } from "@/lib/validation/vehicle";
 import { LinkButton } from "@/components/ui/link-button";
 import { PageTitle } from "@/components/ui/page-title";
 
@@ -50,7 +51,9 @@ export default async function DashboardPage() {
               >
                 <p className="font-bold">{vehicle.name}</p>
                 <p className="text-sm text-muted">
-                  {vehicle.type} · {vehicle.currentValue} {vehicle.metricUnit}
+                  {vehicle.type}
+                  {vehicle.subtype ? ` · ${SUBTYPE_LABELS[vehicle.subtype]}` : ""} ·{" "}
+                  {vehicle.currentValue} {vehicle.metricUnit}
                 </p>
               </Link>
             </li>

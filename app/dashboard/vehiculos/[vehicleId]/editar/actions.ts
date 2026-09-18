@@ -22,7 +22,6 @@ export async function updateVehicleAction(
   const parsed = vehicleUpdateSchema.safeParse({
     vehicleId: formData.get("vehicleId"),
     name: formData.get("name"),
-    type: formData.get("type"),
     metricUnit: formData.get("metricUnit"),
     currentValue: formData.get("currentValue"),
     usageRatePerWeek: formData.get("usageRatePerWeek"),
@@ -43,7 +42,6 @@ export async function updateVehicleAction(
   try {
     await updateVehicle(vehicle.id, userId, {
       name: parsed.data.name,
-      type: parsed.data.type,
       metricUnit: parsed.data.metricUnit,
       currentValue: parsed.data.currentValue,
       usageRatePerWeek: parsed.data.usageRatePerWeek ?? null,

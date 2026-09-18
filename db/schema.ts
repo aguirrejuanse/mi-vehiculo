@@ -17,12 +17,28 @@ export const vehicleTypeEnum = pgEnum("vehicle_type", [
 
 export const metricUnitEnum = pgEnum("metric_unit", ["horas", "km"]);
 
+// Subtype taxonomy is per-`type`: moto_* only applies to type "moto",
+// bici_* only to type "bicicleta". "auto" and "monopatin" have no
+// subtype and store null. Cross-validation lives in lib/validation/vehicle.ts
+// (SUBTYPES_BY_TYPE), not in Postgres — same convention as type/metricUnit.
+export const vehicleSubtypeEnum = pgEnum("vehicle_subtype", [
+  "moto_calle",
+  "moto_enduro",
+  "bici_ruta",
+  "bici_enduro",
+  "bici_downhill",
+  "bici_electrica",
+]);
+
 export const vehicles = pgTable("vehicles", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Clerk user id (not a local foreign key — Clerk owns the users table)
   userId: text("user_id").notNull(),
   name: text("name").notNull(),
   type: vehicleTypeEnum("type").notNull(),
+  // Nullable: only moto/bicicleta have a subtype taxonomy; auto/monopatin
+  // store null. Immutable after creation (see vehicleUpdateSchema).
+  subtype: vehicleSubtypeEnum("subtype"),
   metricUnit: metricUnitEnum("metric_unit").notNull(),
   currentValue: numeric("current_value").notNull().default("0"),
   // How much the metric advances per week on average (nullable: unknown until the user sets it)
