@@ -5,7 +5,8 @@ import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
 import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-logs";
 import { SUBTYPE_LABELS } from "@/lib/validation/vehicle";
-import { formatDateUTC, formatTime } from "@/lib/format";
+import { formatDateUTC } from "@/lib/format";
+import { LocalTime } from "@/components/ui/local-time";
 import { BackLink } from "@/components/ui/back-link";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card } from "@/components/ui/card";
@@ -213,7 +214,7 @@ export default async function VehicleDetailPage({
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-muted">
                       {formatDateUTC(log.performedAtDate)} ·{" "}
-                      {formatTime(log.lastEditedAt ?? log.createdAt)}
+                      <LocalTime value={log.lastEditedAt ?? log.createdAt} />
                     </p>
                     {log.editCount > 0 && (
                       <Link
