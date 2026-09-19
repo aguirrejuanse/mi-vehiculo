@@ -1,4 +1,4 @@
-import { type ComponentPropsWithoutRef, type ElementType } from "react";
+import { type ComponentPropsWithRef, type ElementType } from "react";
 
 const PADDING_CLASSES = {
   sm: "p-4",
@@ -11,7 +11,7 @@ type CardOwnProps<T extends ElementType> = {
 };
 
 type CardProps<T extends ElementType> = CardOwnProps<T> &
-  Omit<ComponentPropsWithoutRef<T>, keyof CardOwnProps<T>>;
+  Omit<ComponentPropsWithRef<T>, keyof CardOwnProps<T>>;
 
 export function Card<T extends ElementType = "div">({
   as,
