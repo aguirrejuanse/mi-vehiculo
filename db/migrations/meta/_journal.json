@@ -50,6 +50,13 @@
       "when": 1789831707282,
       "tag": "0006_overjoyed_sister_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789858422867,
+      "tag": "0007_outstanding_eternals",
+      "breakpoints": true
     }
   ]
 }

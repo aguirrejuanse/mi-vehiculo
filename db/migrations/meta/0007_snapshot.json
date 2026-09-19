@@ -1,0 +1,477 @@
+{
+  "id": "86d2fac5-94d1-4044-879f-b8d8917f8110",
+  "prevId": "39f67929-f81c-4d2e-b5c7-5542d19daa74",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.maintenance_log_edits": {
+      "name": "maintenance_log_edits",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "maintenance_log_id": {
+          "name": "maintenance_log_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "edited_by": {
+          "name": "edited_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "edited_at": {
+          "name": "edited_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "previous_performed_at_value": {
+          "name": "previous_performed_at_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "previous_performed_at_date": {
+          "name": "previous_performed_at_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "previous_notes": {
+          "name": "previous_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "maintenance_log_edits_maintenance_log_id_maintenance_logs_id_fk": {
+          "name": "maintenance_log_edits_maintenance_log_id_maintenance_logs_id_fk",
+          "tableFrom": "maintenance_log_edits",
+          "tableTo": "maintenance_logs",
+          "columnsFrom": [
+            "maintenance_log_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.maintenance_logs": {
+      "name": "maintenance_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "vehicle_id": {
+          "name": "vehicle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "maintenance_type_id": {
+          "name": "maintenance_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "performed_at_value": {
+          "name": "performed_at_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "performed_at_date": {
+          "name": "performed_at_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_edited_at": {
+          "name": "last_edited_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "maintenance_logs_vehicle_id_vehicles_id_fk": {
+          "name": "maintenance_logs_vehicle_id_vehicles_id_fk",
+          "tableFrom": "maintenance_logs",
+          "tableTo": "vehicles",
+          "columnsFrom": [
+            "vehicle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "maintenance_logs_maintenance_type_id_maintenance_types_id_fk": {
+          "name": "maintenance_logs_maintenance_type_id_maintenance_types_id_fk",
+          "tableFrom": "maintenance_logs",
+          "tableTo": "maintenance_types",
+          "columnsFrom": [
+            "maintenance_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.maintenance_types": {
+      "name": "maintenance_types",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "vehicle_id": {
+          "name": "vehicle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interval_value": {
+          "name": "interval_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interval_calendar_value": {
+          "name": "interval_calendar_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interval_calendar_unit": {
+          "name": "interval_calendar_unit",
+          "type": "calendar_unit",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "maintenance_types_vehicle_id_vehicles_id_fk": {
+          "name": "maintenance_types_vehicle_id_vehicles_id_fk",
+          "tableFrom": "maintenance_types",
+          "tableTo": "vehicles",
+          "columnsFrom": [
+            "vehicle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.parts": {
+      "name": "parts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "vehicle_id": {
+          "name": "vehicle_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "part_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "maintenance_type_id": {
+          "name": "maintenance_type_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "maintenance_log_id": {
+          "name": "maintenance_log_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "parts_vehicle_id_vehicles_id_fk": {
+          "name": "parts_vehicle_id_vehicles_id_fk",
+          "tableFrom": "parts",
+          "tableTo": "vehicles",
+          "columnsFrom": [
+            "vehicle_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "parts_maintenance_type_id_maintenance_types_id_fk": {
+          "name": "parts_maintenance_type_id_maintenance_types_id_fk",
+          "tableFrom": "parts",
+          "tableTo": "maintenance_types",
+          "columnsFrom": [
+            "maintenance_type_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "parts_maintenance_log_id_maintenance_logs_id_fk": {
+          "name": "parts_maintenance_log_id_maintenance_logs_id_fk",
+          "tableFrom": "parts",
+          "tableTo": "maintenance_logs",
+          "columnsFrom": [
+            "maintenance_log_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.vehicles": {
+      "name": "vehicles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "vehicle_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subtype": {
+          "name": "subtype",
+          "type": "vehicle_subtype",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metric_unit": {
+          "name": "metric_unit",
+          "type": "metric_unit",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_value": {
+          "name": "current_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "usage_rate_per_week": {
+          "name": "usage_rate_per_week",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.calendar_unit": {
+      "name": "calendar_unit",
+      "schema": "public",
+      "values": [
+        "dias",
+        "meses"
+      ]
+    },
+    "public.metric_unit": {
+      "name": "metric_unit",
+      "schema": "public",
+      "values": [
+        "horas",
+        "km"
+      ]
+    },
+    "public.part_status": {
+      "name": "part_status",
+      "schema": "public",
+      "values": [
+        "wishlist",
+        "pendiente_instalar",
+        "instalado"
+      ]
+    },
+    "public.vehicle_subtype": {
+      "name": "vehicle_subtype",
+      "schema": "public",
+      "values": [
+        "moto_calle",
+        "moto_enduro",
+        "bici_ruta",
+        "bici_enduro",
+        "bici_downhill",
+        "bici_electrica"
+      ]
+    },
+    "public.vehicle_type": {
+      "name": "vehicle_type",
+      "schema": "public",
+      "values": [
+        "moto",
+        "auto",
+        "bicicleta",
+        "monopatin"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

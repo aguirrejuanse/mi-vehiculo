@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
   maintenanceTypes,
@@ -23,4 +23,20 @@ export async function listMaintenanceTypesForVehicle(
     .select()
     .from(maintenanceTypes)
     .where(eq(maintenanceTypes.vehicleId, vehicleId));
+}
+
+export async function getMaintenanceTypeForVehicle(
+  typeId: string,
+  vehicleId: string,
+): Promise<MaintenanceType | null> {
+  const [maintenanceType] = await db
+    .select()
+    .from(maintenanceTypes)
+    .where(
+      and(
+        eq(maintenanceTypes.id, typeId),
+        eq(maintenanceTypes.vehicleId, vehicleId),
+      ),
+    );
+  return maintenanceType ?? null;
 }
