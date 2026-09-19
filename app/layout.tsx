@@ -54,6 +54,24 @@ const righteous = Righteous({
   preload: false,
 });
 
+// Clerk resolves these CSS variables at runtime (color-mix / relative color
+// syntax), so its UI follows the active theme without re-rendering.
+const clerkAppearance = {
+  variables: {
+    colorPrimary: "var(--color-primary)",
+    colorDanger: "var(--color-danger)",
+    colorSuccess: "var(--color-success)",
+    colorWarning: "var(--color-accent)",
+    colorNeutral: "var(--foreground)",
+    colorForeground: "var(--foreground)",
+    colorMutedForeground: "var(--muted)",
+    colorBackground: "var(--surface)",
+    colorInput: "var(--surface-2)",
+    colorInputForeground: "var(--foreground)",
+    colorModalBackdrop: "color-mix(in srgb, var(--background) 73%, transparent)",
+  },
+};
+
 export const metadata: Metadata = {
   title: "Mi Vehículo",
   description: "Llevá el control del mantenimiento de tus vehículos",
@@ -65,7 +83,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const theme = isTheme(themeCookie) ? themeCookie : null;
 
   return (
-    <ClerkProvider>
+    <ClerkProvider appearance={clerkAppearance}>
       <html
         lang="es"
         data-theme={theme ?? undefined}
