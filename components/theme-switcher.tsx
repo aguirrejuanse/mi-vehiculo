@@ -90,11 +90,18 @@ export function ThemeSwitcher({ initialTheme }: ThemeSwitcherProps) {
     startTransition(async () => {
       try {
         await setThemeAction(next);
-        channelRef.current?.postMessage(next);
       } catch {
         // Nothing was persisted: put the UI back where it was.
         setSelected(previous);
         applyTheme(previous);
+        return;
+      }
+      // Separate from the action: the cookie is saved, so a broadcast failure
+      // must neither roll the UI back nor reach the error boundary.
+      try {
+        channelRef.current?.postMessage(next);
+      } catch {
+        // Other tabs pick the theme up on their next full load.
       }
     });
   }
