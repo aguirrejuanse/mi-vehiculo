@@ -24,6 +24,8 @@ export async function createMaintenanceTypeAction(
     vehicleId: formData.get("vehicleId"),
     name: formData.get("name"),
     intervalValue: formData.get("intervalValue"),
+    intervalCalendarValue: formData.get("intervalCalendarValue"),
+    intervalCalendarUnit: formData.get("intervalCalendarUnit"),
   });
 
   if (!parsed.success) {
@@ -48,6 +50,8 @@ export async function createMaintenanceTypeAction(
       vehicleId: parsed.data.vehicleId,
       name: parsed.data.name,
       intervalValue: parsed.data.intervalValue,
+      intervalCalendarValue: parsed.data.intervalCalendarValue,
+      intervalCalendarUnit: parsed.data.intervalCalendarUnit,
     });
   } catch {
     return {

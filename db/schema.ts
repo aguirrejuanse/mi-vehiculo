@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -16,6 +17,8 @@ export const vehicleTypeEnum = pgEnum("vehicle_type", [
 ]);
 
 export const metricUnitEnum = pgEnum("metric_unit", ["horas", "km"]);
+
+export const calendarUnitEnum = pgEnum("calendar_unit", ["dias", "meses"]);
 
 // Subtype taxonomy is per-`type`: moto_* only applies to type "moto",
 // bici_* only to type "bicicleta". "auto" and "monopatin" have no
@@ -52,8 +55,15 @@ export const maintenanceTypes = pgTable("maintenance_types", {
     .notNull()
     .references(() => vehicles.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  // Interval expressed in the vehicle's metric unit (e.g. every 5000 km / every 50 horas)
-  intervalValue: numeric("interval_value").notNull(),
+  // Interval expressed in the vehicle's metric unit (e.g. every 5000 km / every 50 horas).
+  // Nullable: a maintenanceType can instead (or additionally) use a calendar
+  // interval below. Cross-validation (at least one of the two must be set)
+  // lives in lib/validation/maintenance-type.ts, not in Postgres.
+  intervalValue: numeric("interval_value"),
+  // Calendar-based interval, independent from intervalValue. Both must be
+  // set together or both left null — enforced in application validation.
+  intervalCalendarValue: integer("interval_calendar_value"),
+  intervalCalendarUnit: calendarUnitEnum("interval_calendar_unit"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
