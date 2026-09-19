@@ -22,6 +22,7 @@ export async function createVehicleAction(
   const parsed = vehicleSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
+    subtype: formData.get("subtype"),
     metricUnit: formData.get("metricUnit"),
     currentValue: formData.get("currentValue"),
     usageRatePerWeek: formData.get("usageRatePerWeek"),
@@ -40,6 +41,7 @@ export async function createVehicleAction(
       userId,
       name: parsed.data.name,
       type: parsed.data.type,
+      subtype: parsed.data.subtype ?? null,
       metricUnit: parsed.data.metricUnit,
       currentValue: parsed.data.currentValue,
       usageRatePerWeek: parsed.data.usageRatePerWeek ?? null,

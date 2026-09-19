@@ -1,6 +1,34 @@
 import { z } from "zod";
 import { emptyToUndefined } from "@/lib/validation/action-state";
 
+export const SUBTYPES_BY_TYPE = {
+  moto: ["moto_calle", "moto_enduro"],
+  auto: [],
+  bicicleta: ["bici_ruta", "bici_enduro", "bici_downhill", "bici_electrica"],
+  monopatin: [],
+} as const;
+
+export type VehicleType = keyof typeof SUBTYPES_BY_TYPE;
+export type VehicleSubtype = (typeof SUBTYPES_BY_TYPE)[VehicleType][number];
+
+export const SUBTYPE_LABELS: Record<VehicleSubtype, string> = {
+  moto_calle: "Calle",
+  moto_enduro: "Enduro",
+  bici_ruta: "Ruta",
+  bici_enduro: "Enduro",
+  bici_downhill: "Downhill",
+  bici_electrica: "Eléctrica",
+};
+
+export const METRIC_UNIT_BY_SUBTYPE: Record<VehicleSubtype, "horas" | "km"> = {
+  moto_calle: "km",
+  moto_enduro: "horas",
+  bici_ruta: "km",
+  bici_enduro: "horas",
+  bici_downhill: "horas",
+  bici_electrica: "km",
+};
+
 const numericString = z.preprocess(
   emptyToUndefined,
   z
@@ -13,7 +41,17 @@ const numericString = z.preprocess(
     }),
 );
 
-export const vehicleSchema = z.object({
+const ALL_SUBTYPES = Object.values(SUBTYPES_BY_TYPE).flat() as [
+  VehicleSubtype,
+  ...VehicleSubtype[],
+];
+
+// Plain object schema — NOT refined. `vehicleSchema` (create) adds the
+// cross-field subtype check via `.superRefine()` below; `vehicleUpdateSchema`
+// (edit) instead `.omit()`s `type`/`subtype` so they physically cannot be
+// written by the update action, enforcing the identity lock at the type
+// level. Do not re-merge these into one refined chain (see design ADR #2).
+export const vehicleBaseSchema = z.object({
   name: z
     .string({ error: "Ponele un nombre al vehículo." })
     .trim()
@@ -22,6 +60,12 @@ export const vehicleSchema = z.object({
   type: z.enum(["moto", "auto", "bicicleta", "monopatin"], {
     error: "Elegí un tipo de vehículo.",
   }),
+  subtype: z.preprocess(
+    emptyToUndefined,
+    z
+      .enum(ALL_SUBTYPES, { error: "Elegí un subtipo válido." })
+      .nullish(),
+  ),
   metricUnit: z.enum(["horas", "km"], {
     error: "Elegí una unidad de medida.",
   }),
@@ -40,12 +84,45 @@ export const vehicleSchema = z.object({
   ),
 });
 
+export const vehicleSchema = vehicleBaseSchema.superRefine((data, ctx) => {
+  const validSubtypes: readonly string[] = SUBTYPES_BY_TYPE[data.type];
+
+  if (validSubtypes.length === 0) {
+    if (data.subtype != null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["subtype"],
+        message: "Este tipo de vehículo no tiene subtipo.",
+      });
+    }
+    return;
+  }
+
+  if (data.subtype == null) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["subtype"],
+      message: "Elegí un subtipo.",
+    });
+    return;
+  }
+
+  if (!validSubtypes.includes(data.subtype)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["subtype"],
+      message: "Ese subtipo no corresponde a este tipo de vehículo.",
+    });
+  }
+});
+
 export type VehicleInput = z.infer<typeof vehicleSchema>;
 
 export function validateVehicleFields(formData: FormData) {
   const parsed = vehicleSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
+    subtype: formData.get("subtype"),
     metricUnit: formData.get("metricUnit"),
     currentValue: formData.get("currentValue"),
     usageRatePerWeek: formData.get("usageRatePerWeek"),
@@ -63,9 +140,15 @@ export function validateVehicleFields(formData: FormData) {
   return fieldErrors;
 }
 
-export const vehicleUpdateSchema = vehicleSchema.extend({
-  vehicleId: z.uuid({ error: "Vehículo inválido." }),
-});
+// `type`/`subtype` are intentionally OMITTED here, not just left out of the
+// form — this is the server-side identity lock. A crafted POST including
+// those fields has nowhere to land: `updateVehicleAction` cannot even read
+// them off `parsed.data`. See design ADR #3.
+export const vehicleUpdateSchema = vehicleBaseSchema
+  .omit({ type: true, subtype: true })
+  .extend({
+    vehicleId: z.uuid({ error: "Vehículo inválido." }),
+  });
 
 export type VehicleUpdateInput = z.infer<typeof vehicleUpdateSchema>;
 
@@ -73,7 +156,6 @@ export function validateVehicleUpdateFields(formData: FormData) {
   const parsed = vehicleUpdateSchema.safeParse({
     vehicleId: formData.get("vehicleId"),
     name: formData.get("name"),
-    type: formData.get("type"),
     metricUnit: formData.get("metricUnit"),
     currentValue: formData.get("currentValue"),
     usageRatePerWeek: formData.get("usageRatePerWeek"),

@@ -1,0 +1,2 @@
+CREATE TYPE "public"."vehicle_subtype" AS ENUM('moto_calle', 'moto_enduro', 'bici_ruta', 'bici_enduro', 'bici_downhill', 'bici_electrica');--> statement-breakpoint
+ALTER TABLE "vehicles" ADD COLUMN "subtype" "vehicle_subtype";
