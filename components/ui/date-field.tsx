@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { FieldError } from "@/components/ui/field-error";
+import { inputClassName } from "@/components/ui/field-styles";
 import { toDateInputValue } from "@/lib/format";
 
 export function DateField({
@@ -44,9 +45,7 @@ export function DateField({
         name={name}
         type="date"
         defaultValue={defaultValue}
-        className={`rounded-xl border bg-surface-2 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-surface ${
-          error ? "border-danger" : "border-surface-border"
-        }`}
+        className={inputClassName(Boolean(error))}
         aria-invalid={Boolean(error)}
       />
       <FieldError message={error} />

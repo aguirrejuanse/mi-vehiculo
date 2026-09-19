@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { emptyToUndefined } from "@/lib/validation/action-state";
+import {
+  emptyToUndefined,
+  fieldErrorsFromZodError,
+} from "@/lib/validation/action-state";
 
 // Plain object schema — NOT refined. `maintenanceTypeSchema` adds the
 // cross-field interval check via `.superRefine()` below. Do not re-merge
@@ -127,15 +130,5 @@ export function validateMaintenanceTypeFields(formData: FormData) {
 
   if (parsed.success) return null;
 
-  const fieldErrors: Partial<Record<keyof MaintenanceTypeInput, string>> = {};
-  for (const issue of parsed.error.issues) {
-    const key = issue.path[0];
-    if (
-      typeof key === "string" &&
-      !fieldErrors[key as keyof MaintenanceTypeInput]
-    ) {
-      fieldErrors[key as keyof MaintenanceTypeInput] = issue.message;
-    }
-  }
-  return fieldErrors;
+  return fieldErrorsFromZodError<MaintenanceTypeInput>(parsed.error);
 }

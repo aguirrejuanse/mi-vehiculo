@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { emptyToUndefined } from "@/lib/validation/action-state";
+import {
+  emptyToUndefined,
+  fieldErrorsFromZodError,
+} from "@/lib/validation/action-state";
 
 // Plain object schema — NOT refined. `partSchema` adds the mutual-exclusion
 // cross-field check via `.superRefine()` below. Do not re-merge these into
@@ -59,12 +62,5 @@ export function validatePartFields(formData: FormData) {
 
   if (parsed.success) return null;
 
-  const fieldErrors: Partial<Record<keyof PartInput, string>> = {};
-  for (const issue of parsed.error.issues) {
-    const key = issue.path[0];
-    if (typeof key === "string" && !fieldErrors[key as keyof PartInput]) {
-      fieldErrors[key as keyof PartInput] = issue.message;
-    }
-  }
-  return fieldErrors;
+  return fieldErrorsFromZodError<PartInput>(parsed.error);
 }

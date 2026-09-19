@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { emptyToUndefined } from "@/lib/validation/action-state";
+import {
+  emptyToUndefined,
+  fieldErrorsFromZodError,
+} from "@/lib/validation/action-state";
 
 export const maintenanceLogSchema = z.object({
   vehicleId: z.uuid({ error: "Vehículo inválido." }),
@@ -39,17 +42,7 @@ export function validateMaintenanceLogFields(formData: FormData) {
 
   if (parsed.success) return null;
 
-  const fieldErrors: Partial<Record<keyof MaintenanceLogInput, string>> = {};
-  for (const issue of parsed.error.issues) {
-    const key = issue.path[0];
-    if (
-      typeof key === "string" &&
-      !fieldErrors[key as keyof MaintenanceLogInput]
-    ) {
-      fieldErrors[key as keyof MaintenanceLogInput] = issue.message;
-    }
-  }
-  return fieldErrors;
+  return fieldErrorsFromZodError<MaintenanceLogInput>(parsed.error);
 }
 
 export const maintenanceLogUpdateSchema = z.object({
@@ -75,16 +68,5 @@ export function validateMaintenanceLogUpdateFields(formData: FormData) {
 
   if (parsed.success) return null;
 
-  const fieldErrors: Partial<Record<keyof MaintenanceLogUpdateInput, string>> =
-    {};
-  for (const issue of parsed.error.issues) {
-    const key = issue.path[0];
-    if (
-      typeof key === "string" &&
-      !fieldErrors[key as keyof MaintenanceLogUpdateInput]
-    ) {
-      fieldErrors[key as keyof MaintenanceLogUpdateInput] = issue.message;
-    }
-  }
-  return fieldErrors;
+  return fieldErrorsFromZodError<MaintenanceLogUpdateInput>(parsed.error);
 }
