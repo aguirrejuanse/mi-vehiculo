@@ -1,5 +1,6 @@
 import { type ComponentProps } from "react";
 import { FieldError } from "@/components/ui/field-error";
+import { inputClassName } from "@/components/ui/field-styles";
 
 type TextFieldProps = ComponentProps<"input"> & {
   label: string;
@@ -25,9 +26,7 @@ export function TextField({
       <input
         id={name}
         name={name}
-        className={`rounded-xl border bg-surface-2 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-surface ${
-          error ? "border-danger" : "border-surface-border"
-        } ${className ?? ""}`}
+        className={`${inputClassName(Boolean(error))} ${className ?? ""}`}
         aria-invalid={Boolean(error)}
         {...props}
       />

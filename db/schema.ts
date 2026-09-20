@@ -20,6 +20,12 @@ export const metricUnitEnum = pgEnum("metric_unit", ["horas", "km"]);
 
 export const calendarUnitEnum = pgEnum("calendar_unit", ["dias", "meses"]);
 
+export const partStatusEnum = pgEnum("part_status", [
+  "wishlist",
+  "pendiente_instalar",
+  "instalado",
+]);
+
 // Subtype taxonomy is per-`type`: moto_* only applies to type "moto",
 // bici_* only to type "bicicleta". "auto" and "monopatin" have no
 // subtype and store null. Cross-validation lives in lib/validation/vehicle.ts
@@ -103,9 +109,37 @@ export const maintenanceLogEdits = pgTable("maintenance_log_edits", {
   previousNotes: text("previous_notes"),
 });
 
+// A repuesto (part) can optionally hang forward off a maintenanceType
+// ("buy this before the type's next-due hits") or backward off a
+// maintenanceLog (a retroactive quality note on a part already installed),
+// but NEVER both at once. Mutual exclusion is validated in
+// lib/validation/part.ts, not in Postgres. vehicleId cascades (no vehicle,
+// no meaning); the two optional FKs use "set null" — a part is its own
+// entity and shouldn't evaporate just because the type/log it referenced
+// was deleted.
+export const parts = pgTable("parts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  vehicleId: uuid("vehicle_id")
+    .notNull()
+    .references(() => vehicles.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  status: partStatusEnum("status").notNull(),
+  maintenanceTypeId: uuid("maintenance_type_id").references(
+    () => maintenanceTypes.id,
+    { onDelete: "set null" },
+  ),
+  maintenanceLogId: uuid("maintenance_log_id").references(
+    () => maintenanceLogs.id,
+    { onDelete: "set null" },
+  ),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const vehiclesRelations = relations(vehicles, ({ many }) => ({
   maintenanceTypes: many(maintenanceTypes),
   maintenanceLogs: many(maintenanceLogs),
+  parts: many(parts),
 }));
 
 export const maintenanceTypesRelations = relations(
@@ -116,6 +150,7 @@ export const maintenanceTypesRelations = relations(
       references: [vehicles.id],
     }),
     maintenanceLogs: many(maintenanceLogs),
+    parts: many(parts),
   }),
 );
 
@@ -131,8 +166,24 @@ export const maintenanceLogsRelations = relations(
       references: [maintenanceTypes.id],
     }),
     edits: many(maintenanceLogEdits),
+    parts: many(parts),
   }),
 );
+
+export const partsRelations = relations(parts, ({ one }) => ({
+  vehicle: one(vehicles, {
+    fields: [parts.vehicleId],
+    references: [vehicles.id],
+  }),
+  maintenanceType: one(maintenanceTypes, {
+    fields: [parts.maintenanceTypeId],
+    references: [maintenanceTypes.id],
+  }),
+  maintenanceLog: one(maintenanceLogs, {
+    fields: [parts.maintenanceLogId],
+    references: [maintenanceLogs.id],
+  }),
+}));
 
 export const maintenanceLogEditsRelations = relations(
   maintenanceLogEdits,
@@ -152,3 +203,5 @@ export type MaintenanceLog = typeof maintenanceLogs.$inferSelect;
 export type NewMaintenanceLog = typeof maintenanceLogs.$inferInsert;
 export type MaintenanceLogEdit = typeof maintenanceLogEdits.$inferSelect;
 export type NewMaintenanceLogEdit = typeof maintenanceLogEdits.$inferInsert;
+export type Part = typeof parts.$inferSelect;
+export type NewPart = typeof parts.$inferInsert;

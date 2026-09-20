@@ -5,6 +5,7 @@ import { validateMaintenanceTypeFields } from "@/lib/validation/maintenance-type
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
 import { SelectField } from "@/components/ui/select-field";
+import { CheckboxField } from "@/components/ui/checkbox-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
@@ -38,6 +39,12 @@ export function MaintenanceTypeForm({
         name="name"
         placeholder="Cambio de aceite"
         error={fieldErrors?.name}
+      />
+
+      <CheckboxField
+        label="Este mantenimiento no se repite (sin intervalo)"
+        name="noInterval"
+        error={fieldErrors?.noInterval}
       />
 
       <TextField

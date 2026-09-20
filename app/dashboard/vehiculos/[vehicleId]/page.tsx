@@ -4,6 +4,7 @@ import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
 import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-logs";
+import { listPartsForVehicle } from "@/db/queries/parts";
 import { SUBTYPE_LABELS } from "@/lib/validation/vehicle";
 import { formatDateUTC } from "@/lib/format";
 import { LocalTime } from "@/components/ui/local-time";
@@ -18,7 +19,7 @@ import {
   type NextDue,
   type NextDueStatus,
 } from "@/lib/maintenance/next-due";
-import type { MaintenanceType } from "@/db/schema";
+import type { MaintenanceType, Part } from "@/db/schema";
 
 const STATUS_LABEL: Record<NextDueStatus, string> = {
   [NEXT_DUE_STATUS.OK]: "Al día",
@@ -34,6 +35,34 @@ const STATUS_TONE: Record<NextDueStatus, "ok" | "warn" | "danger" | "muted"> = {
   [NEXT_DUE_STATUS.SIN_REGISTRO]: "muted",
 };
 
+// A maintenanceType with no interval configured (opted out via the
+// "sin intervalo" checkbox) has nothing to compute a next-due date from —
+// it's excluded from "Próximos mantenimientos" here, at the page level.
+// lib/maintenance/next-due.ts is intentionally left untouched.
+function hasInterval(type: MaintenanceType): boolean {
+  return type.intervalValue != null || type.intervalCalendarValue != null;
+}
+
+const PART_STATUS_LABEL: Record<Part["status"], string> = {
+  wishlist: "Wishlist",
+  pendiente_instalar: "Pendiente instalar",
+  instalado: "Instalado",
+};
+
+const PART_STATUS_TONE: Record<Part["status"], "ok" | "warn" | "muted"> = {
+  wishlist: "muted",
+  pendiente_instalar: "warn",
+  instalado: "ok",
+};
+
+// pendiente_instalar first (most actionable) → wishlist → instalado last
+// (archived). Ties broken by createdAt desc (newest first).
+const PART_STATUS_ORDER: Record<Part["status"], number> = {
+  pendiente_instalar: 0,
+  wishlist: 1,
+  instalado: 2,
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function VehicleDetailPage({
@@ -45,9 +74,10 @@ export default async function VehicleDetailPage({
 
   if (!vehicle) notFound();
 
-  const [maintenanceTypes, logs] = await Promise.all([
+  const [maintenanceTypes, logs, parts] = await Promise.all([
     listMaintenanceTypesForVehicle(vehicle.id),
     listMaintenanceLogsWithTypeForVehicle(vehicle.id),
+    listPartsForVehicle(vehicle.id),
   ]);
 
   const logsByTypeId = new Map<string, typeof logs>();
@@ -60,8 +90,10 @@ export default async function VehicleDetailPage({
     }
   }
 
+  const scheduledTypes = maintenanceTypes.filter(hasInterval);
+
   const nextDueByType: { type: MaintenanceType; nextDue: NextDue }[] =
-    maintenanceTypes
+    scheduledTypes
       .map((type) => ({
         type,
         nextDue: computeNextDue({
@@ -71,6 +103,33 @@ export default async function VehicleDetailPage({
         }),
       }))
       .sort((a, b) => compareNextDue(a.nextDue, b.nextDue));
+
+  // Parts link forward to a maintenanceType or backward to a maintenanceLog,
+  // never both. Both target sets belong to this same vehicle and are already
+  // in memory — the join is done here to avoid a round-trip and any
+  // `with:` relation query (same strategy as logsByTypeId above).
+  const typeById = new Map(maintenanceTypes.map((type) => [type.id, type]));
+  const logById = new Map(logs.map((log) => [log.id, log]));
+
+  const partsWithLinks = parts
+    .map((part) => ({
+      part,
+      linkedType: part.maintenanceTypeId
+        ? (typeById.get(part.maintenanceTypeId) ?? null)
+        : null,
+      linkedLog: part.maintenanceLogId
+        ? (logById.get(part.maintenanceLogId) ?? null)
+        : null,
+    }))
+    .sort((a, b) => {
+      const statusDiff =
+        PART_STATUS_ORDER[a.part.status] - PART_STATUS_ORDER[b.part.status];
+      if (statusDiff !== 0) return statusDiff;
+      return (
+        new Date(b.part.createdAt).getTime() -
+        new Date(a.part.createdAt).getTime()
+      );
+    });
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-10">
@@ -118,15 +177,24 @@ export default async function VehicleDetailPage({
 
         {nextDueByType.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-border py-16 text-center">
-            <p className="text-sm text-muted">
-              Todavía no cargaste mantenimientos para este vehículo.
-            </p>
-            <LinkButton
-              href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-              size="md"
-            >
-              Cargar mantenimiento
-            </LinkButton>
+            {maintenanceTypes.length === 0 ? (
+              <>
+                <p className="text-sm text-muted">
+                  Todavía no cargaste mantenimientos para este vehículo.
+                </p>
+                <LinkButton
+                  href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
+                  size="md"
+                >
+                  Cargar mantenimiento
+                </LinkButton>
+              </>
+            ) : (
+              <p className="text-sm text-muted">
+                Tus mantenimientos no tienen intervalo, así que no hay
+                vencimientos para calcular.
+              </p>
+            )}
           </div>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -172,6 +240,59 @@ export default async function VehicleDetailPage({
                       </p>
                     )}
                   </>
+                )}
+              </Card>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
+            Repuestos
+          </h2>
+          <Link
+            href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
+            className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
+          >
+            + Repuesto
+          </Link>
+        </div>
+
+        {partsWithLinks.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-border py-16 text-center">
+            <p className="text-sm text-muted">
+              Todavía no cargaste repuestos para este vehículo.
+            </p>
+            <LinkButton
+              href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
+              size="md"
+            >
+              Cargar repuesto
+            </LinkButton>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {partsWithLinks.map(({ part, linkedType, linkedLog }) => (
+              <Card as="li" key={part.id} className="flex flex-col gap-1">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold">{part.name}</p>
+                  <Badge tone={PART_STATUS_TONE[part.status]}>
+                    {PART_STATUS_LABEL[part.status]}
+                  </Badge>
+                </div>
+                {linkedType && (
+                  <p className="text-sm text-muted">Para: {linkedType.name}</p>
+                )}
+                {linkedLog && (
+                  <p className="text-sm text-muted">
+                    De: {linkedLog.maintenanceType.name} ·{" "}
+                    {formatDateUTC(linkedLog.performedAtDate)}
+                  </p>
+                )}
+                {part.notes && (
+                  <p className="text-sm text-foreground">{part.notes}</p>
                 )}
               </Card>
             ))}

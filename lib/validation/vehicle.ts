@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { emptyToUndefined } from "@/lib/validation/action-state";
+import {
+  emptyToUndefined,
+  fieldErrorsFromZodError,
+} from "@/lib/validation/action-state";
 
 export const SUBTYPES_BY_TYPE = {
   moto: ["moto_calle", "moto_enduro"],
@@ -130,14 +133,7 @@ export function validateVehicleFields(formData: FormData) {
 
   if (parsed.success) return null;
 
-  const fieldErrors: Partial<Record<keyof VehicleInput, string>> = {};
-  for (const issue of parsed.error.issues) {
-    const key = issue.path[0];
-    if (typeof key === "string" && !fieldErrors[key as keyof VehicleInput]) {
-      fieldErrors[key as keyof VehicleInput] = issue.message;
-    }
-  }
-  return fieldErrors;
+  return fieldErrorsFromZodError<VehicleInput>(parsed.error);
 }
 
 // `type`/`subtype` are intentionally OMITTED here, not just left out of the
@@ -163,15 +159,5 @@ export function validateVehicleUpdateFields(formData: FormData) {
 
   if (parsed.success) return null;
 
-  const fieldErrors: Partial<Record<keyof VehicleUpdateInput, string>> = {};
-  for (const issue of parsed.error.issues) {
-    const key = issue.path[0];
-    if (
-      typeof key === "string" &&
-      !fieldErrors[key as keyof VehicleUpdateInput]
-    ) {
-      fieldErrors[key as keyof VehicleUpdateInput] = issue.message;
-    }
-  }
-  return fieldErrors;
+  return fieldErrorsFromZodError<VehicleUpdateInput>(parsed.error);
 }

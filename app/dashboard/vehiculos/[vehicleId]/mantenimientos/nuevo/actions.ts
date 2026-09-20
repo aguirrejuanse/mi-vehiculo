@@ -26,6 +26,7 @@ export async function createMaintenanceTypeAction(
     intervalValue: formData.get("intervalValue"),
     intervalCalendarValue: formData.get("intervalCalendarValue"),
     intervalCalendarUnit: formData.get("intervalCalendarUnit"),
+    noInterval: formData.get("noInterval"),
   });
 
   if (!parsed.success) {
