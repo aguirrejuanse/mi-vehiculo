@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-:root {
+/* Light tokens: default and the explicit "claro" theme. */
+:root,
+html[data-theme="claro"] {
   color-scheme: light;
   --background: #f3f1fb;
   --foreground: #201b3d;
@@ -17,10 +19,12 @@
   --color-success-soft: #dcf5e9;
   --color-danger: #d43d47;
   --color-danger-soft: #fbe1e2;
+  --display-font: var(--font-sora);
 }
 
+/* No theme cookie yet: follow the system preference. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     color-scheme: dark;
     --background: #131025;
     --foreground: #f1eefb;
@@ -40,6 +44,68 @@
   }
 }
 
+/* Same values as the system-dark fallback above. */
+html[data-theme="oscuro"] {
+  color-scheme: dark;
+  --background: #131025;
+  --foreground: #f1eefb;
+  --surface: #1c1832;
+  --surface-2: #211d3a;
+  --surface-border: #322c54;
+  --muted: #a49dc4;
+  --color-primary: #8b7ff2;
+  --color-primary-hover: #a094f7;
+  --color-primary-soft: #2a2450;
+  --color-accent: #ff8163;
+  --color-accent-soft: #3a2436;
+  --color-success: #46c98d;
+  --color-success-soft: #17322a;
+  --color-danger: #ea6169;
+  --color-danger-soft: #3a1f24;
+}
+
+/* Asphalt black, nitro blue, tail-light red-orange. */
+html[data-theme="fast-furious"] {
+  color-scheme: dark;
+  --background: #06070b;
+  --foreground: #eef2f8;
+  --surface: #0f1218;
+  --surface-2: #151922;
+  --surface-border: #262c3a;
+  --muted: #98a2b8;
+  --color-primary: #1a6bff;
+  --color-primary-hover: #1358d6;
+  --color-primary-soft: #0d2247;
+  --color-accent: #ff5a36;
+  --color-accent-soft: #3a170f;
+  --color-success: #2fd08a;
+  --color-success-soft: #0f2d22;
+  --color-danger: #ff4d5e;
+  --color-danger-soft: #3a141a;
+  --display-font: var(--font-barlow-condensed);
+}
+
+/* Vice-style sunset: night purple, hot pink, orange and teal. */
+html[data-theme="gta-vi"] {
+  color-scheme: dark;
+  --background: #12051d;
+  --foreground: #fff0f7;
+  --surface: #1e0933;
+  --surface-2: #280e44;
+  --surface-border: #4a2275;
+  --muted: #c6a6dc;
+  --color-primary: #dc1f84;
+  --color-primary-hover: #c41a75;
+  --color-primary-soft: #3d1049;
+  --color-accent: #ff9a3c;
+  --color-accent-soft: #3f1d1f;
+  --color-success: #2fd6c0;
+  --color-success-soft: #0d3038;
+  --color-danger: #ff5c5c;
+  --color-danger-soft: #3d1220;
+  --display-font: var(--font-righteous);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -57,7 +123,7 @@
   --color-danger: var(--color-danger);
   --color-danger-soft: var(--color-danger-soft);
   --font-sans: var(--font-plex-sans);
-  --font-display: var(--font-sora);
+  --font-display: var(--display-font);
   --font-mono: var(--font-plex-mono);
 }
 
@@ -72,4 +138,40 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display), var(--font-sans), sans-serif;
+}
+
+html[data-theme="fast-furious"] body {
+  background-image:
+    radial-gradient(60rem 28rem at 100% -10%, rgb(26 107 255 / 0.2), transparent 60%),
+    radial-gradient(40rem 24rem at 0% 110%, rgb(255 90 54 / 0.14), transparent 60%);
+  background-attachment: fixed;
+}
+
+html[data-theme="fast-furious"] h1,
+html[data-theme="fast-furious"] h2,
+html[data-theme="fast-furious"] h3,
+html[data-theme="fast-furious"] h4,
+html[data-theme="fast-furious"] .font-display {
+  font-style: italic;
+}
+
+html[data-theme="gta-vi"] body {
+  background-image:
+    radial-gradient(50rem 26rem at 0% -10%, rgb(47 214 192 / 0.14), transparent 60%),
+    radial-gradient(60rem 30rem at 50% 115%, rgb(255 154 60 / 0.22), transparent 65%),
+    linear-gradient(180deg, transparent 50%, rgb(220 31 132 / 0.16) 100%);
+  background-attachment: fixed;
+}
+
+/* Righteous ships a single weight; avoid faux bold on headings. */
+html[data-theme="gta-vi"] h1,
+html[data-theme="gta-vi"] h2,
+html[data-theme="gta-vi"] h3,
+html[data-theme="gta-vi"] h4,
+html[data-theme="gta-vi"] .font-display {
+  font-synthesis-weight: none;
+}
+
+html[data-theme="gta-vi"] h1 {
+  text-shadow: 0 0 22px rgb(220 31 132 / 0.55);
 }
