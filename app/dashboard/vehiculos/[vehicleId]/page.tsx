@@ -19,6 +19,8 @@ import {
   type NextDue,
   type NextDueStatus,
 } from "@/lib/maintenance/next-due";
+import { nextPartStatus } from "@/lib/validation/part";
+import { AdvancePartButton } from "./advance-part-button";
 import type { MaintenanceType, Part } from "@/db/schema";
 
 const STATUS_LABEL: Record<NextDueStatus, string> = {
@@ -61,6 +63,12 @@ const PART_STATUS_ORDER: Record<Part["status"], number> = {
   pendiente_instalar: 0,
   wishlist: 1,
   instalado: 2,
+};
+
+const PART_ADVANCE_LABEL: Record<Part["status"], string> = {
+  wishlist: "Marcar pendiente",
+  pendiente_instalar: "Marcar instalado",
+  instalado: "",
 };
 
 export const dynamic = "force-dynamic";
@@ -278,9 +286,19 @@ export default async function VehicleDetailPage({
               <Card as="li" key={part.id} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between">
                   <p className="font-bold">{part.name}</p>
-                  <Badge tone={PART_STATUS_TONE[part.status]}>
-                    {PART_STATUS_LABEL[part.status]}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge tone={PART_STATUS_TONE[part.status]}>
+                      {PART_STATUS_LABEL[part.status]}
+                    </Badge>
+                    {nextPartStatus(part.status) && (
+                      <AdvancePartButton
+                        partId={part.id}
+                        vehicleId={vehicle.id}
+                        currentStatus={part.status}
+                        label={PART_ADVANCE_LABEL[part.status]}
+                      />
+                    )}
+                  </div>
                 </div>
                 {linkedType && (
                   <p className="text-sm text-muted">Para: {linkedType.name}</p>

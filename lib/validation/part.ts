@@ -50,6 +50,21 @@ export const partSchema = partBaseSchema.superRefine((data, ctx) => {
 
 export type PartInput = z.infer<typeof partSchema>;
 
+export type PartStatus = PartInput["status"];
+
+// Forward-only, one step at a time. `instalado` is terminal — no further
+// transitions out of it. Keyed off the same literal union as partBaseSchema
+// (`satisfies` keeps them in sync without importing the db enum here).
+const PART_STATUS_TRANSITIONS = {
+  wishlist: "pendiente_instalar",
+  pendiente_instalar: "instalado",
+  instalado: null,
+} as const satisfies Record<PartStatus, PartStatus | null>;
+
+export function nextPartStatus(current: PartStatus): PartStatus | null {
+  return PART_STATUS_TRANSITIONS[current];
+}
+
 export function validatePartFields(formData: FormData) {
   const parsed = partSchema.safeParse({
     vehicleId: formData.get("vehicleId"),
