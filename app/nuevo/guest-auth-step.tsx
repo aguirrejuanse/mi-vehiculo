@@ -10,6 +10,7 @@ import { FieldError } from "@/components/ui/field-error";
 import { inputClassName } from "@/components/ui/field-styles";
 
 const RESEND_SECONDS = 30;
+const CODE_LENGTH = 6;
 
 export type ConfirmPhase = "review" | "email" | "code";
 
@@ -110,6 +111,9 @@ export function GuestAuthStep({
   });
 
   async function verifyCode() {
+    // Also guards the Enter-key path (actionRef), which bypasses the
+    // button's disabled state.
+    if (code.length !== CODE_LENGTH || isSubmitting) return;
     setGuestError(null);
     setIsSubmitting(true);
     try {
@@ -182,8 +186,13 @@ export function GuestAuthStep({
           <input
             id="guest-code"
             placeholder="123456"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={CODE_LENGTH}
             value={code}
-            onChange={(event) => setCode(event.target.value)}
+            onChange={(event) =>
+              setCode(event.target.value.replace(/\D/g, "").slice(0, CODE_LENGTH))
+            }
             className={inputClassName(Boolean(guestError))}
             aria-invalid={Boolean(guestError)}
           />
@@ -197,7 +206,7 @@ export function GuestAuthStep({
         ) : null}
         <button
           type="button"
-          disabled={isSubmitting || !code}
+          disabled={isSubmitting || code.length !== CODE_LENGTH}
           onClick={verifyCode}
           className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
