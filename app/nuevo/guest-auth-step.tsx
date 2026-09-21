@@ -22,8 +22,8 @@ type GuestAuthStepProps = {
 
 // Runs the guest auth sub-phase of "confirmar": collects an email, sends a
 // verification code, then verifies it and finalizes the Clerk sign-up. If the
-// email already has an account, the same email-code flow runs as a sign-in
-// (mode "signin") so the visitor never leaves the wizard. Both
+// email already has an account, the code is sent through the sign-in flow
+// (mode "signin") automatically so the visitor never leaves the wizard. Both
 // inputs are controlled state with no `name` attribute so they never enter
 // the wizard's FormData (see design D4 / FormData section).
 export function GuestAuthStep({
@@ -38,7 +38,6 @@ export function GuestAuthStep({
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [guestError, setGuestError] = useState<string | null>(null);
-  const [showSignIn, setShowSignIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
 
@@ -50,32 +49,41 @@ export function GuestAuthStep({
     return () => clearInterval(timer);
   }, [resendSeconds]);
 
-  async function sendCode(forceMode?: "signup" | "signin") {
-    const activeMode = forceMode ?? mode;
+  // Sign-up first; if Clerk says the email already has an account, switch to
+  // the sign-in flow and send the code right away so the visitor never has to
+  // ask for it (one less step). Resends stay in whichever mode was resolved.
+  async function sendCode() {
     setGuestError(null);
-    setShowSignIn(false);
     setIsSubmitting(true);
     try {
+      let activeMode = mode;
+
+      if (activeMode === "signup") {
+        const { error: createError } = await signUp.create({
+          emailAddress: email,
+        });
+        if (createError && !isIdentifierExistsError(createError)) {
+          setGuestError(mapGuestAuthError(createError));
+          return;
+        }
+
+        if (createError) {
+          activeMode = "signin";
+          setMode("signin");
+        } else {
+          const { error: sendError } =
+            await signUp.verifications.sendEmailCode();
+          if (sendError) {
+            setGuestError(mapGuestAuthError(sendError));
+            return;
+          }
+        }
+      }
+
       if (activeMode === "signin") {
         const { error: sendError } = await signIn.emailCode.sendCode({
           emailAddress: email,
         });
-        if (sendError) {
-          setGuestError(mapGuestAuthError(sendError));
-          return;
-        }
-      } else {
-        const { error: createError } = await signUp.create({
-          emailAddress: email,
-        });
-        if (createError) {
-          setGuestError(mapGuestAuthError(createError));
-          setShowSignIn(isIdentifierExistsError(createError));
-          return;
-        }
-
-        const { error: sendError } =
-          await signUp.verifications.sendEmailCode();
         if (sendError) {
           setGuestError(mapGuestAuthError(sendError));
           return;
@@ -87,11 +95,6 @@ export function GuestAuthStep({
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  function switchToSignIn() {
-    setMode("signin");
-    void sendCode("signin");
   }
 
   // Exposes this phase's primary action to the parent form's Enter-key
@@ -154,16 +157,6 @@ export function GuestAuthStep({
           />
         </div>
         <FieldError message={guestError ?? undefined} />
-        {showSignIn ? (
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={switchToSignIn}
-            className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-foreground uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Iniciar sesión con código
-          </button>
-        ) : null}
         <button
           type="button"
           disabled={isSubmitting || !email}
@@ -196,6 +189,12 @@ export function GuestAuthStep({
           />
         </div>
         <FieldError message={guestError ?? undefined} />
+        {mode === "signin" ? (
+          <p className="text-xs font-semibold text-muted">
+            Ya tenés cuenta con ese mail. Te enviamos un código para iniciar
+            sesión.
+          </p>
+        ) : null}
         <button
           type="button"
           disabled={isSubmitting || !code}
