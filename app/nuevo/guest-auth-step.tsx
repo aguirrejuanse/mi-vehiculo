@@ -8,7 +8,7 @@ import {
 } from "@/lib/auth/guest-auth-errors";
 import { isValidEmail } from "@/lib/validation/email";
 import { FieldError } from "@/components/ui/field-error";
-import { Toast } from "@/components/ui/toast";
+import { Toast, type ToastVariant } from "@/components/ui/toast";
 import { inputClassName } from "@/components/ui/field-styles";
 
 const RESEND_SECONDS = 30;
@@ -44,10 +44,16 @@ export function GuestAuthStep({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
   // `id` keys the <Toast> so a resend restarts its timer and animation.
-  const [toast, setToast] = useState<{ id: number; message: string } | null>(
-    null,
-  );
+  const [toast, setToast] = useState<{
+    id: number;
+    message: string;
+    variant: ToastVariant;
+  } | null>(null);
   const dismissToast = useCallback(() => setToast(null), []);
+
+  function notify(variant: ToastVariant, message: string) {
+    setToast({ id: Date.now(), message, variant });
+  }
 
   useEffect(() => {
     if (resendSeconds <= 0) return;
@@ -74,7 +80,7 @@ export function GuestAuthStep({
           emailAddress: email.trim(),
         });
         if (createError && !isIdentifierExistsError(createError)) {
-          setGuestError(mapGuestAuthError(createError));
+          notify("error", mapGuestAuthError(createError));
           return;
         }
 
@@ -85,7 +91,7 @@ export function GuestAuthStep({
           const { error: sendError } =
             await signUp.verifications.sendEmailCode();
           if (sendError) {
-            setGuestError(mapGuestAuthError(sendError));
+            notify("error", mapGuestAuthError(sendError));
             return;
           }
         }
@@ -96,16 +102,13 @@ export function GuestAuthStep({
           emailAddress: email.trim(),
         });
         if (sendError) {
-          setGuestError(mapGuestAuthError(sendError));
+          notify("error", mapGuestAuthError(sendError));
           return;
         }
       }
 
       setResendSeconds(RESEND_SECONDS);
-      setToast({
-        id: Date.now(),
-        message: `Te enviamos un código a ${email.trim()}`,
-      });
+      notify("success", `Te enviamos un código a ${email.trim()}`);
       onEmailSent();
     } finally {
       setIsSubmitting(false);
@@ -144,7 +147,7 @@ export function GuestAuthStep({
       const { error: finalizeError } =
         mode === "signin" ? await signIn.finalize() : await signUp.finalize();
       if (finalizeError) {
-        setGuestError(mapGuestAuthError(finalizeError));
+        notify("error", mapGuestAuthError(finalizeError));
         return;
       }
 
@@ -157,7 +160,12 @@ export function GuestAuthStep({
   // Rendered outside the animated step container: a transformed ancestor
   // would become the containing block of the toast's `position: fixed`.
   const toastElement = toast ? (
-    <Toast key={toast.id} message={toast.message} onDismiss={dismissToast} />
+    <Toast
+      key={toast.id}
+      message={toast.message}
+      variant={toast.variant}
+      onDismiss={dismissToast}
+    />
   ) : null;
 
   if (confirmPhase === "email") {
