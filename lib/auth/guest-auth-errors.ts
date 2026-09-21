@@ -10,6 +10,15 @@ export type GuestAuthError = {
 
 const FALLBACK_MESSAGE = "No pudimos verificar el código. Probá de nuevo.";
 
+// Clerk returns a field-specific code ("form_identifier_exists__email_address")
+// alongside the generic one, depending on instance config — check both.
+export function isIdentifierExistsError(error: GuestAuthError): boolean {
+  return (
+    error?.code === "form_identifier_exists" ||
+    error?.code === "form_identifier_exists__email_address"
+  );
+}
+
 export function mapGuestAuthError(error: GuestAuthError): string {
   if (!error) return FALLBACK_MESSAGE;
 
@@ -20,6 +29,7 @@ export function mapGuestAuthError(error: GuestAuthError): string {
     case "verification_failed":
       return "El código venció. Pedí uno nuevo.";
     case "form_identifier_exists":
+    case "form_identifier_exists__email_address":
       return "Ya tenés cuenta con ese mail. Iniciá sesión y cargá el vehículo desde tu panel.";
     case "too_many_requests":
       return "Demasiados intentos. Esperá un minuto y volvé a probar.";

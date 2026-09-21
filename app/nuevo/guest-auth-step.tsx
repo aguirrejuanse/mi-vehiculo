@@ -2,7 +2,10 @@
 
 import { useEffect, useState, type RefObject } from "react";
 import { SignInButton, useSignUp } from "@clerk/nextjs";
-import { mapGuestAuthError } from "@/lib/auth/guest-auth-errors";
+import {
+  isIdentifierExistsError,
+  mapGuestAuthError,
+} from "@/lib/auth/guest-auth-errors";
 import { FieldError } from "@/components/ui/field-error";
 import { inputClassName } from "@/components/ui/field-styles";
 
@@ -51,7 +54,7 @@ export function GuestAuthStep({
       const { error: createError } = await signUp.create({ emailAddress: email });
       if (createError) {
         setGuestError(mapGuestAuthError(createError));
-        setShowSignIn(createError.code === "form_identifier_exists");
+        setShowSignIn(isIdentifierExistsError(createError));
         return;
       }
 
