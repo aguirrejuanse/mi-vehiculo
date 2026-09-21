@@ -8,7 +8,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -74,7 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </nav>
           </header>
           <main className="flex flex-1 flex-col">{children}</main>
-          <Toaster position="bottom-right" theme="system" richColors />
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

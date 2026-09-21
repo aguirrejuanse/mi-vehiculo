@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type RefObject } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import {
   isIdentifierExistsError,
@@ -69,7 +69,7 @@ export function GuestAuthStep({
           emailAddress: email.trim(),
         });
         if (createError && !isIdentifierExistsError(createError)) {
-          toast.error(mapGuestAuthError(createError));
+          toast.add({ type: "error", title: mapGuestAuthError(createError) });
           return;
         }
 
@@ -80,7 +80,7 @@ export function GuestAuthStep({
           const { error: sendError } =
             await signUp.verifications.sendEmailCode();
           if (sendError) {
-            toast.error(mapGuestAuthError(sendError));
+            toast.add({ type: "error", title: mapGuestAuthError(sendError) });
             return;
           }
         }
@@ -91,13 +91,17 @@ export function GuestAuthStep({
           emailAddress: email.trim(),
         });
         if (sendError) {
-          toast.error(mapGuestAuthError(sendError));
+          toast.add({ type: "error", title: mapGuestAuthError(sendError) });
           return;
         }
       }
 
       setResendSeconds(RESEND_SECONDS);
-      toast.success(`Te enviamos un código a ${email.trim()}`);
+      toast.add({
+        type: "success",
+        title: "Te enviamos un código a",
+        description: email.trim(),
+      });
       onEmailSent();
     } finally {
       setIsSubmitting(false);
@@ -136,7 +140,7 @@ export function GuestAuthStep({
       const { error: finalizeError } =
         mode === "signin" ? await signIn.finalize() : await signUp.finalize();
       if (finalizeError) {
-        toast.error(mapGuestAuthError(finalizeError));
+        toast.add({ type: "error", title: mapGuestAuthError(finalizeError) });
         return;
       }
 

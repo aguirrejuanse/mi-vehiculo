@@ -14,13 +14,13 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@base-ui/react": "^1.8.0",
     "@clerk/nextjs": "^7.9.2",
     "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^0.45.2",
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "sonner": "^2.0.8",
     "zod": "^4.6.5"
   },
   "devDependencies": {
