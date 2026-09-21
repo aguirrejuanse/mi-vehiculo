@@ -1,4 +1,4 @@
-import { VehicleWizard } from "@/app/dashboard/vehiculos/nuevo/vehicle-wizard";
+import { VehicleWizard } from "@/app/nuevo/vehicle-wizard";
 import { BackLink } from "@/components/ui/back-link";
 import { PageTitle } from "@/components/ui/page-title";
 

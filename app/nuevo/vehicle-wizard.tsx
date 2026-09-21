@@ -1,12 +1,20 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent } from "react";
-import { createVehicleAction } from "@/app/dashboard/vehiculos/nuevo/actions";
+import {
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+import { useAuth } from "@clerk/nextjs";
+import { createVehicleAction } from "@/app/nuevo/actions";
+import { GuestAuthStep, type ConfirmPhase } from "@/app/nuevo/guest-auth-step";
 import {
   STEP_FIELDS,
   WizardSteps,
   type StepId,
-} from "@/app/dashboard/vehiculos/nuevo/wizard-steps";
+} from "@/app/nuevo/wizard-steps";
 import {
   SUBTYPES_BY_TYPE,
   METRIC_UNIT_BY_SUBTYPE,
@@ -38,10 +46,20 @@ export function VehicleWizard() {
   const { state, formAction, isPending, handleSubmit, fieldErrors } =
     useActionFormState(createVehicleAction, validateVehicleFields);
 
+  const { isLoaded, isSignedIn } = useAuth();
+
   const formRef = useRef<HTMLFormElement>(null);
+  const guestPrimaryActionRef = useRef<(() => void) | null>(null);
 
   const [stepId, setStepId] = useState<StepId>("tipo");
   const [stepErrors, setStepErrors] = useState<StepErrors>(null);
+
+  // Guest identity capture is a sub-phase of "confirmar", not its own StepId
+  // — see design D3. `pendingSave` bridges the moment `finalize()` resolves
+  // and the moment `isSignedIn` actually flips, since the callback itself
+  // closes over a stale `isSignedIn` (design D4).
+  const [confirmPhase, setConfirmPhase] = useState<ConfirmPhase>("review");
+  const [pendingSave, setPendingSave] = useState(false);
 
   const [type, setType] = useState<VehicleType | "">("");
   const [subtype, setSubtype] = useState<VehicleSubtype | "">("");
@@ -112,6 +130,21 @@ export function VehicleWizard() {
     setStepId(steps[currentIndex - 1]);
   }
 
+  // Dispatch the vehicle-creation action once the guest's Clerk session is
+  // actually active. Deterministic, no polling — see design D4. Covers the
+  // already-signed-in case too (pendingSave is simply never set there).
+  // `dispatchedRef` (not more setState) guards against a double dispatch —
+  // calling setState synchronously inside an effect body triggers avoidable
+  // cascading renders (react-hooks/set-state-in-effect).
+  const dispatchedRef = useRef(false);
+  useEffect(() => {
+    if (!pendingSave || !isSignedIn || dispatchedRef.current) return;
+    dispatchedRef.current = true;
+    startTransition(() => {
+      formAction(new FormData(formRef.current!));
+    });
+  }, [pendingSave, isSignedIn, formAction]);
+
   // A form with a single visible text input performs implicit submission on
   // Enter even with no submit button in the accessibility tree — real
   // browser gotcha. Guard it everywhere except the final "confirmar" step.
@@ -120,7 +153,16 @@ export function VehicleWizard() {
     if (event.key !== "Enter") return;
     const target = event.target as HTMLElement;
     if (target.tagName === "TEXTAREA") return;
-    if (stepId === "confirmar") return;
+    if (stepId === "confirmar") {
+      // Once the guest sub-phase is running, Enter must not trigger a bare
+      // form submit (no session yet) — route it to that phase's own action
+      // (send/verify code) instead. See design D3 / FormData section.
+      if (confirmPhase !== "review") {
+        event.preventDefault();
+        guestPrimaryActionRef.current?.();
+      }
+      return;
+    }
     event.preventDefault();
     goNext();
   }
@@ -128,6 +170,7 @@ export function VehicleWizard() {
   const currentIndex = steps.indexOf(stepId);
   const isFirstStep = currentIndex === 0;
   const isConfirmStep = stepId === "confirmar";
+  const needsGuestAuth = isConfirmStep && isLoaded && !isSignedIn;
 
   return (
     <Card
@@ -160,33 +203,52 @@ export function VehicleWizard() {
         message={state.status === "error" ? state.message : undefined}
       />
 
-      <div className="flex items-center gap-3">
-        {!isFirstStep ? (
-          <button
-            type="button"
-            onClick={goBack}
-            className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
-          >
-            Volver
-          </button>
-        ) : null}
+      {needsGuestAuth && confirmPhase !== "review" ? (
+        <GuestAuthStep
+          confirmPhase={confirmPhase}
+          actionRef={guestPrimaryActionRef}
+          onEmailSent={() => setConfirmPhase("code")}
+          onVerified={() => setPendingSave(true)}
+        />
+      ) : (
+        <div className="flex items-center gap-3">
+          {!isFirstStep ? (
+            <button
+              type="button"
+              onClick={goBack}
+              className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground"
+            >
+              Volver
+            </button>
+          ) : null}
 
-        {isConfirmStep ? (
-          <SubmitButton
-            isPending={isPending}
-            label="Confirmar y guardar"
-            pendingLabel="Guardando..."
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={goNext}
-            className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover"
-          >
-            Continuar
-          </button>
-        )}
-      </div>
+          {isConfirmStep ? (
+            needsGuestAuth ? (
+              <button
+                type="button"
+                onClick={() => setConfirmPhase("email")}
+                className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
+              >
+                Continuar
+              </button>
+            ) : (
+              <SubmitButton
+                isPending={isPending || !isLoaded}
+                label="Confirmar y guardar"
+                pendingLabel="Guardando..."
+              />
+            )
+          ) : (
+            <button
+              type="button"
+              onClick={goNext}
+              className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
+            >
+              Continuar
+            </button>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

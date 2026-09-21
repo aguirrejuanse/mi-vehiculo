@@ -16,7 +16,7 @@ export type VehicleSubtype = (typeof SUBTYPES_BY_TYPE)[VehicleType][number];
 
 export const SUBTYPE_LABELS: Record<VehicleSubtype, string> = {
   moto_calle: "Calle",
-  moto_enduro: "Enduro",
+  moto_enduro: "Enduro/MX",
   bici_ruta: "Ruta",
   bici_enduro: "Enduro",
   bici_downhill: "Downhill",

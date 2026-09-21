@@ -15,7 +15,7 @@ import type { Vehicle } from "@/db/schema";
 
 const VEHICLE_TYPE_LABELS: Record<string, string> = {
   moto: "Moto",
-  auto: "Auto",
+  auto: "Auto/Camioneta",
   bicicleta: "Bicicleta",
   monopatin: "Monopatín",
 };

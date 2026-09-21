@@ -73,3 +73,26 @@ h3,
 h4 {
   font-family: var(--font-display), var(--font-sans), sans-serif;
 }
+
+/* Each wizard step is toggled with `hidden`, so the animation replays every
+   time a step goes from display:none to visible. */
+@keyframes wizard-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wizard-step {
+  animation: wizard-step-in 250ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wizard-step {
+    animation: none;
+  }
+}

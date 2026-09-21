@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireUserId } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { createVehicle } from "@/db/queries/vehicles";
 import {
   vehicleSchema,
@@ -17,7 +17,18 @@ export async function createVehicleAction(
   _prevState: ActionState<VehicleInput>,
   formData: FormData,
 ): Promise<ActionState<VehicleInput>> {
-  const userId = await requireUserId();
+  // Scoped to this action only (design D5): the guest flow dispatches this
+  // action right after `signUp.finalize()`, in the narrow window where the
+  // Clerk session may not have propagated to this request yet. Returning an
+  // error here is retryable; `requireUserId()` throwing would blow up the
+  // error boundary and wipe all client-held wizard state.
+  const { userId } = await auth();
+  if (!userId) {
+    return {
+      status: "error",
+      message: "Tu sesión todavía se está activando. Probá de nuevo.",
+    };
+  }
 
   const parsed = vehicleSchema.safeParse({
     name: formData.get("name"),

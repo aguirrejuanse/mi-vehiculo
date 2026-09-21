@@ -30,10 +30,34 @@ export const STEP_FIELDS: Record<StepId, readonly (keyof VehicleInput)[]> = {
 
 const VEHICLE_TYPES: { value: VehicleType; label: string }[] = [
   { value: "moto", label: "Moto" },
-  { value: "auto", label: "Auto" },
+  { value: "auto", label: "Auto/Camioneta" },
   { value: "bicicleta", label: "Bicicleta" },
   { value: "monopatin", label: "Monopatín" },
 ];
+
+const NAME_PLACEHOLDER_BY_TYPE: Record<VehicleType, string> = {
+  moto: "Kawasaki Ninja",
+  auto: "Nissan Skyline",
+  bicicleta: "Trek Marlin",
+  monopatin: "Xiaomi Pro 2",
+};
+
+const NAME_PLACEHOLDER_BY_SUBTYPE: Partial<Record<VehicleSubtype, string>> = {
+  moto_enduro: "KTM 350 EXC",
+  bici_enduro: "Specialized Stumpjumper",
+  bici_downhill: "Commencal Supreme",
+  bici_electrica: "Specialized Turbo Vado",
+};
+
+function namePlaceholder(
+  type: VehicleType | "",
+  subtype: VehicleSubtype | "",
+): string {
+  if (subtype && NAME_PLACEHOLDER_BY_SUBTYPE[subtype]) {
+    return NAME_PLACEHOLDER_BY_SUBTYPE[subtype];
+  }
+  return type ? NAME_PLACEHOLDER_BY_TYPE[type] : "Mi vehículo";
+}
 
 const METRIC_UNITS: { value: "horas" | "km"; label: string }[] = [
   { value: "horas", label: "Horas" },
@@ -42,7 +66,7 @@ const METRIC_UNITS: { value: "horas" | "km"; label: string }[] = [
 
 const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   moto: "Moto",
-  auto: "Auto",
+  auto: "Auto/Camioneta",
   bicicleta: "Bicicleta",
   monopatin: "Monopatín",
 };
@@ -103,7 +127,7 @@ export function WizardSteps({
 
   return (
     <>
-      <fieldset hidden={stepId !== "tipo"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "tipo"} className="wizard-step flex flex-col gap-5">
         <OptionCardGroup
           label="Tipo de vehículo"
           name="type"
@@ -117,7 +141,7 @@ export function WizardSteps({
       <fieldset
         hidden={stepId !== "subtipo"}
         disabled={!hasSubtypes}
-        className="flex flex-col gap-5"
+        className="wizard-step flex flex-col gap-5"
       >
         <OptionCardGroup
           label="Subtipo"
@@ -133,17 +157,17 @@ export function WizardSteps({
         />
       </fieldset>
 
-      <fieldset hidden={stepId !== "apodo"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "apodo"} className="wizard-step flex flex-col gap-5">
         <TextField
           label="Nombre"
           name="name"
-          placeholder="Enduro 350"
+          placeholder={namePlaceholder(type, subtype)}
           defaultValue=""
           error={errorFor("name", stepErrors, fieldErrors)}
         />
       </fieldset>
 
-      <fieldset hidden={stepId !== "estado"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "estado"} className="wizard-step flex flex-col gap-5">
         <OptionCardGroup
           label="Unidad de medida"
           name="metricUnit"
@@ -158,12 +182,13 @@ export function WizardSteps({
           type="number"
           step="any"
           min={0}
-          defaultValue="0"
+          placeholder="Ej: 100"
+          defaultValue=""
           error={errorFor("currentValue", stepErrors, fieldErrors)}
         />
       </fieldset>
 
-      <fieldset hidden={stepId !== "uso"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "uso"} className="wizard-step flex flex-col gap-5">
         <TextField
           label="Uso semanal estimado (opcional)"
           name="usageRatePerWeek"
@@ -178,7 +203,7 @@ export function WizardSteps({
 
       <fieldset
         hidden={stepId !== "confirmar"}
-        className="flex flex-col gap-4"
+        className="wizard-step flex flex-col gap-4"
       >
         <div className="flex flex-col gap-2 rounded-xl border border-surface-border bg-surface-2 p-4 text-sm">
           <SummaryRow

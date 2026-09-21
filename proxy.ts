@@ -1,8 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-// Public routes: the landing page only. Everything else under the app
-// (dashboard, etc.) requires authentication.
-const isPublicRoute = createRouteMatcher(["/"]);
+// Public routes: the landing page and the guest vehicle wizard. Everything
+// else under the app (dashboard, etc.) requires authentication.
+const isPublicRoute = createRouteMatcher(["/", "/nuevo"]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
