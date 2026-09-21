@@ -29,9 +29,17 @@ describe("mapGuestAuthError", () => {
     );
   });
 
-  it("maps the field-specific form_identifier_exists__email_address variant, which is what Clerk actually returns for a duplicate email", () => {
+  it("maps the nested errors[0].code shape, which is what Clerk actually returns at runtime (top-level code is always api_response_error)", () => {
     expect(
-      mapGuestAuthError({ code: "form_identifier_exists__email_address" }),
+      mapGuestAuthError({
+        code: "api_response_error",
+        errors: [
+          {
+            code: "form_identifier_exists",
+            longMessage: "That email address is taken. Please try another.",
+          },
+        ],
+      }),
     ).toBe(
       "Ya tenés cuenta con ese mail. Iniciá sesión y cargá el vehículo desde tu panel.",
     );
@@ -72,10 +80,11 @@ describe("isIdentifierExistsError", () => {
     );
   });
 
-  it("recognizes the field-specific code Clerk actually returns", () => {
+  it("recognizes the nested errors[0].code shape Clerk actually returns", () => {
     expect(
       isIdentifierExistsError({
-        code: "form_identifier_exists__email_address",
+        code: "api_response_error",
+        errors: [{ code: "form_identifier_exists" }],
       }),
     ).toBe(true);
   });
