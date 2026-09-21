@@ -6,6 +6,7 @@ import {
   isIdentifierExistsError,
   mapGuestAuthError,
 } from "@/lib/auth/guest-auth-errors";
+import { isValidEmail } from "@/lib/validation/email";
 import { FieldError } from "@/components/ui/field-error";
 import { inputClassName } from "@/components/ui/field-styles";
 
@@ -54,6 +55,9 @@ export function GuestAuthStep({
   // the sign-in flow and send the code right away so the visitor never has to
   // ask for it (one less step). Resends stay in whichever mode was resolved.
   async function sendCode() {
+    // Also guards the Enter-key path (actionRef), which bypasses the
+    // button's disabled state.
+    if (!isValidEmail(email) || isSubmitting) return;
     setGuestError(null);
     setIsSubmitting(true);
     try {
@@ -61,7 +65,7 @@ export function GuestAuthStep({
 
       if (activeMode === "signup") {
         const { error: createError } = await signUp.create({
-          emailAddress: email,
+          emailAddress: email.trim(),
         });
         if (createError && !isIdentifierExistsError(createError)) {
           setGuestError(mapGuestAuthError(createError));
@@ -83,7 +87,7 @@ export function GuestAuthStep({
 
       if (activeMode === "signin") {
         const { error: sendError } = await signIn.emailCode.sendCode({
-          emailAddress: email,
+          emailAddress: email.trim(),
         });
         if (sendError) {
           setGuestError(mapGuestAuthError(sendError));
@@ -153,6 +157,8 @@ export function GuestAuthStep({
           <input
             id="guest-email"
             type="email"
+            inputMode="email"
+            autoComplete="email"
             placeholder="vos@ejemplo.com"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
@@ -163,7 +169,7 @@ export function GuestAuthStep({
         <FieldError message={guestError ?? undefined} />
         <button
           type="button"
-          disabled={isSubmitting || !email}
+          disabled={isSubmitting || !isValidEmail(email)}
           onClick={() => void sendCode()}
           className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
