@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
+import { toast } from "sonner";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import {
   isIdentifierExistsError,
@@ -8,7 +9,6 @@ import {
 } from "@/lib/auth/guest-auth-errors";
 import { isValidEmail } from "@/lib/validation/email";
 import { FieldError } from "@/components/ui/field-error";
-import { Toast, type ToastVariant } from "@/components/ui/toast";
 import { inputClassName } from "@/components/ui/field-styles";
 
 const RESEND_SECONDS = 30;
@@ -43,17 +43,6 @@ export function GuestAuthStep({
   const [guestError, setGuestError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
-  // `id` keys the <Toast> so a resend restarts its timer and animation.
-  const [toast, setToast] = useState<{
-    id: number;
-    message: string;
-    variant: ToastVariant;
-  } | null>(null);
-  const dismissToast = useCallback(() => setToast(null), []);
-
-  function notify(variant: ToastVariant, message: string) {
-    setToast({ id: Date.now(), message, variant });
-  }
 
   useEffect(() => {
     if (resendSeconds <= 0) return;
@@ -80,7 +69,7 @@ export function GuestAuthStep({
           emailAddress: email.trim(),
         });
         if (createError && !isIdentifierExistsError(createError)) {
-          notify("error", mapGuestAuthError(createError));
+          toast.error(mapGuestAuthError(createError));
           return;
         }
 
@@ -91,7 +80,7 @@ export function GuestAuthStep({
           const { error: sendError } =
             await signUp.verifications.sendEmailCode();
           if (sendError) {
-            notify("error", mapGuestAuthError(sendError));
+            toast.error(mapGuestAuthError(sendError));
             return;
           }
         }
@@ -102,13 +91,13 @@ export function GuestAuthStep({
           emailAddress: email.trim(),
         });
         if (sendError) {
-          notify("error", mapGuestAuthError(sendError));
+          toast.error(mapGuestAuthError(sendError));
           return;
         }
       }
 
       setResendSeconds(RESEND_SECONDS);
-      notify("success", `Te enviamos un código a ${email.trim()}`);
+      toast.success(`Te enviamos un código a ${email.trim()}`);
       onEmailSent();
     } finally {
       setIsSubmitting(false);
@@ -147,7 +136,7 @@ export function GuestAuthStep({
       const { error: finalizeError } =
         mode === "signin" ? await signIn.finalize() : await signUp.finalize();
       if (finalizeError) {
-        notify("error", mapGuestAuthError(finalizeError));
+        toast.error(mapGuestAuthError(finalizeError));
         return;
       }
 
@@ -157,108 +146,91 @@ export function GuestAuthStep({
     }
   }
 
-  // Rendered outside the animated step container: a transformed ancestor
-  // would become the containing block of the toast's `position: fixed`.
-  const toastElement = toast ? (
-    <Toast
-      key={toast.id}
-      message={toast.message}
-      variant={toast.variant}
-      onDismiss={dismissToast}
-    />
-  ) : null;
-
   if (confirmPhase === "email") {
     return (
-      <>
-        <div className="wizard-step flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="guest-email"
-              className="text-xs font-bold tracking-widest text-muted uppercase"
-            >
-              Tu email
-            </label>
-            <input
-              id="guest-email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              placeholder="vos@ejemplo.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className={inputClassName(Boolean(guestError))}
-              aria-invalid={Boolean(guestError)}
-            />
-          </div>
-          <FieldError message={guestError ?? undefined} />
-          <button
-            type="button"
-            disabled={isSubmitting || !isValidEmail(email)}
-            onClick={() => void sendCode()}
-            className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+      <div className="wizard-step flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="guest-email"
+            className="text-xs font-bold tracking-widest text-muted uppercase"
           >
-            {isSubmitting ? "Enviando..." : "Enviar código"}
-          </button>
+            Tu email
+          </label>
+          <input
+            id="guest-email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="vos@ejemplo.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className={inputClassName(Boolean(guestError))}
+            aria-invalid={Boolean(guestError)}
+          />
         </div>
-        {toastElement}
-      </>
+        <FieldError message={guestError ?? undefined} />
+        <button
+          type="button"
+          disabled={isSubmitting || !isValidEmail(email)}
+          onClick={() => void sendCode()}
+          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSubmitting ? "Enviando..." : "Enviar código"}
+        </button>
+      </div>
     );
   }
 
   if (confirmPhase === "code") {
     return (
-      <>
-        <div className="wizard-step flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="guest-code"
-              className="text-xs font-bold tracking-widest text-muted uppercase"
-            >
-              Código de verificación
-            </label>
-            <input
-              id="guest-code"
-              placeholder="123456"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={CODE_LENGTH}
-              value={code}
-              onChange={(event) =>
-                setCode(event.target.value.replace(/\D/g, "").slice(0, CODE_LENGTH))
-              }
-              className={inputClassName(Boolean(guestError))}
-              aria-invalid={Boolean(guestError)}
-            />
-          </div>
-          <FieldError message={guestError ?? undefined} />
-          {mode === "signin" ? (
-            <p className="text-xs font-semibold text-muted">
-              Ya tenés cuenta con ese mail. Te enviamos un código para iniciar
-              sesión.
-            </p>
-          ) : null}
-          <button
-            type="button"
-            disabled={isSubmitting || code.length !== CODE_LENGTH}
-            onClick={verifyCode}
-            className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+      <div className="wizard-step flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="guest-code"
+            className="text-xs font-bold tracking-widest text-muted uppercase"
           >
-            {isSubmitting ? "Verificando..." : "Verificar código"}
-          </button>
-          <button
-            type="button"
-            disabled={resendSeconds > 0 || isSubmitting}
-            onClick={() => void sendCode()}
-            className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {resendSeconds > 0
-              ? `Reenviar código (${resendSeconds}s)`
-              : "Reenviar código"}
-          </button>
+            Código de verificación
+          </label>
+          <input
+            id="guest-code"
+            placeholder="123456"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={CODE_LENGTH}
+            value={code}
+            onChange={(event) =>
+              setCode(event.target.value.replace(/\D/g, "").slice(0, CODE_LENGTH))
+            }
+            className={inputClassName(Boolean(guestError))}
+            aria-invalid={Boolean(guestError)}
+          />
         </div>
-        {toastElement}
-      </>
+        <FieldError message={guestError ?? undefined} />
+        {mode === "signin" ? (
+          <p className="text-xs font-semibold text-muted">
+            Ya tenés cuenta con ese mail. Te enviamos un código para iniciar
+            sesión.
+          </p>
+        ) : null}
+        <button
+          type="button"
+          disabled={isSubmitting || code.length !== CODE_LENGTH}
+          onClick={verifyCode}
+          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSubmitting ? "Verificando..." : "Verificar código"}
+        </button>
+        <button
+          type="button"
+          disabled={resendSeconds > 0 || isSubmitting}
+          onClick={() => void sendCode()}
+          className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {resendSeconds > 0
+            ? `Reenviar código (${resendSeconds}s)`
+            : "Reenviar código"}
+        </button>
+      </div>
     );
   }
 
