@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type RefObject } from "react";
-import { SignInButton, useSignUp } from "@clerk/nextjs";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
 import {
   isIdentifierExistsError,
   mapGuestAuthError,
@@ -20,8 +20,10 @@ type GuestAuthStepProps = {
   onVerified: () => void;
 };
 
-// Runs the guest sign-up sub-phase of "confirmar": collects an email, sends a
-// verification code, then verifies it and finalizes the Clerk sign-up. Both
+// Runs the guest auth sub-phase of "confirmar": collects an email, sends a
+// verification code, then verifies it and finalizes the Clerk sign-up. If the
+// email already has an account, the same email-code flow runs as a sign-in
+// (mode "signin") so the visitor never leaves the wizard. Both
 // inputs are controlled state with no `name` attribute so they never enter
 // the wizard's FormData (see design D4 / FormData section).
 export function GuestAuthStep({
@@ -31,6 +33,8 @@ export function GuestAuthStep({
   onVerified,
 }: GuestAuthStepProps) {
   const { signUp } = useSignUp();
+  const { signIn } = useSignIn();
+  const [mode, setMode] = useState<"signup" | "signin">("signup");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [guestError, setGuestError] = useState<string | null>(null);
@@ -46,22 +50,36 @@ export function GuestAuthStep({
     return () => clearInterval(timer);
   }, [resendSeconds]);
 
-  async function sendCode() {
+  async function sendCode(forceMode?: "signup" | "signin") {
+    const activeMode = forceMode ?? mode;
     setGuestError(null);
     setShowSignIn(false);
     setIsSubmitting(true);
     try {
-      const { error: createError } = await signUp.create({ emailAddress: email });
-      if (createError) {
-        setGuestError(mapGuestAuthError(createError));
-        setShowSignIn(isIdentifierExistsError(createError));
-        return;
-      }
+      if (activeMode === "signin") {
+        const { error: sendError } = await signIn.emailCode.sendCode({
+          emailAddress: email,
+        });
+        if (sendError) {
+          setGuestError(mapGuestAuthError(sendError));
+          return;
+        }
+      } else {
+        const { error: createError } = await signUp.create({
+          emailAddress: email,
+        });
+        if (createError) {
+          setGuestError(mapGuestAuthError(createError));
+          setShowSignIn(isIdentifierExistsError(createError));
+          return;
+        }
 
-      const { error: sendError } = await signUp.verifications.sendEmailCode();
-      if (sendError) {
-        setGuestError(mapGuestAuthError(sendError));
-        return;
+        const { error: sendError } =
+          await signUp.verifications.sendEmailCode();
+        if (sendError) {
+          setGuestError(mapGuestAuthError(sendError));
+          return;
+        }
       }
 
       setResendSeconds(RESEND_SECONDS);
@@ -71,12 +89,18 @@ export function GuestAuthStep({
     }
   }
 
+  function switchToSignIn() {
+    setMode("signin");
+    void sendCode("signin");
+  }
+
   // Exposes this phase's primary action to the parent form's Enter-key
   // handler (design task 2.6) — the field inputs live inside the same
   // <form> as the rest of the wizard, so Enter must reach this action
   // instead of falling through to a bare (session-less) form submit.
   useEffect(() => {
-    actionRef.current = confirmPhase === "code" ? verifyCode : sendCode;
+    actionRef.current =
+      confirmPhase === "code" ? verifyCode : () => void sendCode();
     return () => {
       actionRef.current = null;
     };
@@ -86,16 +110,18 @@ export function GuestAuthStep({
     setGuestError(null);
     setIsSubmitting(true);
     try {
-      const { error: verifyError } = await signUp.verifications.verifyEmailCode({
-        code,
-      });
+      const { error: verifyError } =
+        mode === "signin"
+          ? await signIn.emailCode.verifyCode({ code })
+          : await signUp.verifications.verifyEmailCode({ code });
       if (verifyError) {
         setGuestError(mapGuestAuthError(verifyError));
         setCode("");
         return;
       }
 
-      const { error: finalizeError } = await signUp.finalize();
+      const { error: finalizeError } =
+        mode === "signin" ? await signIn.finalize() : await signUp.finalize();
       if (finalizeError) {
         setGuestError(mapGuestAuthError(finalizeError));
         return;
@@ -129,19 +155,19 @@ export function GuestAuthStep({
         </div>
         <FieldError message={guestError ?? undefined} />
         {showSignIn ? (
-          <SignInButton>
-            <button
-              type="button"
-              className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-foreground uppercase transition-colors hover:text-primary"
-            >
-              Iniciar sesión
-            </button>
-          </SignInButton>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={switchToSignIn}
+            className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-foreground uppercase transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Iniciar sesión con código
+          </button>
         ) : null}
         <button
           type="button"
           disabled={isSubmitting || !email}
-          onClick={sendCode}
+          onClick={() => void sendCode()}
           className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Enviando..." : "Enviar código"}
@@ -181,7 +207,7 @@ export function GuestAuthStep({
         <button
           type="button"
           disabled={resendSeconds > 0 || isSubmitting}
-          onClick={sendCode}
+          onClick={() => void sendCode()}
           className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
         >
           {resendSeconds > 0
