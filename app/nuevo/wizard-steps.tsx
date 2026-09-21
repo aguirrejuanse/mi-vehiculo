@@ -158,7 +158,8 @@ export function WizardSteps({
           type="number"
           step="any"
           min={0}
-          defaultValue="0"
+          placeholder="Ej: 100"
+          defaultValue=""
           error={errorFor("currentValue", stepErrors, fieldErrors)}
         />
       </fieldset>
