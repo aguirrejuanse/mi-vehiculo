@@ -35,6 +35,30 @@ const VEHICLE_TYPES: { value: VehicleType; label: string }[] = [
   { value: "monopatin", label: "Monopatín" },
 ];
 
+const NAME_PLACEHOLDER_BY_TYPE: Record<VehicleType, string> = {
+  moto: "Kawasaki Ninja",
+  auto: "Nissan Skyline",
+  bicicleta: "Trek Marlin",
+  monopatin: "Xiaomi Pro 2",
+};
+
+const NAME_PLACEHOLDER_BY_SUBTYPE: Partial<Record<VehicleSubtype, string>> = {
+  moto_enduro: "KTM 350 EXC",
+  bici_enduro: "Specialized Stumpjumper",
+  bici_downhill: "Commencal Supreme",
+  bici_electrica: "Specialized Turbo Vado",
+};
+
+function namePlaceholder(
+  type: VehicleType | "",
+  subtype: VehicleSubtype | "",
+): string {
+  if (subtype && NAME_PLACEHOLDER_BY_SUBTYPE[subtype]) {
+    return NAME_PLACEHOLDER_BY_SUBTYPE[subtype];
+  }
+  return type ? NAME_PLACEHOLDER_BY_TYPE[type] : "Mi vehículo";
+}
+
 const METRIC_UNITS: { value: "horas" | "km"; label: string }[] = [
   { value: "horas", label: "Horas" },
   { value: "km", label: "Kilómetros" },
@@ -137,7 +161,7 @@ export function WizardSteps({
         <TextField
           label="Nombre"
           name="name"
-          placeholder="Enduro 350"
+          placeholder={namePlaceholder(type, subtype)}
           defaultValue=""
           error={errorFor("name", stepErrors, fieldErrors)}
         />
