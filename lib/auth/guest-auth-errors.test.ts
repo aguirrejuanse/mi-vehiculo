@@ -25,7 +25,7 @@ describe("mapGuestAuthError", () => {
 
   it("maps form_identifier_exists", () => {
     expect(mapGuestAuthError({ code: "form_identifier_exists" })).toBe(
-      "Ya tenés cuenta con ese mail. Iniciá sesión y cargá el vehículo desde tu panel.",
+      "Ya tenés cuenta con ese mail. Iniciá sesión con un código y guardamos tu vehículo.",
     );
   });
 
@@ -41,7 +41,7 @@ describe("mapGuestAuthError", () => {
         ],
       }),
     ).toBe(
-      "Ya tenés cuenta con ese mail. Iniciá sesión y cargá el vehículo desde tu panel.",
+      "Ya tenés cuenta con ese mail. Iniciá sesión con un código y guardamos tu vehículo.",
     );
   });
 

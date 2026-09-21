@@ -37,7 +37,7 @@ export function mapGuestAuthError(error: GuestAuthError): string {
     case "verification_failed":
       return "El código venció. Pedí uno nuevo.";
     case "form_identifier_exists":
-      return "Ya tenés cuenta con ese mail. Iniciá sesión y cargá el vehículo desde tu panel.";
+      return "Ya tenés cuenta con ese mail. Iniciá sesión con un código y guardamos tu vehículo.";
     case "too_many_requests":
       return "Demasiados intentos. Esperá un minuto y volvé a probar.";
     default:
