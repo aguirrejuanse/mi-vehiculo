@@ -216,7 +216,7 @@ export function VehicleWizard() {
             <button
               type="button"
               onClick={goBack}
-              className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
+              className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground"
             >
               Volver
             </button>
@@ -227,7 +227,7 @@ export function VehicleWizard() {
               <button
                 type="button"
                 onClick={() => setConfirmPhase("email")}
-                className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover"
+                className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
               >
                 Continuar
               </button>
@@ -242,7 +242,7 @@ export function VehicleWizard() {
             <button
               type="button"
               onClick={goNext}
-              className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover"
+              className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
             >
               Continuar
             </button>

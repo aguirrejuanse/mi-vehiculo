@@ -34,7 +34,7 @@ export function OptionCardGroup<V extends string>({
 }: OptionCardGroupProps<V>) {
   return (
     <fieldset disabled={disabled} className="flex flex-col gap-1.5">
-      <legend className="text-xs font-bold tracking-widest text-muted uppercase">
+      <legend className="mb-1.5 text-xs font-bold tracking-widest text-muted uppercase">
         {label}
       </legend>
       <div
@@ -45,14 +45,14 @@ export function OptionCardGroup<V extends string>({
           return (
             <label
               key={option.value}
-              className={`flex flex-col gap-0.5 rounded-xl border px-4 py-3 text-sm transition-colors ${
+              className={`flex flex-col gap-0.5 rounded-xl border px-4 py-3 text-sm transition duration-150 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
                 checked
-                  ? "border-primary bg-surface"
+                  ? "border-primary bg-primary-soft ring-1 ring-primary"
                   : "border-surface-border bg-surface-2"
               } ${
                 disabled
                   ? "cursor-not-allowed opacity-60"
-                  : "cursor-pointer hover:border-primary"
+                  : "cursor-pointer hover:-translate-y-0.5 hover:border-primary hover:bg-primary-soft hover:shadow-sm active:translate-y-0 active:scale-[0.98]"
               }`}
             >
               <input

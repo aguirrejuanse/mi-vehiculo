@@ -103,7 +103,7 @@ export function WizardSteps({
 
   return (
     <>
-      <fieldset hidden={stepId !== "tipo"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "tipo"} className="wizard-step flex flex-col gap-5">
         <OptionCardGroup
           label="Tipo de vehículo"
           name="type"
@@ -117,7 +117,7 @@ export function WizardSteps({
       <fieldset
         hidden={stepId !== "subtipo"}
         disabled={!hasSubtypes}
-        className="flex flex-col gap-5"
+        className="wizard-step flex flex-col gap-5"
       >
         <OptionCardGroup
           label="Subtipo"
@@ -133,7 +133,7 @@ export function WizardSteps({
         />
       </fieldset>
 
-      <fieldset hidden={stepId !== "apodo"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "apodo"} className="wizard-step flex flex-col gap-5">
         <TextField
           label="Nombre"
           name="name"
@@ -143,7 +143,7 @@ export function WizardSteps({
         />
       </fieldset>
 
-      <fieldset hidden={stepId !== "estado"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "estado"} className="wizard-step flex flex-col gap-5">
         <OptionCardGroup
           label="Unidad de medida"
           name="metricUnit"
@@ -164,7 +164,7 @@ export function WizardSteps({
         />
       </fieldset>
 
-      <fieldset hidden={stepId !== "uso"} className="flex flex-col gap-5">
+      <fieldset hidden={stepId !== "uso"} className="wizard-step flex flex-col gap-5">
         <TextField
           label="Uso semanal estimado (opcional)"
           name="usageRatePerWeek"
@@ -179,7 +179,7 @@ export function WizardSteps({
 
       <fieldset
         hidden={stepId !== "confirmar"}
-        className="flex flex-col gap-4"
+        className="wizard-step flex flex-col gap-4"
       >
         <div className="flex flex-col gap-2 rounded-xl border border-surface-border bg-surface-2 p-4 text-sm">
           <SummaryRow

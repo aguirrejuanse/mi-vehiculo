@@ -135,7 +135,7 @@ export function GuestAuthStep({
 
   if (confirmPhase === "email") {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="wizard-step flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="guest-email"
@@ -159,7 +159,7 @@ export function GuestAuthStep({
             type="button"
             disabled={isSubmitting}
             onClick={switchToSignIn}
-            className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-foreground uppercase transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+            className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-foreground uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
             Iniciar sesión con código
           </button>
@@ -168,7 +168,7 @@ export function GuestAuthStep({
           type="button"
           disabled={isSubmitting || !email}
           onClick={() => void sendCode()}
-          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Enviando..." : "Enviar código"}
         </button>
@@ -178,7 +178,7 @@ export function GuestAuthStep({
 
   if (confirmPhase === "code") {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="wizard-step flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="guest-code"
@@ -200,7 +200,7 @@ export function GuestAuthStep({
           type="button"
           disabled={isSubmitting || !code}
           onClick={verifyCode}
-          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Verificando..." : "Verificar código"}
         </button>
@@ -208,7 +208,7 @@ export function GuestAuthStep({
           type="button"
           disabled={resendSeconds > 0 || isSubmitting}
           onClick={() => void sendCode()}
-          className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
         >
           {resendSeconds > 0
             ? `Reenviar código (${resendSeconds}s)`
