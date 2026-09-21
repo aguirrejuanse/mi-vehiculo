@@ -30,7 +30,7 @@ export const STEP_FIELDS: Record<StepId, readonly (keyof VehicleInput)[]> = {
 
 const VEHICLE_TYPES: { value: VehicleType; label: string }[] = [
   { value: "moto", label: "Moto" },
-  { value: "auto", label: "Auto" },
+  { value: "auto", label: "Auto/Camioneta" },
   { value: "bicicleta", label: "Bicicleta" },
   { value: "monopatin", label: "Monopatín" },
 ];
@@ -66,7 +66,7 @@ const METRIC_UNITS: { value: "horas" | "km"; label: string }[] = [
 
 const VEHICLE_TYPE_LABELS: Record<VehicleType, string> = {
   moto: "Moto",
-  auto: "Auto",
+  auto: "Auto/Camioneta",
   bicicleta: "Bicicleta",
   monopatin: "Monopatín",
 };
