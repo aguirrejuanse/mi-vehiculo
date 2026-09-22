@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Sora } from "next/font/google";
 import { ClerkProvider, SignInButton, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
-import { LinkButton } from "@/components/ui/link-button";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
@@ -63,23 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     Iniciar sesión
                   </button>
                 </SignInButton>
-                {/* Guest-first: creates the vehicle immediately (no account
-                    yet, see app/nuevo), not a Clerk sign-up — matches the
-                    "crear como invitado, pedir cuenta al final" flow.
-                    `bare` + explicit text classes so this stays a bit smaller
-                    than LinkButton's own `text-sm` default at every
-                    breakpoint, to fit the header. text-center: once
-                    HeaderNav's tablet links (600–1024px) squeeze this button
-                    and it wraps to two lines, they were left-aligned instead
-                    of centered — nowrap was tried but caused overflow. */}
-                <LinkButton
-                  href="/nuevo"
-                  size="sm"
-                  bare
-                  className="cursor-pointer text-center text-xs font-bold tracking-wide uppercase sm:text-sm"
-                >
-                  Crear tu vehículo
-                </LinkButton>
+                <HeaderCta />
               </Show>
               <Show when="signed-in">
                 <Link
