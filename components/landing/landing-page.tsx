@@ -20,11 +20,10 @@ type LandingPageProps = {
   variant?: HeroVariant;
 };
 
-// Repeated on both constrained chunks below, around the full-bleed sections
-// that need to span the viewport (see pain-banner.tsx, final-cta.tsx,
-// footer.tsx).
+// Only the hero needs this: every other section below is full-bleed and
+// applies its own max-w-5xl constraint internally (see pain-banner.tsx).
 const CONTAINER_CLASSES =
-  "mx-auto flex w-full max-w-5xl flex-col gap-20 px-4 py-12 sm:px-6 md:py-16";
+  "mx-auto flex w-full max-w-5xl flex-col px-4 py-12 sm:px-6 md:py-16";
 
 export async function LandingPage({ variant }: LandingPageProps) {
   const { userId } = await auth();
@@ -32,56 +31,48 @@ export async function LandingPage({ variant }: LandingPageProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className={CONTAINER_CLASSES}>
+      <section className={CONTAINER_CLASSES}>
         {variant ? (
           <Hero variants={[variant]} activeIndex={0} />
         ) : (
           <HeroRotator variants={HERO_VARIANTS} />
         )}
-      </div>
+      </section>
 
       <Benefits />
       <PainBanner />
 
-      <div className={CONTAINER_CLASSES}>
-        {/* The hero CTA links to this id (create-vehicle-link.tsx). */}
-        <section
-          id="crear"
-          tabIndex={-1}
-          aria-labelledby="crear-title"
-          className="mx-auto flex min-h-screen w-full max-w-md scroll-mt-6 snap-start flex-col justify-center gap-6 outline-none"
-        >
-          <div className="flex flex-col gap-2">
-            <h2
-              id="crear-title"
-              className="text-3xl font-black tracking-tight uppercase sm:text-4xl"
-            >
-              Creá tu <span className="text-primary">vehículo</span>
-            </h2>
-            <p className="text-lg text-muted">
-              Elegí el tipo, ponele nombre e indicá cuánto lleva usado.
-            </p>
-          </div>
-          <VehicleWizard />
-        </section>
-      </div>
+      {/* The hero CTA links to this id (create-vehicle-link.tsx). Narrower
+          than the other sections (max-w-md, not max-w-5xl), so it carries its
+          own padding instead of reusing CONTAINER_CLASSES. */}
+      <section
+        id="crear"
+        tabIndex={-1}
+        aria-labelledby="crear-title"
+        className="mx-auto flex min-h-screen w-full max-w-md scroll-mt-6 snap-start flex-col justify-center gap-6 px-4 py-12 outline-none sm:px-6 md:py-16"
+      >
+        <div className="flex flex-col gap-2">
+          <h2
+            id="crear-title"
+            className="text-3xl font-black tracking-tight uppercase sm:text-4xl"
+          >
+            Creá tu <span className="text-primary">vehículo</span>
+          </h2>
+          <p className="text-lg text-muted">
+            Elegí el tipo, ponele nombre e indicá cuánto lleva usado.
+          </p>
+        </div>
+        <VehicleWizard />
+      </section>
 
-      {/* HowItWorks and FounderQuote are full-bleed "dark box" sections (see
-          pain-banner.tsx): they need their own w-full, not CONTAINER_CLASSES's
-          max-w-5xl, so they're siblings here instead of nested inside it. */}
+      {/* Every section below is a top-level sibling, each carrying its own
+          width constraint internally (see benefits.tsx/pain-banner.tsx for
+          the pattern) — no <section> is ever wrapped in a layout <div>. */}
       <HowItWorks />
-
-      <div className={CONTAINER_CLASSES}>
-        <FeaturesGrid />
-        <UseCases currentSlug={variant?.slug} />
-      </div>
-
+      <FeaturesGrid />
+      <UseCases currentSlug={variant?.slug} />
       <FounderQuote />
-
-      <div className={CONTAINER_CLASSES}>
-        <Faq />
-      </div>
-
+      <Faq />
       <FinalCta />
       <Footer />
     </div>

@@ -57,21 +57,23 @@ const FEATURES: readonly Feature[] = [
 // colored sections back-to-back.
 export function FeaturesGrid() {
   return (
-    <section className="flex min-h-screen snap-start flex-col justify-center gap-8">
-      <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
-        Todo lo que hace{" "}
-        <span className="text-primary">(y lo que viene)</span>
-      </h2>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map((feature) => (
-          <Card key={feature.title} padding="md" className="flex flex-col gap-3">
-            <Badge tone={feature.available ? "ok" : "muted"} className="self-start">
-              {feature.available ? "Disponible" : "En camino"}
-            </Badge>
-            <h3 className="text-lg font-bold">{feature.title}</h3>
-            <p className="text-sm text-muted">{feature.body}</p>
-          </Card>
-        ))}
+    <section className="flex min-h-screen w-full snap-start flex-col justify-center">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-16 sm:px-6">
+        <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
+          Todo lo que hace{" "}
+          <span className="text-primary">(y lo que viene)</span>
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((feature) => (
+            <Card key={feature.title} padding="md" className="flex flex-col gap-3">
+              <Badge tone={feature.available ? "ok" : "muted"} className="self-start">
+                {feature.available ? "Disponible" : "En camino"}
+              </Badge>
+              <h3 className="text-lg font-bold">{feature.title}</h3>
+              <p className="text-sm text-muted">{feature.body}</p>
+            </Card>
+          ))}
+        </div>
       </div>
     </section>
   );

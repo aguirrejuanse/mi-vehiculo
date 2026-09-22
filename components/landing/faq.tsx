@@ -65,39 +65,41 @@ export function Faq() {
   return (
     <section
       id="preguntas-frecuentes"
-      className="flex min-h-screen scroll-mt-6 snap-start flex-col justify-center gap-6"
+      className="flex min-h-screen w-full scroll-mt-6 snap-start flex-col justify-center"
     >
-      <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
-        Preguntas <span className="text-primary">frecuentes</span>
-      </h2>
-      <div className="flex flex-col divide-y divide-surface-border">
-        {FAQ_ITEMS.map((item) => (
-          <details key={item.question} className="group py-6">
-            <summary className="cursor-pointer list-none text-lg font-bold marker:hidden">
-              {item.question}
-            </summary>
-            {/* `grid` here is load-bearing: it's an author-origin rule, so
-                it beats the UA stylesheet's `details:not([open]) > *
-                { display: none }` regardless of the [open] attribute,
-                letting `grid-template-rows` (an animatable track-sizing
-                function, unlike `height: auto`) transition from 0fr to 1fr.
-                `overflow-hidden` clips the 0fr state to zero height. */}
-            <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none group-open:grid-rows-[1fr]">
-              <div className="overflow-hidden">
-                <p className="mt-3 text-base text-muted">{item.answer}</p>
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-16 sm:px-6">
+        <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
+          Preguntas <span className="text-primary">frecuentes</span>
+        </h2>
+        <div className="flex flex-col divide-y divide-surface-border">
+          {FAQ_ITEMS.map((item) => (
+            <details key={item.question} className="group py-6">
+              <summary className="cursor-pointer list-none text-lg font-bold marker:hidden">
+                {item.question}
+              </summary>
+              {/* `grid` here is load-bearing: it's an author-origin rule, so
+                  it beats the UA stylesheet's `details:not([open]) > *
+                  { display: none }` regardless of the [open] attribute,
+                  letting `grid-template-rows` (an animatable track-sizing
+                  function, unlike `height: auto`) transition from 0fr to 1fr.
+                  `overflow-hidden` clips the 0fr state to zero height. */}
+              <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none group-open:grid-rows-[1fr]">
+                <div className="overflow-hidden">
+                  <p className="mt-3 text-base text-muted">{item.answer}</p>
+                </div>
               </div>
-            </div>
-          </details>
-        ))}
+            </details>
+          ))}
+        </div>
+        {/* JSON.stringify output is escaped to prevent XSS via `</script>` or
+            similar breakout strings, per the Next.js JSON-LD guide. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
       </div>
-      {/* JSON.stringify output is escaped to prevent XSS via `</script>` or
-          similar breakout strings, per the Next.js JSON-LD guide. */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
-        }}
-      />
     </section>
   );
 }
