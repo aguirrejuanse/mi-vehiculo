@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Sora } from "next/font/google";
 import { ClerkProvider, SignInButton, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
 import { Toaster } from "@/components/ui/toast";
+import { SITE_URL } from "@/lib/site-url";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -25,9 +26,31 @@ const sora = Sora({
   weight: ["500", "600", "700", "800"],
 });
 
+const DESCRIPTION = "Llevá el control del mantenimiento de tus vehículos";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Mi Vehículo",
-  description: "Llevá el control del mantenimiento de tus vehículos",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    title: "Mi Vehículo",
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Mi Vehículo",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Mi Vehículo",
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6c5ce7",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

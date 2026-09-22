@@ -1,5 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { HERO_VARIANTS } from "@/lib/landing/hero-variants";
+// Imported for its side effect: validates Clerk env vars eagerly so a
+// misconfigured prod deploy fails fast here instead of surfacing an opaque
+// Clerk SDK error later.
+import "@/lib/env";
 
 // Public routes: the landing page (and its per-vehicle variants) and the guest
 // vehicle wizard. Everything else under the app (dashboard, etc.) requires
