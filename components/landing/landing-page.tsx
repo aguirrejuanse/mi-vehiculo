@@ -42,6 +42,12 @@ export async function LandingPage({ variant }: LandingPageProps) {
       <Benefits />
       <PainBanner />
 
+      {/* Explains the 3 steps (step 1 is "Creá tu vehículo") before the
+          wizard below asks the user to actually do it — reversed order
+          would have the user reach "how it works" after already doing
+          step 1. */}
+      <HowItWorks />
+
       {/* The hero CTA links to this id (create-vehicle-link.tsx). Narrower
           than the other sections (max-w-md, not max-w-5xl), so it carries its
           own padding instead of reusing CONTAINER_CLASSES. */}
@@ -68,7 +74,6 @@ export async function LandingPage({ variant }: LandingPageProps) {
       {/* Every section below is a top-level sibling, each carrying its own
           width constraint internally (see benefits.tsx/pain-banner.tsx for
           the pattern) — no <section> is ever wrapped in a layout <div>. */}
-      <HowItWorks />
       <FeaturesGrid />
       <UseCases currentSlug={variant?.slug} />
       <FounderQuote />
