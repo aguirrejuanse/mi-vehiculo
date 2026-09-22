@@ -27,53 +27,59 @@ function PreviewItems({ variant }: { variant: HeroVariant }) {
   );
 }
 
+// Flat section — no background tint (tried bg-surface-2, user asked to
+// remove it and keep this one plain). Cards here keep the ui/card.tsx border
+// (unlike benefits.tsx): they're clickable links, so the border also serves
+// as an affordance, not just a divider.
 export function UseCases({ currentSlug }: UseCasesProps) {
   return (
-    <section className="flex min-h-screen snap-start flex-col justify-center gap-8">
-      <h2 className="text-2xl font-black tracking-tight uppercase">
-        Hecho para lo que tenés en{" "}
-        <span className="text-primary">el garaje</span>
-      </h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {HERO_VARIANTS.map((variant) => {
-          const isCurrent = variant.slug === currentSlug;
+    <section className="flex min-h-screen w-full snap-start flex-col justify-center">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-16 sm:px-6">
+        <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
+          Hecho para lo que tenés en{" "}
+          <span className="text-primary">el garaje</span>
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {HERO_VARIANTS.map((variant) => {
+            const isCurrent = variant.slug === currentSlug;
 
-          if (isCurrent) {
+            if (isCurrent) {
+              return (
+                <Card
+                  key={variant.slug}
+                  padding="md"
+                  className="flex flex-col gap-3 ring-2 ring-primary"
+                >
+                  <h3 className="text-lg font-bold">
+                    {capitalizeSubject(variant.subject)}
+                  </h3>
+                  <PreviewItems variant={variant} />
+                  <span className="text-sm font-bold text-primary">
+                    Estás viendo esta
+                  </span>
+                </Card>
+              );
+            }
+
             return (
               <Card
                 key={variant.slug}
+                as={Link}
+                href={`/${variant.slug}`}
                 padding="md"
-                className="flex flex-col gap-2 ring-2 ring-primary"
+                className="flex flex-col gap-3 transition-colors hover:border-primary"
               >
-                <h3 className="font-bold">
+                <h3 className="text-lg font-bold">
                   {capitalizeSubject(variant.subject)}
                 </h3>
                 <PreviewItems variant={variant} />
                 <span className="text-sm font-bold text-primary">
-                  Estás viendo esta
+                  Ver ejemplo →
                 </span>
               </Card>
             );
-          }
-
-          return (
-            <Card
-              key={variant.slug}
-              as={Link}
-              href={`/${variant.slug}`}
-              padding="md"
-              className="flex flex-col gap-2 transition-colors hover:border-primary"
-            >
-              <h3 className="font-bold">
-                {capitalizeSubject(variant.subject)}
-              </h3>
-              <PreviewItems variant={variant} />
-              <span className="text-sm font-bold text-primary">
-                Ver ejemplo →
-              </span>
-            </Card>
-          );
-        })}
+          })}
+        </div>
       </div>
     </section>
   );

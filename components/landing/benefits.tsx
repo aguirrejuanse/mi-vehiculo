@@ -1,5 +1,4 @@
 import { type ReactNode, type SVGProps } from "react";
-import { Card } from "@/components/ui/card";
 
 type Benefit = {
   title: string;
@@ -17,7 +16,7 @@ function iconProps(): SVGProps<SVGSVGElement> {
     strokeWidth: 1.5,
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    className: "size-6",
+    className: "size-7",
   };
 }
 
@@ -69,18 +68,39 @@ const BENEFITS: readonly Benefit[] = [
   },
 ];
 
+// Full-bleed section, same pattern as pain-banner.tsx: bg-surface-2 blends
+// softer than the plain page background so the cards below don't read as
+// stark white boxes floating on it. The cards themselves drop the
+// border+shadow the ui/card.tsx default uses elsewhere — on this backdrop
+// that combo read as excess edge-contrast, per user feedback — and rely on
+// spacing + a lighter fill to separate instead. Tried the same dark-box
+// treatment used elsewhere (pain-banner, how-it-works, founder-quote,
+// final-cta) here too, A/B'd live against this flat version — user picked
+// flat, so this section stays outside the dark-box rotation. Also tried
+// tinting these cards (bg-teal-soft) — user rejected it, they're plain
+// bg-surface again.
 export function Benefits() {
   return (
-    <div className="grid min-h-screen snap-start content-center gap-6 md:grid-cols-3">
-      {BENEFITS.map((benefit) => (
-        <Card key={benefit.title} padding="md" className="flex flex-col gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
-            {benefit.icon}
-          </div>
-          <h3 className="font-bold">{benefit.title}</h3>
-          <p className="text-sm text-muted">{benefit.body}</p>
-        </Card>
-      ))}
-    </div>
+    <section className="flex min-h-screen w-full snap-start flex-col justify-center bg-surface-2">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-16 sm:px-6">
+        <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
+          Por qué <span className="text-primary">Mi Vehículo</span>
+        </h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          {BENEFITS.map((benefit) => (
+            <div
+              key={benefit.title}
+              className="flex flex-col gap-4 rounded-3xl bg-surface p-8"
+            >
+              <div className="flex size-14 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                {benefit.icon}
+              </div>
+              <h3 className="text-xl font-bold">{benefit.title}</h3>
+              <p className="text-base text-muted">{benefit.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

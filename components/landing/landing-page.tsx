@@ -38,9 +38,9 @@ export async function LandingPage({ variant }: LandingPageProps) {
         ) : (
           <HeroRotator variants={HERO_VARIANTS} />
         )}
-        <Benefits />
       </div>
 
+      <Benefits />
       <PainBanner />
 
       <div className={CONTAINER_CLASSES}>
@@ -64,11 +64,21 @@ export async function LandingPage({ variant }: LandingPageProps) {
           </div>
           <VehicleWizard />
         </section>
+      </div>
 
-        <HowItWorks />
+      {/* HowItWorks and FounderQuote are full-bleed "dark box" sections (see
+          pain-banner.tsx): they need their own w-full, not CONTAINER_CLASSES's
+          max-w-5xl, so they're siblings here instead of nested inside it. */}
+      <HowItWorks />
+
+      <div className={CONTAINER_CLASSES}>
         <FeaturesGrid />
         <UseCases currentSlug={variant?.slug} />
-        <FounderQuote />
+      </div>
+
+      <FounderQuote />
+
+      <div className={CONTAINER_CLASSES}>
         <Faq />
       </div>
 

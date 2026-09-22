@@ -2,7 +2,11 @@
 
 :root {
   color-scheme: light;
-  --background: #f3f1fb;
+  /* Softer than pure white on purpose: bare #ffffff read as too high-contrast
+     next to the violet palette. Kept a step lighter than --surface-2/
+     --color-box-section so those two still read as a distinct tint on top
+     of this one. */
+  --background: #fdfcff;
   --foreground: #201b3d;
   --surface: #ffffff;
   --surface-2: #faf9fe;
@@ -17,6 +21,21 @@
   --color-success-soft: #dcf5e9;
   --color-danger: #d43d47;
   --color-danger-soft: #fbe1e2;
+  /* "Dark box" pattern (pain-banner, how-it-works, final-cta, founder-quote):
+     its own fixed token trio, NOT --foreground/--background. Those two are
+     semantic app tokens — reusing them here would make this component-level
+     visual pattern shift any time the app's overall theme changes, which is
+     not what we want (confirmed after the app bg went lavender -> white and
+     this pattern's colors needed to stay put). Deliberately NOT overridden
+     in the dark-mode block below: same fixed look in both color schemes. */
+  --color-box: #201b3d;
+  --color-box-title: #f3f1fb;
+  --color-box-desc: #f3f1fbcc;
+  /* Section wrapper for pain-banner/how-it-works/final-cta (not
+     founder-quote, which settled on --surface-2 instead): a fixed off-white
+     with a lavender tint, chosen after pure white read as too harsh. Same
+     "fixed, not theme-coupled" reasoning as --color-box above. */
+  --color-box-section: #f7f5fc;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -56,6 +75,10 @@
   --color-success-soft: var(--color-success-soft);
   --color-danger: var(--color-danger);
   --color-danger-soft: var(--color-danger-soft);
+  --color-box: var(--color-box);
+  --color-box-title: var(--color-box-title);
+  --color-box-desc: var(--color-box-desc);
+  --color-box-section: var(--color-box-section);
   --font-sans: var(--font-plex-sans);
   --font-display: var(--font-sora);
   --font-mono: var(--font-plex-mono);

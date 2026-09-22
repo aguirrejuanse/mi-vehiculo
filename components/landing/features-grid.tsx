@@ -11,7 +11,7 @@ type Feature = {
 
 const FEATURES: readonly Feature[] = [
   {
-    title: "Horas o km, automático",
+    title: "Trackeo de horas o km, automático",
     body: "Elegimos la unidad según tu tipo de vehículo.",
     available: true,
   },
@@ -31,11 +31,6 @@ const FEATURES: readonly Feature[] = [
     available: true,
   },
   {
-    title: "Todos tus vehículos",
-    body: "Con tipo y subtipo propio.",
-    available: true,
-  },
-  {
     title: "Recordatorios",
     body: "Aviso antes de que venza.",
     available: false,
@@ -51,31 +46,29 @@ const FEATURES: readonly Feature[] = [
     available: false,
   },
   {
-    title: "Creá grupos de vehículos",
-    body: "Organizá tus vehículos como quieras.",
-    available: false,
-  },
-  {
     title: "Creá grupos con tus amigos",
     body: "Compartí vehículos y mantenimiento con tu grupo.",
     available: false,
   },
 ];
 
+// Stays on the plain page background: How-it-works (before this, in scroll
+// order) just used bg-primary-soft, so keeping this one plain avoids two
+// colored sections back-to-back.
 export function FeaturesGrid() {
   return (
     <section className="flex min-h-screen snap-start flex-col justify-center gap-8">
-      <h2 className="text-2xl font-black tracking-tight uppercase">
+      <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
         Todo lo que hace{" "}
         <span className="text-primary">(y lo que viene)</span>
       </h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {FEATURES.map((feature) => (
-          <Card key={feature.title} padding="md" className="flex flex-col gap-2">
+          <Card key={feature.title} padding="md" className="flex flex-col gap-3">
             <Badge tone={feature.available ? "ok" : "muted"} className="self-start">
               {feature.available ? "Disponible" : "En camino"}
             </Badge>
-            <h3 className="font-bold">{feature.title}</h3>
+            <h3 className="text-lg font-bold">{feature.title}</h3>
             <p className="text-sm text-muted">{feature.body}</p>
           </Card>
         ))}

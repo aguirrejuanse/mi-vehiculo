@@ -1,4 +1,8 @@
+"use client";
+
+import type { MouseEvent } from "react";
 import Link from "next/link";
+import { scrollToHash } from "@/lib/landing/smooth-scroll";
 
 type FooterLink = {
   label: string;
@@ -41,6 +45,9 @@ function FooterColumn({
             {link.href.startsWith("#") ? (
               <a
                 href={link.href}
+                onClick={(event: MouseEvent<HTMLAnchorElement>) =>
+                  scrollToHash(link.href, event)
+                }
                 className="text-sm transition-colors hover:text-primary"
               >
                 {link.label}
@@ -81,7 +88,7 @@ export function Footer() {
             aria-label="LinkedIn de Juanse"
             className="w-fit transition-colors hover:text-primary"
           >
-            LinkedIn
+            Juanse Aguirre
           </a>
         </div>
       </div>

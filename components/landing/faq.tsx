@@ -67,7 +67,7 @@ export function Faq() {
       id="preguntas-frecuentes"
       className="flex min-h-screen scroll-mt-6 snap-start flex-col justify-center gap-6"
     >
-      <h2 className="text-2xl font-black tracking-tight uppercase">
+      <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
         Preguntas <span className="text-primary">frecuentes</span>
       </h2>
       <div className="flex flex-col divide-y divide-surface-border">
