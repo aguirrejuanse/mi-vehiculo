@@ -35,11 +35,12 @@ export function HowItWorks() {
   return (
     <section
       id="como-funciona"
-      className="flex min-h-screen w-full scroll-mt-6 snap-start flex-col justify-center bg-box-section px-4 sm:px-6"
+      className="flex min-h-screen w-full scroll-mt-20 snap-start flex-col justify-center bg-box-section px-4 py-12 sm:px-6 md:py-16"
     >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 rounded-[2rem] bg-box px-6 py-16 sm:px-16">
         <h2 className="text-3xl font-black tracking-tight text-box-title uppercase sm:text-4xl">
-          Cómo <span className="text-primary">funciona</span>
+          Cómo{" "}
+          <span className="block text-primary sm:inline">funciona</span>
         </h2>
         <div className="grid gap-10 md:grid-cols-3">
           {STEPS.map((step) => (

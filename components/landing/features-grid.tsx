@@ -59,9 +59,15 @@ export function FeaturesGrid() {
   return (
     <section className="flex min-h-screen w-full snap-start flex-col justify-center">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-16 sm:px-6">
+        {/* Forced break below sm: on mobile the line wrapped mid-phrase
+            ("...y lo que" / "viene)"), leaving an orphan word. From sm up
+            there's enough width that the natural wrap never orphans a word,
+            so it goes back to flowing inline. */}
         <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
           Todo lo que hace{" "}
-          <span className="text-primary">(y lo que viene)</span>
+          <span className="block text-primary sm:inline">
+            (y lo que viene)
+          </span>
         </h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((feature) => (

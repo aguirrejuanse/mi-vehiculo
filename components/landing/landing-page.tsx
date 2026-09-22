@@ -55,7 +55,7 @@ export async function LandingPage({ variant }: LandingPageProps) {
         id="crear"
         tabIndex={-1}
         aria-labelledby="crear-title"
-        className="mx-auto flex min-h-screen w-full max-w-md scroll-mt-6 snap-start flex-col justify-center gap-6 px-4 py-12 outline-none sm:px-6 md:py-16"
+        className="mx-auto flex min-h-screen w-full max-w-md scroll-mt-20 snap-start flex-col justify-center gap-6 px-4 py-12 outline-none sm:px-6 md:py-16"
       >
         <div className="flex flex-col gap-2">
           <h2

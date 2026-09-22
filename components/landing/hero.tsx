@@ -65,7 +65,9 @@ export function Hero({ variants, activeIndex }: HeroProps) {
         padding="md"
         className="flex w-full max-w-md flex-col gap-4 md:justify-self-end"
       >
-        <div className="flex items-center justify-between gap-3">
+        {/* Stacked below md: side by side, the title and badge squeeze into
+            a cramped two-column row at narrow widths. */}
+        <div className="flex flex-col items-start gap-1.5 md:flex-row md:items-center md:justify-between md:gap-3">
           <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
             Próximos mantenimientos
           </h2>

@@ -65,11 +65,12 @@ export function Faq() {
   return (
     <section
       id="preguntas-frecuentes"
-      className="flex min-h-screen w-full scroll-mt-6 snap-start flex-col justify-center"
+      className="flex min-h-screen w-full scroll-mt-20 snap-start flex-col justify-center"
     >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-16 sm:px-6">
         <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
-          Preguntas <span className="text-primary">frecuentes</span>
+          Preguntas{" "}
+          <span className="block text-primary sm:inline">frecuentes</span>
         </h2>
         <div className="flex flex-col divide-y divide-surface-border">
           {FAQ_ITEMS.map((item) => (
