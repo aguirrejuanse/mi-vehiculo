@@ -39,7 +39,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <ClerkProvider>
       <html
         lang="es"
-        className={`${plexSans.variable} ${plexMono.variable} ${sora.variable} h-full antialiased`}
+        // Landing sections opt into `snap-start` (see components/landing/*)
+        // and rely on this being the scroll container: nothing in the tree
+        // sets overflow, so the document itself (this element) is what
+        // actually scrolls. `proximity`, not `mandatory`, so long sections
+        // (FAQ, the wizard, use-cases) stay freely scrollable.
+        className={`${plexSans.variable} ${plexMono.variable} ${sora.variable} h-full snap-y snap-proximity antialiased`}
       >
         <body className="min-h-full flex flex-col bg-background text-foreground">
           <header className="flex items-center justify-between border-b border-surface-border px-6 py-4">

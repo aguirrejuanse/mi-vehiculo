@@ -7,3 +7,4 @@
 - Inline sign-in for existing accounts needs "Email verification code" enabled in Clerk Dashboard → Sign-in options.
 - Toasts live in `components/ui/toast.tsx` (Base UI, hand-adapted from the shadcn registry). Do NOT run `shadcn init`: it overwrites project tokens (`--muted`, `--background`, `--foreground`), switches dark mode to a `.dark` class and adds `--font-sans` cycles.
 - Prettier is not installed; rely on ESLint.
+- Competitor research and screenshots go in `docs/competidores/<name>/`.
