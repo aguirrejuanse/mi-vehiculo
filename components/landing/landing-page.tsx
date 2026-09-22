@@ -31,7 +31,7 @@ export async function LandingPage({ variant }: LandingPageProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <section className={CONTAINER_CLASSES}>
+      <section id="inicio" className={CONTAINER_CLASSES}>
         {variant ? (
           <Hero variants={[variant]} activeIndex={0} />
         ) : (
@@ -57,7 +57,13 @@ export async function LandingPage({ variant }: LandingPageProps) {
         aria-labelledby="crear-title"
         className="mx-auto flex min-h-screen w-full max-w-md scroll-mt-20 snap-start flex-col justify-center gap-6 px-4 py-12 outline-none sm:px-6 md:py-16"
       >
-        <div className="flex flex-col gap-2">
+        {/* text-center: this div's children stretch to the section's full
+            width (flex-col default), so left-aligned text left a visible gap
+            on the right — most noticeable on mobile/tablet, where this
+            max-w-md box takes up most of the viewport width. The wizard
+            below keeps its own natural (left-aligned) layout — it's a form,
+            not a heading. */}
+        <div className="flex flex-col gap-2 text-center">
           <h2
             id="crear-title"
             className="text-3xl font-black tracking-tight uppercase sm:text-4xl"

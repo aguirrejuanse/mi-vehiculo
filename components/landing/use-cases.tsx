@@ -33,7 +33,10 @@ function PreviewItems({ variant }: { variant: HeroVariant }) {
 // as an affordance, not just a divider.
 export function UseCases({ currentSlug }: UseCasesProps) {
   return (
-    <section className="flex min-h-screen w-full snap-start flex-col justify-center">
+    <section
+      id="casos-de-uso"
+      className="flex min-h-screen w-full scroll-mt-20 snap-start flex-col justify-center"
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-16 sm:px-6">
         <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
           Hecho para lo que tenés en{" "}

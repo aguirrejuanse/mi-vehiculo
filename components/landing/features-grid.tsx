@@ -57,7 +57,10 @@ const FEATURES: readonly Feature[] = [
 // colored sections back-to-back.
 export function FeaturesGrid() {
   return (
-    <section className="flex min-h-screen w-full snap-start flex-col justify-center">
+    <section
+      id="funcionalidades"
+      className="flex min-h-screen w-full scroll-mt-20 snap-start flex-col justify-center"
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-16 sm:px-6">
         {/* Forced break below sm: on mobile the line wrapped mid-phrase
             ("...y lo que" / "viene)"), leaving an orphan word. From sm up

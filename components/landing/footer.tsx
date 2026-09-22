@@ -11,6 +11,9 @@ type FooterLink = {
 
 const PRODUCT_LINKS: readonly FooterLink[] = [
   { label: "Cómo funciona", href: "#como-funciona" },
+  { label: "Funcionalidades", href: "#funcionalidades" },
+  { label: "Casos de uso", href: "#casos-de-uso" },
+  { label: "Testimonios", href: "#testimonios" },
   { label: "FAQ", href: "#preguntas-frecuentes" },
 ];
 

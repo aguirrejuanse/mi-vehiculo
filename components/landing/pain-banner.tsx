@@ -14,7 +14,10 @@ import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 // founder-quote.tsx settled on bg-surface-2 instead.
 export function PainBanner() {
   return (
-    <section className="flex min-h-screen w-full snap-start flex-col justify-center bg-box-section px-4 sm:px-6">
+    <section
+      id="problema"
+      className="flex min-h-screen w-full snap-start flex-col justify-center bg-box-section px-4 sm:px-6"
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-4 rounded-[2rem] bg-box px-6 py-16 text-center sm:px-16">
         <h2 className="max-w-2xl text-3xl font-black tracking-tight text-box-title uppercase sm:text-4xl">
           ¿Todavía llevás el service en una planilla o en las notas del

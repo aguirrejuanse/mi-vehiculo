@@ -81,7 +81,10 @@ const BENEFITS: readonly Benefit[] = [
 // bg-surface again.
 export function Benefits() {
   return (
-    <section className="flex min-h-screen w-full snap-start flex-col justify-center bg-surface-2">
+    <section
+      id="beneficios"
+      className="flex min-h-screen w-full snap-start flex-col justify-center bg-surface-2"
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-16 sm:px-6">
         <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
           Por qué{" "}

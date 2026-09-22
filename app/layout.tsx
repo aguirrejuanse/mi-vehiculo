@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Sora } from "next/font/google";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  Show,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider, SignInButton, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { HeaderNav } from "@/components/landing/header-nav";
+import { LinkButton } from "@/components/ui/link-button";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
@@ -59,18 +55,31 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             >
               Mi <span className="text-primary">Vehículo</span>
             </Link>
+            <HeaderNav />
             <nav className="flex items-center gap-2 sm:gap-4">
               <Show when="signed-out">
                 <SignInButton>
-                  <button className="cursor-pointer text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm">
+                  <button className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm">
                     Iniciar sesión
                   </button>
                 </SignInButton>
-                <SignUpButton>
-                  <button className="cursor-pointer rounded-xl bg-primary px-3 py-1.5 text-xs font-bold tracking-wide uppercase text-white transition-colors hover:bg-primary-hover sm:px-4 sm:py-2 sm:text-sm">
-                    Crear cuenta
-                  </button>
-                </SignUpButton>
+                {/* Guest-first: creates the vehicle immediately (no account
+                    yet, see app/nuevo), not a Clerk sign-up — matches the
+                    "crear como invitado, pedir cuenta al final" flow.
+                    `bare` + explicit text classes so this stays a bit smaller
+                    than LinkButton's own `text-sm` default at every
+                    breakpoint, to fit the header. text-center: once
+                    HeaderNav's tablet links (600–1024px) squeeze this button
+                    and it wraps to two lines, they were left-aligned instead
+                    of centered — nowrap was tried but caused overflow. */}
+                <LinkButton
+                  href="/nuevo"
+                  size="sm"
+                  bare
+                  className="cursor-pointer text-center text-xs font-bold tracking-wide uppercase sm:text-sm"
+                >
+                  Crear tu vehículo
+                </LinkButton>
               </Show>
               <Show when="signed-in">
                 <Link

@@ -8,7 +8,10 @@ import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 // pain-banner.tsx and how-it-works.tsx.
 export function FinalCta() {
   return (
-    <section className="flex min-h-screen w-full snap-start flex-col justify-center bg-box-section px-4 sm:px-6">
+    <section
+      id="empezar"
+      className="flex min-h-screen w-full snap-start flex-col justify-center bg-box-section px-4 sm:px-6"
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-4 rounded-[2rem] bg-box px-6 py-16 text-center text-box-title sm:px-16">
         <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
           ¿Empezamos con tu vehículo?

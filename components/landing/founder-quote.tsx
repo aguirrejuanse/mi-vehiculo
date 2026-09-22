@@ -8,7 +8,10 @@
 // bg-box-section — user preferred it flat here specifically.
 export function FounderQuote() {
   return (
-    <section className="flex min-h-screen w-full snap-start flex-col justify-center bg-surface-2 px-4 sm:px-6">
+    <section
+      id="testimonios"
+      className="flex min-h-screen w-full scroll-mt-20 snap-start flex-col justify-center bg-surface-2 px-4 sm:px-6"
+    >
       <figure className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 rounded-[2rem] bg-box px-6 py-16 text-center text-box-title sm:px-16">
         {/* Placeholder for the founder's photo — pending asset, not built yet.
             When available: <Image src="/juanse.jpg" alt="" width={96} height={96} className="rounded-full" /> */}
