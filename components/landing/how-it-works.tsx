@@ -1,3 +1,5 @@
+import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
+
 type Step = {
   number: string;
   title: string;
@@ -51,6 +53,9 @@ export function HowItWorks() {
               <p className="text-base text-box-desc">{step.body}</p>
             </div>
           ))}
+        </div>
+        <div className="self-center">
+          <CreateVehicleLink />
         </div>
       </div>
     </section>
