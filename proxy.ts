@@ -1,8 +1,14 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { HERO_VARIANTS } from "@/lib/landing/hero-variants";
 
-// Public routes: the landing page and the guest vehicle wizard. Everything
-// else under the app (dashboard, etc.) requires authentication.
-const isPublicRoute = createRouteMatcher(["/", "/nuevo"]);
+// Public routes: the landing page (and its per-vehicle variants) and the guest
+// vehicle wizard. Everything else under the app (dashboard, etc.) requires
+// authentication.
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/nuevo",
+  ...HERO_VARIANTS.map((variant) => `/${variant.slug}`),
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {

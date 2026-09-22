@@ -1,5 +1,5 @@
 import Link, { type LinkProps } from "next/link";
-import { type ReactNode } from "react";
+import { type MouseEvent, type ReactNode } from "react";
 
 const SIZE_CLASSES = {
   sm: "px-4 py-2",
@@ -18,6 +18,11 @@ type LinkButtonProps = LinkProps & {
    * so this link doesn't override the inherited size.
    */
   bare?: boolean;
+  // Not part of next/link's own LinkProps type, but Link forwards it to the
+  // underlying <a> — needed by callers that intercept the click (e.g.
+  // lib/landing/smooth-scroll's scrollToHash) to smooth-scroll instead of
+  // navigating when the target is on the current page.
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
 export function LinkButton({
