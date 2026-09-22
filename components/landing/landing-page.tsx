@@ -54,11 +54,11 @@ export async function LandingPage({ variant }: LandingPageProps) {
           <div className="flex flex-col gap-2">
             <h2
               id="crear-title"
-              className="text-2xl font-black tracking-tight uppercase"
+              className="text-3xl font-black tracking-tight uppercase sm:text-4xl"
             >
               Creá tu <span className="text-primary">vehículo</span>
             </h2>
-            <p className="text-muted">
+            <p className="text-lg text-muted">
               Elegí el tipo, ponele nombre e indicá cuánto lleva usado.
             </p>
           </div>
