@@ -14,6 +14,7 @@ import {
   getMaintenanceTypeForVehicle,
   restoreMaintenanceType,
 } from "@/db/queries/maintenance-types";
+import { track } from "@/lib/analytics/server";
 import { nextPartStatus, type PartStatus } from "@/lib/validation/part";
 import {
   listMaintenanceLogsWithTypeForVehicle,
@@ -94,6 +95,9 @@ export async function archiveVehicleAction(
   }
 
   await archiveVehicle(vehicle.id, userId);
+
+  track("vehicle_archived", { vehicle_id: vehicle.id }, { userId });
+
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect("/dashboard");
@@ -127,6 +131,13 @@ export async function archiveMaintenanceTypeAction(
   }
 
   await archiveMaintenanceType(type.id, vehicle.id);
+
+  track(
+    "maintenance_type_archived",
+    { vehicle_id: vehicle.id, type_id: type.id },
+    { userId },
+  );
+
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   revalidatePath("/dashboard");
   return { status: "success" };
@@ -158,6 +169,13 @@ export async function restoreMaintenanceTypeAction(
   }
 
   await restoreMaintenanceType(type.id, vehicle.id);
+
+  track(
+    "maintenance_type_restored",
+    { vehicle_id: vehicle.id, type_id: type.id },
+    { userId },
+  );
+
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   revalidatePath("/dashboard");
   return { status: "success" };
@@ -198,6 +216,9 @@ export async function restoreVehicleAction(
   }
 
   await restoreVehicle(vehicle.id, userId);
+
+  track("vehicle_restored", { vehicle_id: vehicle.id }, { userId });
+
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect(`/dashboard/vehiculos/${vehicle.id}`);

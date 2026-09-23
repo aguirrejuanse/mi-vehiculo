@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
 import { UserEmail } from "@/components/layout/user-email";
+import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { SIGN_IN_PATH } from "@/lib/auth/routes";
 import { Toaster } from "@/components/ui/toast";
 import { SITE_URL, SITE_URL_ORIGIN } from "@/lib/site-url";
@@ -114,7 +115,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </Show>
             </nav>
           </header>
-          <main className="flex flex-1 flex-col">{children}</main>
+          <main className="flex flex-1 flex-col">
+            <PostHogProvider>{children}</PostHogProvider>
+          </main>
           <Toaster />
         </body>
       </html>

@@ -2,12 +2,14 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { createMaintenanceLog } from "@/db/queries/maintenance-logs";
 import { db } from "@/db";
-import { maintenanceTypes } from "@/db/schema";
+import { maintenanceLogs, maintenanceTypes } from "@/db/schema";
+import { computeNextDue } from "@/lib/maintenance/next-due";
+import { track } from "@/lib/analytics/server";
 import {
   maintenanceLogSchema,
   type MaintenanceLogInput,
@@ -58,6 +60,26 @@ export async function createMaintenanceLogAction(
     };
   }
 
+  const previousLogs = await db
+    .select({
+      performedAtValue: maintenanceLogs.performedAtValue,
+      performedAtDate: maintenanceLogs.performedAtDate,
+    })
+    .from(maintenanceLogs)
+    .where(
+      and(
+        eq(maintenanceLogs.vehicleId, vehicle.id),
+        eq(maintenanceLogs.maintenanceTypeId, maintenanceType.id),
+      ),
+    );
+
+  const nextDue = computeNextDue({
+    maintenanceType,
+    logs: previousLogs,
+    currentValue: parsed.data.performedAtValue,
+    now: new Date(parsed.data.performedAtDate),
+  });
+
   try {
     await createMaintenanceLog({
       vehicleId: vehicle.id,
@@ -72,6 +94,33 @@ export async function createMaintenanceLogAction(
       message: "No se pudo guardar el registro. Probá de nuevo.",
     };
   }
+
+  const daysOverdue =
+    nextDue.dateDue && nextDue.daysRemaining != null && nextDue.daysRemaining < 0
+      ? Math.ceil(Math.abs(nextDue.daysRemaining))
+      : null;
+  const usageOverdue =
+    nextDue.usageDue != null &&
+    nextDue.usageRemaining != null &&
+    nextDue.usageRemaining < 0
+      ? Math.ceil(Math.abs(nextDue.usageRemaining))
+      : null;
+
+  track(
+    "maintenance_log_created",
+    {
+      vehicle_id: vehicle.id,
+      maintenance_type_id: maintenanceType.id,
+      performed_at_value: parsed.data.performedAtValue,
+      computed_due_at: nextDue.dateDue?.toISOString() ?? null,
+      computed_due_value: nextDue.usageDue ?? null,
+      is_overdue: nextDue.status === "vencido",
+      days_overdue: daysOverdue,
+      usage_overdue: usageOverdue,
+      trigger: nextDue.trigger,
+    },
+    { userId },
+  );
 
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect(`/dashboard/vehiculos/${vehicle.id}`);

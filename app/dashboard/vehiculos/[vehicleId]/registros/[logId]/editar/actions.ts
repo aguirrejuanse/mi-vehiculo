@@ -8,6 +8,7 @@ import {
   getMaintenanceLogWithTypeForVehicle,
   updateMaintenanceLog,
 } from "@/db/queries/maintenance-logs";
+import { track } from "@/lib/analytics/server";
 import {
   maintenanceLogUpdateSchema,
   type MaintenanceLogUpdateInput,
@@ -72,6 +73,12 @@ export async function updateMaintenanceLogAction(
       message: "No se pudo guardar el registro. Probá de nuevo.",
     };
   }
+
+  track(
+    "maintenance_log_edited",
+    { vehicle_id: vehicle.id, log_id: log.id },
+    { userId },
+  );
 
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   revalidatePath(
