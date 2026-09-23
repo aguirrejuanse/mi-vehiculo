@@ -82,10 +82,7 @@ semana"). No se define acá para no mezclar B2C y B2B prematuramente — ver
 - Toda nueva feature del roadmap debería poder explicar qué fila de la
   tabla de arriba mueve, o si crea un evento nuevo que todavía no está
   medido.
-- Todavía no hay instrumentación de analytics en el código — esto es un
-  marco de referencia, no un dashboard. Cuando se decida instrumentar
-  (ej. PostHog, Vercel Analytics), este documento es el punto de partida
-  para qué eventos trackear primero: creación de vehículo, creación de
-  tipo de mantenimiento, y creación/edición de log (con timestamp de
-  vencimiento calculado al momento del log, para poder derivar "a tiempo"
-  vs "tarde" retroactivamente).
+- Analytics ya está instrumentado con PostHog. Ver `docs/analytics-events.md`
+  para el mapa de eventos y cómo cada uno alimenta las métricas de arriba.
+  Este documento sigue siendo el marco de producto; `docs/analytics-events.md`
+  es el dashboard de referencia para funnels e insights.
