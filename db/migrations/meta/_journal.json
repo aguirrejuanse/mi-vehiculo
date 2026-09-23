@@ -57,6 +57,13 @@
       "when": 1789858422867,
       "tag": "0007_outstanding_eternals",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790189303888,
+      "tag": "0008_talented_zodiak",
+      "breakpoints": true
     }
   ]
 }

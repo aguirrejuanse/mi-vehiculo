@@ -25,6 +25,7 @@ import {
 } from "@/lib/maintenance/next-due";
 import { nextPartStatus } from "@/lib/validation/part";
 import { AdvancePartButton } from "./advance-part-button";
+import { ArchiveVehicleButton } from "./archive-vehicle-button";
 import type { MaintenanceType, Part } from "@/db/schema";
 
 const STATUS_LABEL: Record<NextDueStatus, string> = {
@@ -85,6 +86,8 @@ export default async function VehicleDetailPage({
   const vehicle = await getVehicleForUser(vehicleId, userId);
 
   if (!vehicle) notFound();
+
+  const isArchived = vehicle.archivedAt != null;
 
   const [maintenanceTypes, logs, parts] = await Promise.all([
     listMaintenanceTypesForVehicle(vehicle.id),
@@ -156,13 +159,25 @@ export default async function VehicleDetailPage({
             <h1 className="truncate text-2xl font-black tracking-tight uppercase">
               {vehicle.name}
             </h1>
-            <Link
-              href={`/dashboard/vehiculos/${vehicle.id}/editar`}
-              aria-label={`Editar ${vehicle.name}`}
-              className="mt-1 shrink-0 rounded-lg p-1 text-muted transition-colors hover:text-foreground"
-            >
-              <PencilIcon className="size-4" />
-            </Link>
+            <div className="flex shrink-0 items-center gap-2">
+              {isArchived ? (
+                <span className="rounded-full border border-surface-border bg-surface-2 px-2 py-0.5 text-xs font-bold tracking-widest whitespace-nowrap text-muted uppercase">
+                  Archivado
+                </span>
+              ) : (
+                <Link
+                  href={`/dashboard/vehiculos/${vehicle.id}/editar`}
+                  aria-label={`Editar ${vehicle.name}`}
+                  className="mt-0.5 rounded-lg p-1 text-muted transition-colors hover:text-foreground"
+                >
+                  <PencilIcon className="size-4" />
+                </Link>
+              )}
+              <ArchiveVehicleButton
+                vehicleId={vehicle.id}
+                isArchived={isArchived}
+              />
+            </div>
           </div>
           <p className="text-sm text-muted">
             {TYPE_LABELS[vehicle.type]}
@@ -180,11 +195,13 @@ export default async function VehicleDetailPage({
       <Section
         title="Próximos mantenimientos"
         action={
-          <SectionAddLink
-            href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-          >
-            Mantenimiento
-          </SectionAddLink>
+          !isArchived && (
+            <SectionAddLink
+              href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
+            >
+              Mantenimiento
+            </SectionAddLink>
+          )
         }
       >
         {nextDueByType.length === 0 ? (
@@ -262,11 +279,13 @@ export default async function VehicleDetailPage({
       <Section
         title="Repuestos"
         action={
-          <SectionAddLink
-            href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
-          >
-            Repuesto
-          </SectionAddLink>
+          !isArchived && (
+            <SectionAddLink
+              href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
+            >
+              Repuesto
+            </SectionAddLink>
+          )
         }
       >
         {partsWithLinks.length === 0 ? (
@@ -322,11 +341,13 @@ export default async function VehicleDetailPage({
       <Section
         title="Historial"
         action={
-          <SectionAddLink
-            href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-          >
-            Registro
-          </SectionAddLink>
+          !isArchived && (
+            <SectionAddLink
+              href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
+            >
+              Registro
+            </SectionAddLink>
+          )
         }
       >
         {logs.length === 0 ? (
