@@ -6,7 +6,7 @@ import {
 } from "@/lib/landing/hero-variants";
 
 // Top-level routes that a variant slug must never shadow.
-const RESERVED_ROUTES = ["dashboard", "nuevo", "api", "sign-in", "sign-up"];
+const RESERVED_ROUTES = ["dashboard", "nuevo", "api", "sign-in", "sign-up", "ingresar"];
 
 describe("HERO_VARIANTS", () => {
   it("starts with the moto de enduro variant", () => {

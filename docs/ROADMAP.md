@@ -9,7 +9,7 @@ orden.
 ## V1 — Camino al lanzamiento
 
 Hoy no hay usuarios reales: el objetivo es terminar el producto y
-lanzarlo. Ejecutando de a PRs chicos sobre `master`.
+lanzarlo. Ejecutando de a PRs chicos: `feature → dev → master`.
 
 **Hecho**
 
@@ -26,20 +26,16 @@ lanzarlo. Ejecutando de a PRs chicos sobre `master`.
 
 **Pre-lanzamiento (en este orden)**
 
-7. ⏸️ **Nombre y dominio** (pospuesto, 2026-09-21): se sigue con
-   "Mi Vehículo" como nombre de trabajo y se renombra más adelante. No
-   bloquea la landing. `mivehiculo.com` está ocupado; a futuro podría
-   vivir bajo Andes Riders (subdominio). Descartados: `cuandotoca`,
-   `autofy`, `puestaapunto`, `elgaraje`, `motorcheck`. Candidatos si se
-   retoma (RDAP 2026-09-21): `fierrero` (`.com` y `.app` libres),
-   `fierreros.app`, `garagear.app`. Riesgos: "fierro" también es arma en
-   lunfardo; "garaje" se parece a Mi Garage. Pendiente: marcas
-   registradas, `.com.ar` y handles. "Vehículo" es término de flotas:
+7. ✅ **Nombre y dominio** (2026-09-23): "Mi Vehículo" queda como
+   nombre definitivo, dominio `mi-vehiculo.com` (Cloudflare; apex en
+   Vercel, `www` y `vercel.app` redirigen 308). `mivehiculo.com` y
+   `mivehiculo.com.ar` estaban ocupados. "Vehículo" es término de flotas:
    nadie lo busca así (SEO: usar moto/enduro/service en títulos).
-8. ⬜ **Preparar deploy**: dominio propio, instancia de producción de
-   Clerk (email-code-only sign-up + "Email verification code" en
-   Sign-in options), variables de entorno y rama de DB de producción,
-   páginas de términos y privacidad, metadata/OG, monitoreo de errores.
+8. 🟡 **Preparar deploy**: hecho dominio propio, instancia de producción
+   de Clerk (config clonada de dev), claves y rama de DB de producción
+   separadas por entorno, DMARC en modo monitor, CI con migraciones por
+   entorno. Falta: páginas de términos y privacidad, verificar
+   metadata/OG en prod, monitoreo de errores, DMARC a `p=quarantine`.
 9. ⬜ **Analytics**: instrumentar el funnel de `docs/PRODUCT.md`
    (visita → wizard iniciado → wizard completado → cuenta creada → primer
    mantenimiento). Sin esto no se puede iterar la landing.
