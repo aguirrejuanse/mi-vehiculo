@@ -32,7 +32,7 @@ export function SectionAddLink({
   return (
     <Link
       aria-label={`Nuevo ${children.toLowerCase()}`}
-      className="inline-flex shrink-0 items-center rounded-full border border-surface-border p-1.5 text-muted transition-colors hover:border-primary hover:text-primary sm:border-transparent sm:p-0 sm:text-xs sm:font-bold sm:tracking-widest sm:uppercase sm:hover:text-foreground"
+      className="-m-1.5 inline-flex shrink-0 items-center rounded-full border border-surface-border p-2.5 text-muted transition-colors hover:border-primary hover:text-primary sm:m-0 sm:border-transparent sm:p-0 sm:text-xs sm:font-bold sm:tracking-widest sm:uppercase sm:hover:text-foreground"
       {...props}
     >
       <PlusIcon className="size-4 sm:hidden" />

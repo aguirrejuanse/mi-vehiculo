@@ -11,7 +11,7 @@ export function ChipLink({ active, count, children, ...props }: ChipLinkProps) {
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase transition-colors ${
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2.5 text-xs font-bold tracking-widest uppercase transition-colors ${
         active
           ? "border-primary bg-primary-soft text-primary"
           : "border-surface-border bg-surface text-muted hover:text-foreground"
@@ -19,7 +19,9 @@ export function ChipLink({ active, count, children, ...props }: ChipLinkProps) {
       {...props}
     >
       {children}
-      {count != null && <span className="font-semibold">{count}</span>}
+      {count != null && count > 0 && (
+        <span className="font-semibold">{count}</span>
+      )}
     </Link>
   );
 }

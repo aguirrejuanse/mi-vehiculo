@@ -45,6 +45,9 @@ export async function updateMaintenanceLogAction(
   if (!vehicle) {
     return { status: "error", message: "No encontramos ese vehículo." };
   }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
 
   const log = await getMaintenanceLogWithTypeForVehicle(
     parsed.data.logId,

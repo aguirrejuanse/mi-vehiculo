@@ -38,6 +38,9 @@ export async function updateVehicleAction(
   if (!vehicle) {
     return { status: "error", message: "No encontramos ese vehículo." };
   }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
 
   try {
     await updateVehicle(vehicle.id, userId, {
