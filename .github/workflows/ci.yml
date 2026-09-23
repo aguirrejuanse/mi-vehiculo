@@ -1,0 +1,67 @@
+name: CI
+
+# Branch flow: feature/* → dev → master.
+# - Every PR runs the checks.
+# - A push to dev/master (i.e. a merge) runs the checks, then applies pending
+#   Drizzle migrations to that branch's Neon database.
+# The Next.js build itself is not run here: Vercel already builds every PR and
+# push, so a second build would only duplicate that work.
+on:
+  pull_request:
+  push:
+    branches: [dev, master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      # `next typegen` generates the route types (LayoutProps, PageProps…)
+      # that `tsc` needs; they aren't committed.
+      - run: pnpm exec next typegen
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm test
+
+  migrate:
+    name: Migrate database (${{ github.ref_name }})
+    needs: checks
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # GitHub Environments "dev" and "production" each hold their own
+    # DATABASE_URL secret, pointing at the matching Neon branch.
+    environment: ${{ github.ref_name == 'master' && 'production' || 'dev' }}
+    # Never run two migrations against the same database at once, and never
+    # cancel one halfway through.
+    concurrency:
+      group: migrate-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
