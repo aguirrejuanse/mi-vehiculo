@@ -5,6 +5,18 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: "/sign-in", destination: "/ingresar", permanent: true }];
   },
+
+  // Proxy PostHog ingestion through our own domain to avoid ad blockers.
+  async rewrites() {
+    const host =
+      process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
+    return [
+      {
+        source: "/_posthog/:path*",
+        destination: `${host}/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
