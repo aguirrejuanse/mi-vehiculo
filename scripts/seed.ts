@@ -82,7 +82,7 @@ async function main() {
   }
 
   async function addVehicle(
-    input: typeof vehicles.$inferInsert,
+    input: Omit<typeof vehicles.$inferInsert, "userId">,
   ): Promise<Vehicle> {
     const [v] = await db
       .insert(vehicles)
@@ -286,6 +286,20 @@ async function main() {
   });
   await addLog(suran.id, suranAceite.id, 75000, monthsAgo(4));
 
+  const raptor = await addVehicle({
+    name: "Ford Raptor",
+    type: "auto",
+    metricUnit: "km",
+    currentValue: "62000",
+    usageRatePerWeek: "250",
+  });
+  const raptorAceite = await addType(raptor.id, {
+    name: "Cambio de aceite",
+    intervalValue: "10000",
+  });
+  await addLog(raptor.id, raptorAceite.id, 53000, monthsAgo(3));
+  // due 63000, remaining 1000 → ratio 0.1 → PRONTO.
+
   // ── Moto secundaria, bici, monopatín ──
   const yamaha = await addVehicle({
     name: "Yamaha FZ 150",
@@ -319,6 +333,51 @@ async function main() {
     status: "instalado",
   });
 
+  // Resto de subtypes de bici — pueblan el grupo en el dashboard.
+  const enduro = await addVehicle({
+    name: "Santa Cruz Nomad",
+    type: "bicicleta",
+    subtype: "bici_enduro",
+    metricUnit: "km",
+    currentValue: "800",
+  });
+  const enduroSusp = await addType(enduro.id, {
+    name: "Service suspensión",
+    intervalCalendarValue: 6,
+    intervalCalendarUnit: "meses",
+  });
+  await addLog(enduro.id, enduroSusp.id, 400, monthsAgo(7));
+  // ~1 month overdue → VENCIDO.
+
+  const dh = await addVehicle({
+    name: "Commencal Supreme DH",
+    type: "bicicleta",
+    subtype: "bici_downhill",
+    metricUnit: "km",
+    currentValue: "300",
+  });
+  const dhFrenos = await addType(dh.id, {
+    name: "Pastillas de freno",
+    intervalValue: "500",
+  });
+  await addLog(dh.id, dhFrenos.id, 50, monthsAgo(4));
+  // due 550, remaining 250 → OK.
+
+  const levo = await addVehicle({
+    name: "Specialized Turbo Levo",
+    type: "bicicleta",
+    subtype: "bici_electrica",
+    metricUnit: "km",
+    currentValue: "1500",
+  });
+  const levoMotor = await addType(levo.id, {
+    name: "Service motor/batería",
+    intervalCalendarValue: 12,
+    intervalCalendarUnit: "meses",
+  });
+  await addLog(levo.id, levoMotor.id, 600, monthsAgo(10));
+  // ~2 months left of 12 → OK.
+
   const monopatin = await addVehicle({
     name: "Xiaomi Pro 2",
     type: "monopatin",
@@ -350,7 +409,7 @@ async function main() {
   await addPart(vieja.id, { name: "Cubre puños", status: "instalado" });
 
   console.log(`Seed OK para ${userId}:`);
-  console.log("  6 vehículos activos + 1 archivado");
+  console.log("  10 vehículos activos + 1 archivado");
   console.log("  Husky: 8 tipos (vencido ×2, pronto ×2, ok, sin registro, sin intervalo, archivado) + 16 logs + repuestos");
   console.log("  Probá: /dashboard (grupos, dots, archivados) → detalle Husky → Cargar más → gestión de tipos");
 }
