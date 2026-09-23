@@ -57,7 +57,10 @@ export function MaintenanceTypeForm({
         error={fieldErrors?.intervalValue}
       />
 
-      <div className="flex gap-3">
+      {/* Vertical below md (labels+inputs overflow side-by-side on narrow
+          screens); items-end aligns the inputs when the left label wraps to
+          two lines and "Unidad" stays on one. */}
+      <div className="flex flex-col gap-5 md:flex-row md:items-end md:gap-3">
         <div className="flex-1">
           <TextField
             label="Intervalo por calendario (opcional)"
