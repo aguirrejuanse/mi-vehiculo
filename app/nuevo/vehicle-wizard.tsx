@@ -24,6 +24,7 @@ import {
   type VehicleType,
 } from "@/lib/validation/vehicle";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
+import { track } from "@/lib/analytics/client";
 import { WizardProgress } from "@/components/ui/wizard-progress";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
@@ -107,6 +108,7 @@ export function VehicleWizard() {
       return;
     }
     setStepErrors(null);
+    track("wizard_step_completed", { step: stepId });
 
     const currentIndex = steps.indexOf(stepId);
     const nextStep = steps[currentIndex + 1];
@@ -144,6 +146,13 @@ export function VehicleWizard() {
       formAction(new FormData(formRef.current!));
     });
   }, [pendingSave, isSignedIn, formAction]);
+
+  const wizardStartedRef = useRef(false);
+  useEffect(() => {
+    if (!isLoaded || wizardStartedRef.current) return;
+    wizardStartedRef.current = true;
+    track("wizard_started", { is_signed_in: Boolean(isSignedIn) });
+  }, [isLoaded, isSignedIn]);
 
   // A form with a single visible text input performs implicit submission on
   // Enter even with no submit button in the accessibility tree — real
@@ -208,7 +217,10 @@ export function VehicleWizard() {
           confirmPhase={confirmPhase}
           actionRef={guestPrimaryActionRef}
           onEmailSent={() => setConfirmPhase("code")}
-          onVerified={() => setPendingSave(true)}
+          onVerified={() => {
+            track("account_created");
+            setPendingSave(true);
+          }}
         />
       ) : (
         <div className="flex items-center gap-3">
