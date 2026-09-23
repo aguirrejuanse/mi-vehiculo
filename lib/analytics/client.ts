@@ -1,9 +1,12 @@
 import posthog from "posthog-js";
 
+const environment =
+  process.env.NEXT_PUBLIC_POSTHOG_ENV ?? process.env.NODE_ENV ?? "unknown";
+
 export function track(event: string, properties?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
-  posthog.capture(event, properties);
+  posthog.capture(event, { ...(properties ?? {}), environment });
 }
 
 export function identify(userId: string, properties?: Record<string, unknown>) {

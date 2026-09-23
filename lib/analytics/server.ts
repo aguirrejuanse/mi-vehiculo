@@ -7,6 +7,9 @@ const analytics = key
   ? new PostHog(key, { host: host || "https://us.i.posthog.com" })
   : null;
 
+const environment =
+  process.env.NEXT_PUBLIC_POSTHOG_ENV ?? process.env.NODE_ENV ?? "unknown";
+
 export function track(
   event: string,
   properties?: Record<string, unknown>,
@@ -16,6 +19,6 @@ export function track(
   analytics.capture({
     distinctId: options?.userId ?? "anonymous",
     event,
-    properties,
+    properties: { ...(properties ?? {}), environment },
   });
 }
