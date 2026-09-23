@@ -150,35 +150,38 @@ export default async function VehicleDetailPage({
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-10">
       <BackLink href="/dashboard">Tus vehículos</BackLink>
 
-      <Card padding="md" className="flex items-start gap-4">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-          <VehicleTypeIcon type={vehicle.type} className="size-6" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h1 className="truncate text-2xl font-black tracking-tight uppercase">
-              {vehicle.name}
-            </h1>
-            <div className="flex shrink-0 items-center gap-2">
-              {isArchived ? (
-                <span className="rounded-full border border-surface-border bg-surface-2 px-2 py-0.5 text-xs font-bold tracking-widest whitespace-nowrap text-muted uppercase">
-                  Archivado
-                </span>
-              ) : (
-                <Link
-                  href={`/dashboard/vehiculos/${vehicle.id}/editar`}
-                  aria-label={`Editar ${vehicle.name}`}
-                  className="mt-0.5 rounded-lg p-1 text-muted transition-colors hover:text-foreground"
-                >
-                  <PencilIcon className="size-4" />
-                </Link>
-              )}
-              <ArchiveVehicleButton
-                vehicleId={vehicle.id}
-                isArchived={isArchived}
-              />
-            </div>
+      <Card padding="md" className="flex flex-col gap-4">
+        {/* Toolbar row: icon left, actions right. Keeping actions out of the
+            name row gives the vehicle name the card's full width — a shared
+            row crushed it to a few characters on narrow screens. */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+            <VehicleTypeIcon type={vehicle.type} className="size-6" />
           </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {isArchived ? (
+              <span className="rounded-full border border-surface-border bg-surface-2 px-2 py-0.5 text-xs font-bold tracking-widest whitespace-nowrap text-muted uppercase">
+                Archivado
+              </span>
+            ) : (
+              <Link
+                href={`/dashboard/vehiculos/${vehicle.id}/editar`}
+                aria-label={`Editar ${vehicle.name}`}
+                className="rounded-lg p-1 text-muted transition-colors hover:text-foreground"
+              >
+                <PencilIcon className="size-4" />
+              </Link>
+            )}
+            <ArchiveVehicleButton
+              vehicleId={vehicle.id}
+              isArchived={isArchived}
+            />
+          </div>
+        </div>
+        <div>
+          <h1 className="text-2xl font-black tracking-tight uppercase wrap-anywhere">
+            {vehicle.name}
+          </h1>
           <p className="text-sm text-muted">
             {TYPE_LABELS[vehicle.type]}
             {vehicle.subtype ? ` · ${SUBTYPE_LABELS[vehicle.subtype]}` : ""}
