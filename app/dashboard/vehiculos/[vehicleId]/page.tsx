@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
-import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-logs";
+import {
+  listMaintenanceLogsForVehicle,
+  listMaintenanceLogsWithTypeForVehicle,
+  LOGS_PAGE_SIZE,
+} from "@/db/queries/maintenance-logs";
 import { listPartsForVehicle } from "@/db/queries/parts";
 import { SUBTYPE_LABELS, TYPE_LABELS } from "@/lib/validation/vehicle";
 import { formatDateUTC, formatMetric } from "@/lib/format";
@@ -25,7 +29,10 @@ import {
 } from "@/lib/maintenance/next-due";
 import { nextPartStatus } from "@/lib/validation/part";
 import { AdvancePartButton } from "./advance-part-button";
+import { ArchiveTypeButton } from "./archive-type-button";
 import { ArchiveVehicleButton } from "./archive-vehicle-button";
+import { LoadMoreLogs } from "./load-more-logs";
+import { LogCard } from "./log-card";
 import type { MaintenanceType, Part } from "@/db/schema";
 
 const STATUS_LABEL: Record<NextDueStatus, string> = {
@@ -76,6 +83,32 @@ const PART_ADVANCE_LABEL: Record<Part["status"], string> = {
   instalado: "",
 };
 
+const CALENDAR_UNIT_LABEL: Record<string, string> = {
+  dias: "días",
+  meses: "meses",
+};
+
+// "Cada 5000 km · cada 6 meses" / "Sin intervalo" — the management list shows
+// the configured cadence, not the computed next-due (that's "Próximos").
+function intervalSummary(
+  type: MaintenanceType,
+  metricUnit: string,
+): string {
+  const parts: string[] = [];
+  if (type.intervalValue != null) {
+    parts.push(`cada ${formatMetric(Number(type.intervalValue))} ${metricUnit}`);
+  }
+  if (
+    type.intervalCalendarValue != null &&
+    type.intervalCalendarUnit != null
+  ) {
+    parts.push(
+      `cada ${type.intervalCalendarValue} ${CALENDAR_UNIT_LABEL[type.intervalCalendarUnit] ?? type.intervalCalendarUnit}`,
+    );
+  }
+  return parts.length > 0 ? parts.join(" · ") : "Sin intervalo";
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function VehicleDetailPage({
@@ -94,14 +127,32 @@ export default async function VehicleDetailPage({
 
   const isArchived = vehicle.archivedAt != null;
 
-  const [maintenanceTypes, logs, parts] = await Promise.all([
-    listMaintenanceTypesForVehicle(vehicle.id),
-    listMaintenanceLogsWithTypeForVehicle(vehicle.id),
+  // includeArchived: the "Mantenimientos" management section lists every type
+  // (with an archived badge + restore), while next-due and create-selects only
+  // ever see the active subset below.
+  // Two log fetches on purpose: `logsPage` (with type join + edit count) feeds
+  // the rendered historial page; `allLogs` (no join, slim) feeds next-due and
+  // part→log links, which must see EVERY log regardless of pagination.
+  const [allMaintenanceTypes, logsPage, allLogs, parts] = await Promise.all([
+    listMaintenanceTypesForVehicle(vehicle.id, true),
+    listMaintenanceLogsWithTypeForVehicle(vehicle.id, {
+      limit: LOGS_PAGE_SIZE + 1,
+    }),
+    listMaintenanceLogsForVehicle(vehicle.id),
     listPartsForVehicle(vehicle.id),
   ]);
 
-  const logsByTypeId = new Map<string, typeof logs>();
-  for (const log of logs) {
+  // +1 row is the hasMore probe: it tells the client whether to offer
+  // "Cargar más" without a separate COUNT query.
+  const hasMoreLogs = logsPage.length > LOGS_PAGE_SIZE;
+  const logs = logsPage.slice(0, LOGS_PAGE_SIZE);
+
+  const maintenanceTypes = allMaintenanceTypes.filter(
+    (t) => t.archivedAt == null,
+  );
+
+  const logsByTypeId = new Map<string, typeof allLogs>();
+  for (const log of allLogs) {
     const bucket = logsByTypeId.get(log.maintenanceTypeId);
     if (bucket) {
       bucket.push(log);
@@ -128,19 +179,28 @@ export default async function VehicleDetailPage({
   // never both. Both target sets belong to this same vehicle and are already
   // in memory — the join is done here to avoid a round-trip and any
   // `with:` relation query (same strategy as logsByTypeId above).
-  const typeById = new Map(maintenanceTypes.map((type) => [type.id, type]));
-  const logById = new Map(logs.map((log) => [log.id, log]));
+  const typeById = new Map(
+    allMaintenanceTypes.map((type) => [type.id, type]),
+  );
+  const logById = new Map(allLogs.map((log) => [log.id, log]));
 
   const partsWithLinks = parts
-    .map((part) => ({
-      part,
-      linkedType: part.maintenanceTypeId
-        ? (typeById.get(part.maintenanceTypeId) ?? null)
-        : null,
-      linkedLog: part.maintenanceLogId
+    .map((part) => {
+      const linkedLog = part.maintenanceLogId
         ? (logById.get(part.maintenanceLogId) ?? null)
-        : null,
-    }))
+        : null;
+      return {
+        part,
+        linkedType: part.maintenanceTypeId
+          ? (typeById.get(part.maintenanceTypeId) ?? null)
+          : null,
+        // `allLogs` has no join — resolve the log's type name via typeById.
+        linkedLog,
+        linkedLogType: linkedLog
+          ? (typeById.get(linkedLog.maintenanceTypeId) ?? null)
+          : null,
+      };
+    })
     .sort((a, b) => {
       const statusDiff =
         PART_STATUS_ORDER[a.part.status] - PART_STATUS_ORDER[b.part.status];
@@ -314,7 +374,7 @@ export default async function VehicleDetailPage({
           </EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
-            {partsWithLinks.map(({ part, linkedType, linkedLog }) => (
+            {partsWithLinks.map(({ part, linkedType, linkedLog, linkedLogType }) => (
               <Card as="li" key={part.id} className="flex flex-col gap-1">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                   <p className="font-bold">{part.name}</p>
@@ -333,11 +393,14 @@ export default async function VehicleDetailPage({
                   </div>
                 </div>
                 {linkedType && (
-                  <p className="text-sm text-muted">Para: {linkedType.name}</p>
+                  <p className="text-sm text-muted">
+                    Para: {linkedType.name}
+                    {linkedType.archivedAt ? " (archivado)" : ""}
+                  </p>
                 )}
                 {linkedLog && (
                   <p className="text-sm text-muted">
-                    De: {linkedLog.maintenanceType.name} ·{" "}
+                    De: {linkedLogType?.name ?? "Mantenimiento"} ·{" "}
                     {formatDateUTC(linkedLog.performedAtDate)}
                   </p>
                 )}
@@ -387,36 +450,90 @@ export default async function VehicleDetailPage({
         ) : (
           <ul className="flex flex-col gap-3">
             {logs.map((log) => (
-              <Card as="li" key={log.id} className="flex flex-col gap-1">
-                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                  <p className="font-bold">{log.maintenanceType.name}</p>
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs text-muted">
-                      {formatDateUTC(log.performedAtDate)}
-                    </p>
-                    {log.editCount > 0 && (
-                      <SectionLink
-                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial${suffix}`}
-                      >
-                        Editado ({log.editCount})
-                      </SectionLink>
-                    )}
-                    {!isArchived && (
-                      <SectionLink
-                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar${suffix}`}
-                      >
-                        Editar
-                      </SectionLink>
-                    )}
-                  </div>
+              <LogCard
+                key={log.id}
+                log={log}
+                vehicleId={vehicle.id}
+                metricUnit={vehicle.metricUnit}
+                suffix={suffix}
+                isArchived={isArchived}
+              />
+            ))}
+            {hasMoreLogs && (
+              <LoadMoreLogs
+                vehicleId={vehicle.id}
+                metricUnit={vehicle.metricUnit}
+                suffix={suffix}
+                isArchived={isArchived}
+                initialOffset={LOGS_PAGE_SIZE}
+              />
+            )}
+          </ul>
+        )}
+      </Section>
+
+      <Section
+        title="Tipos de mantenimiento"
+        action={
+          !isArchived && (
+            <SectionAddLink
+              href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo${suffix}`}
+            >
+              Tipo
+            </SectionAddLink>
+          )
+        }
+      >
+        {allMaintenanceTypes.length === 0 ? (
+          <EmptyState>
+            <p className="text-sm text-muted">
+              Todavía no cargaste mantenimientos para este vehículo.
+            </p>
+            {!isArchived && (
+              <LinkButton
+                href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo${suffix}`}
+                size="md"
+              >
+                Cargar mantenimiento
+              </LinkButton>
+            )}
+          </EmptyState>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {allMaintenanceTypes.map((type) => (
+              <li key={type.id}>
+                <div className="flex items-center gap-3 rounded-2xl border border-surface-border bg-surface px-4 py-3">
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate font-bold">{type.name}</span>
+                      {type.archivedAt != null && (
+                        <span className="shrink-0 rounded-full border border-surface-border px-2 py-0.5 text-[10px] font-bold tracking-widest whitespace-nowrap text-muted uppercase">
+                          Archivado
+                        </span>
+                      )}
+                    </span>
+                    <span className="truncate text-sm text-muted">
+                      {intervalSummary(type, vehicle.metricUnit)}
+                    </span>
+                  </span>
+                  {!isArchived && (
+                    <div className="flex shrink-0 items-center gap-3">
+                      {type.archivedAt == null && (
+                        <SectionLink
+                          href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/${type.id}/editar${suffix}`}
+                        >
+                          Editar
+                        </SectionLink>
+                      )}
+                      <ArchiveTypeButton
+                        typeId={type.id}
+                        vehicleId={vehicle.id}
+                        isArchived={type.archivedAt != null}
+                      />
+                    </div>
+                  )}
                 </div>
-                <p className="text-sm text-muted">
-                  {formatMetric(log.performedAtValue)} {vehicle.metricUnit}
-                </p>
-                {log.notes && (
-                  <p className="text-sm text-foreground">{log.notes}</p>
-                )}
-              </Card>
+              </li>
             ))}
           </ul>
         )}

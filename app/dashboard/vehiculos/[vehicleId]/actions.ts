@@ -9,7 +9,17 @@ import {
   restoreVehicle,
 } from "@/db/queries/vehicles";
 import { getPartForVehicle, updatePartStatus } from "@/db/queries/parts";
+import {
+  archiveMaintenanceType,
+  getMaintenanceTypeForVehicle,
+  restoreMaintenanceType,
+} from "@/db/queries/maintenance-types";
 import { nextPartStatus, type PartStatus } from "@/lib/validation/part";
+import {
+  listMaintenanceLogsWithTypeForVehicle,
+  LOGS_PAGE_SIZE,
+  type MaintenanceLogWithTypeAndEditCount,
+} from "@/db/queries/maintenance-logs";
 import type { ActionState } from "@/lib/validation/action-state";
 
 const STALE_MESSAGE = "Ese repuesto ya cambió de estado, refrescá la página.";
@@ -87,6 +97,88 @@ export async function archiveVehicleAction(
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect("/dashboard");
+}
+
+// Same archived-guard reasoning as vehicles: archiving a type is soft-delete —
+// its logs and linked parts keep their data; only next-due and selects hide it.
+export async function archiveMaintenanceTypeAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  const vehicleId = formData.get("vehicleId");
+  const typeId = formData.get("typeId");
+
+  if (typeof vehicleId !== "string" || typeof typeId !== "string") {
+    return { status: "error", message: "Solicitud inválida." };
+  }
+
+  const vehicle = await getVehicleForUser(vehicleId, userId);
+  if (!vehicle) {
+    return { status: "error", message: "No encontramos ese vehículo." };
+  }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
+
+  const type = await getMaintenanceTypeForVehicle(typeId, vehicle.id);
+  if (!type) {
+    return { status: "error", message: "No encontramos ese mantenimiento." };
+  }
+
+  await archiveMaintenanceType(type.id, vehicle.id);
+  revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
+  revalidatePath("/dashboard");
+  return { status: "success" };
+}
+
+export async function restoreMaintenanceTypeAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  const vehicleId = formData.get("vehicleId");
+  const typeId = formData.get("typeId");
+
+  if (typeof vehicleId !== "string" || typeof typeId !== "string") {
+    return { status: "error", message: "Solicitud inválida." };
+  }
+
+  const vehicle = await getVehicleForUser(vehicleId, userId);
+  if (!vehicle) {
+    return { status: "error", message: "No encontramos ese vehículo." };
+  }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
+
+  const type = await getMaintenanceTypeForVehicle(typeId, vehicle.id);
+  if (!type) {
+    return { status: "error", message: "No encontramos ese mantenimiento." };
+  }
+
+  await restoreMaintenanceType(type.id, vehicle.id);
+  revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
+  revalidatePath("/dashboard");
+  return { status: "success" };
+}
+
+// Data-fetching action for the "Cargar más" button: returns serialized log
+// pages — offset pagination keeps it simple and stable enough for an
+// append-mostly list (new logs land on top, never inside loaded pages).
+export async function loadMoreMaintenanceLogsAction(
+  vehicleId: string,
+  offset: number,
+): Promise<{ logs: MaintenanceLogWithTypeAndEditCount[]; hasMore: boolean }> {
+  const userId = await requireUserId();
+  const vehicle = await getVehicleForUser(vehicleId, userId);
+  if (!vehicle) return { logs: [], hasMore: false };
+
+  const logs = await listMaintenanceLogsWithTypeForVehicle(vehicle.id, {
+    limit: LOGS_PAGE_SIZE + 1,
+    offset,
+  });
+  return { logs: logs.slice(0, LOGS_PAGE_SIZE), hasMore: logs.length > LOGS_PAGE_SIZE };
 }
 
 export async function restoreVehicleAction(
