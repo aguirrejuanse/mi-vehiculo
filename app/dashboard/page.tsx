@@ -67,6 +67,16 @@ function worstVehicleStatus(
   return worst ? worst.status : null;
 }
 
+// Builds /dashboard URLs keeping the two filter axes independent:
+// ?tipo=<type> (group filter) and ?ver=archivados (active vs archived pool).
+function dashboardHref(type: VehicleType | null, archived: boolean): string {
+  const params = new URLSearchParams();
+  if (type) params.set("tipo", type);
+  if (archived) params.set("ver", "archivados");
+  const qs = params.toString();
+  return qs ? `/dashboard?${qs}` : "/dashboard";
+}
+
 // This page reads live, per-user data (Clerk auth + Neon query) on every
 // request, so it must not be statically prerendered at build time.
 export const dynamic = "force-dynamic";
@@ -82,18 +92,29 @@ export default async function DashboardPage({
     return null;
   }
 
-  const { tipo } = await searchParams;
+  const { tipo, ver } = await searchParams;
   const activeType = VEHICLE_TYPES.includes(tipo as VehicleType)
     ? (tipo as VehicleType)
     : null;
+  const showArchived = ver === "archivados";
 
-  const myVehicles = await listVehiclesForUser(userId);
+  // includeArchived=true so the "Archivados" chip can show its count; the
+  // visible pool is then filtered to one side of the split.
+  const allVehicles = await listVehiclesForUser(userId, true);
+  const archivedCount = allVehicles.filter((v) => v.archivedAt != null).length;
+  const pool = allVehicles.filter((v) =>
+    showArchived ? v.archivedAt != null : v.archivedAt == null,
+  );
 
-  const vehicleIds = myVehicles.map((v) => v.id);
-  const [allTypes, allLogs] = await Promise.all([
-    listMaintenanceTypesForVehicles(vehicleIds),
-    listMaintenanceLogsForVehicles(vehicleIds),
-  ]);
+  // Status dots only make sense for the active pool (an archived vehicle's
+  // next-due is frozen) — skip the two batch queries entirely in that view.
+  const vehicleIds = pool.map((v) => v.id);
+  const [allTypes, allLogs] = !showArchived
+    ? await Promise.all([
+        listMaintenanceTypesForVehicles(vehicleIds),
+        listMaintenanceLogsForVehicles(vehicleIds),
+      ])
+    : [[], []];
 
   const logsByTypeId = new Map<string, MaintenanceLog[]>();
   for (const log of allLogs) {
@@ -109,7 +130,7 @@ export default async function DashboardPage({
   // user actually has come first, empty types sink to the bottom.
   const groups = VEHICLE_TYPES.map((type) => ({
     type,
-    vehicles: myVehicles
+    vehicles: pool
       .filter((v) => v.type === type)
       .sort((a, b) => a.name.localeCompare(b.name, "es")),
   })).sort((a, b) => b.vehicles.length - a.vehicles.length);
@@ -135,7 +156,7 @@ export default async function DashboardPage({
         </LinkButton>
       </div>
 
-      {myVehicles.length === 0 ? (
+      {allVehicles.length === 0 ? (
         <EmptyState>
           <p className="text-muted">Todavía no tenés vehículos cargados.</p>
           <LinkButton href="/dashboard/vehiculos/nuevo">
@@ -146,23 +167,40 @@ export default async function DashboardPage({
         <>
           <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1">
             <ChipLink
-              href="/dashboard"
+              href={dashboardHref(null, showArchived)}
               active={!activeType}
-              count={myVehicles.length}
+              count={pool.length}
             >
               Todos
             </ChipLink>
             {groups.map((group) => (
               <ChipLink
                 key={group.type}
-                href={`/dashboard?tipo=${group.type}`}
+                href={dashboardHref(group.type, showArchived)}
                 active={activeType === group.type}
                 count={group.vehicles.length}
               >
                 {TYPE_GROUP_LABELS[group.type]}
               </ChipLink>
             ))}
+            {(archivedCount > 0 || showArchived) && (
+              <ChipLink
+                href={dashboardHref(activeType, !showArchived)}
+                active={showArchived}
+                count={archivedCount}
+              >
+                Archivados
+              </ChipLink>
+            )}
           </div>
+
+          {pool.length === 0 ? (
+            <EmptyState>
+              <p className="text-sm text-muted">
+                No tenés vehículos archivados.
+              </p>
+            </EmptyState>
+          ) : null}
 
           {visibleGroups.map((group) => (
             <Section key={group.type} title={TYPE_GROUP_LABELS[group.type]}>
@@ -170,11 +208,13 @@ export default async function DashboardPage({
                 <EmptyState>
                   <p className="text-sm text-muted">
                     No tenés {TYPE_GROUP_LABELS[group.type].toLowerCase()}{" "}
-                    cargados.
+                    {showArchived ? "archivados" : "cargados"}.
                   </p>
-                  <LinkButton href="/dashboard/vehiculos/nuevo" size="md">
-                    Cargar {TYPE_LABELS[group.type].toLowerCase()}
-                  </LinkButton>
+                  {!showArchived && (
+                    <LinkButton href="/dashboard/vehiculos/nuevo" size="md">
+                      Cargar {TYPE_LABELS[group.type].toLowerCase()}
+                    </LinkButton>
+                  )}
                 </EmptyState>
               ) : (
                 <ul className="flex flex-col gap-2">
@@ -199,7 +239,7 @@ export default async function DashboardPage({
                           title={vehicle.name}
                           meta={`${vehicle.subtype ? `${SUBTYPE_LABELS[vehicle.subtype]} · ` : ""}${formatMetric(vehicle.currentValue)} ${vehicle.metricUnit}`}
                           trailing={
-                            status ? (
+                            !showArchived && status ? (
                               <StatusDot
                                 tone={STATUS_DOT_TONE[status]}
                                 label={STATUS_DOT_LABEL[status]}
@@ -215,7 +255,7 @@ export default async function DashboardPage({
             </Section>
           ))}
 
-          {!activeType && emptyTypes.length > 0 && (
+          {!activeType && !showArchived && emptyTypes.length > 0 && (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-2xl border border-dashed border-surface-border px-4 py-3">
               <span className="text-xs font-bold tracking-widest text-muted uppercase">
                 Sumá:
