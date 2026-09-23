@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { vehicles, type NewVehicle, type Vehicle } from "@/db/schema";
 
@@ -18,8 +18,15 @@ export async function getVehicleForUser(
   return vehicle ?? null;
 }
 
-export async function listVehiclesForUser(userId: string): Promise<Vehicle[]> {
-  return db.select().from(vehicles).where(eq(vehicles.userId, userId));
+export async function listVehiclesForUser(
+  userId: string,
+  includeArchived: boolean = false,
+): Promise<Vehicle[]> {
+  const conditions = [eq(vehicles.userId, userId)];
+  if (!includeArchived) {
+    conditions.push(isNull(vehicles.archivedAt));
+  }
+  return db.select().from(vehicles).where(and(...conditions));
 }
 
 export async function updateVehicle(
@@ -33,4 +40,28 @@ export async function updateVehicle(
     .where(and(eq(vehicles.id, vehicleId), eq(vehicles.userId, userId)))
     .returning();
   return vehicle;
+}
+
+export async function archiveVehicle(
+  vehicleId: string,
+  userId: string,
+): Promise<Vehicle | null> {
+  const [vehicle] = await db
+    .update(vehicles)
+    .set({ archivedAt: new Date() })
+    .where(and(eq(vehicles.id, vehicleId), eq(vehicles.userId, userId)))
+    .returning();
+  return vehicle ?? null;
+}
+
+export async function restoreVehicle(
+  vehicleId: string,
+  userId: string,
+): Promise<Vehicle | null> {
+  const [vehicle] = await db
+    .update(vehicles)
+    .set({ archivedAt: null })
+    .where(and(eq(vehicles.id, vehicleId), eq(vehicles.userId, userId)))
+    .returning();
+  return vehicle ?? null;
 }
