@@ -38,6 +38,9 @@ export async function createPartAction(
   if (!vehicle) {
     return { status: "error", message: "No encontramos ese vehículo." };
   }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
 
   if (parsed.data.maintenanceTypeId) {
     const maintenanceType = await getMaintenanceTypeForVehicle(
