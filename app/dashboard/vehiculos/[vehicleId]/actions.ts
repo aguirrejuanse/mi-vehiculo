@@ -189,6 +189,10 @@ export async function loadMoreMaintenanceLogsAction(
   offset: number,
 ): Promise<{ logs: MaintenanceLogWithTypeAndEditCount[]; hasMore: boolean }> {
   const userId = await requireUserId();
+  // Client-controlled offset: reject negatives/NaN before they reach SQL.
+  if (!Number.isInteger(offset) || offset < 0) {
+    return { logs: [], hasMore: false };
+  }
   const vehicle = await getVehicleForUser(vehicleId, userId);
   if (!vehicle) return { logs: [], hasMore: false };
 

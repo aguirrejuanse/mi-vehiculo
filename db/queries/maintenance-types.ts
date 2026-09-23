@@ -5,6 +5,7 @@ import {
   type MaintenanceType,
   type NewMaintenanceType,
 } from "@/db/schema";
+import { idSchema } from "@/lib/validation/id";
 
 export async function createMaintenanceType(
   input: NewMaintenanceType,
@@ -105,6 +106,12 @@ export async function getMaintenanceTypeForVehicle(
   typeId: string,
   vehicleId: string,
 ): Promise<MaintenanceType | null> {
+  if (
+    !idSchema.safeParse(typeId).success ||
+    !idSchema.safeParse(vehicleId).success
+  ) {
+    return null;
+  }
   const [maintenanceType] = await db
     .select()
     .from(maintenanceTypes)
