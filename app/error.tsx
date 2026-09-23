@@ -5,10 +5,13 @@ import Link from "next/link";
 
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  // Unlike `reset` (clears the client boundary state without re-fetching),
+  // `retry` re-fetches and re-renders the segment — the one that actually
+  // recovers from a transient server-side failure (e.g. a Neon/Clerk blip).
+  retry: () => void;
 }) {
   useEffect(() => {
     // Log server-side; never render error.message in production (it can
@@ -18,12 +21,12 @@ export default function Error({
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-16 text-center">
-      <p className="text-sm font-bold tracking-widest text-primary uppercase">
+      <h1 className="text-6xl leading-none font-black tracking-tight text-primary md:text-8xl">
         Error
-      </p>
-      <h1 className="text-3xl leading-tight font-black tracking-tight uppercase md:text-4xl">
-        Algo salió mal.
       </h1>
+      <p className="text-2xl leading-tight font-black tracking-tight uppercase md:text-3xl">
+        Algo salió mal.
+      </p>
       <p className="max-w-md text-lg text-muted">
         Tuvimos un problema inesperado. Podés intentar de nuevo o volver al
         inicio.
@@ -31,7 +34,7 @@ export default function Error({
       <div className="flex flex-wrap items-center justify-center gap-4">
         <button
           type="button"
-          onClick={() => reset()}
+          onClick={() => retry()}
           className="cursor-pointer rounded-2xl bg-primary px-6 py-3 text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover"
         >
           Reintentar
