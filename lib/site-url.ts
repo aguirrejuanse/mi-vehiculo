@@ -16,7 +16,7 @@ function resolveSiteUrl(): string {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   }
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://mivehiculo.vercel.app";
+  return "https://mi-vehiculo.com";
 }
 
 export const SITE_URL = resolveSiteUrl();
@@ -33,6 +33,6 @@ export const SITE_URL_ORIGIN = (() => {
     console.error(
       `Invalid SITE_URL "${SITE_URL}" (check NEXT_PUBLIC_SITE_URL — it needs a scheme, e.g. "https://example.com"). Falling back to the production domain.`,
     );
-    return new URL("https://mivehiculo.vercel.app");
+    return new URL("https://mi-vehiculo.com");
   }
 })();
