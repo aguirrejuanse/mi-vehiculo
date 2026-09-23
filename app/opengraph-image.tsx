@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { BRAND_BOX, BRAND_PRIMARY } from "@/lib/brand";
 
 export const alt = "Mi Vehículo";
 export const size = { width: 1200, height: 630 };
@@ -18,7 +19,7 @@ export default function Image() {
           alignItems: "center",
           justifyContent: "center",
           gap: 24,
-          background: "#201b3d",
+          background: BRAND_BOX,
           color: "#f1eefb",
           fontFamily: "sans-serif",
         }}
@@ -31,7 +32,7 @@ export default function Image() {
             letterSpacing: -2,
           }}
         >
-          Mi <span style={{ color: "#8b7ff2", marginLeft: 20 }}>Vehículo</span>
+          Mi <span style={{ color: BRAND_PRIMARY, marginLeft: 20 }}>Vehículo</span>
         </div>
         <div
           style={{
