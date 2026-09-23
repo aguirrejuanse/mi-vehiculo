@@ -3,6 +3,7 @@ import {
   emptyToUndefined,
   fieldErrorsFromZodError,
 } from "@/lib/validation/action-state";
+import { isDecimalString } from "@/lib/validation/numeric";
 
 // Plain object schema — NOT refined. `maintenanceTypeSchema` adds the
 // cross-field interval check via `.superRefine()` below. Do not re-merge
@@ -19,7 +20,7 @@ export const maintenanceTypeBaseSchema = z.object({
     emptyToUndefined,
     z
       .string()
-      .refine((value) => !Number.isNaN(Number(value)), {
+      .refine(isDecimalString, {
         error: "Tiene que ser un número.",
       })
       .refine((value) => Number(value) > 0, {

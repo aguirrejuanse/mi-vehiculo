@@ -3,6 +3,7 @@ import {
   emptyToUndefined,
   fieldErrorsFromZodError,
 } from "@/lib/validation/action-state";
+import { isDecimalString } from "@/lib/validation/numeric";
 
 export const maintenanceLogSchema = z.object({
   vehicleId: z.uuid({ error: "Vehículo inválido." }),
@@ -11,7 +12,7 @@ export const maintenanceLogSchema = z.object({
     emptyToUndefined,
     z
       .string({ error: "Ingresá el valor del odómetro." })
-      .refine((value) => !Number.isNaN(Number(value)), {
+      .refine(isDecimalString, {
         error: "Tiene que ser un número.",
       })
       .refine((value) => Number(value) >= 0, {
@@ -22,7 +23,13 @@ export const maintenanceLogSchema = z.object({
     .string({ error: "Elegí una fecha." })
     .refine((value) => !Number.isNaN(new Date(value).getTime()), {
       error: "Fecha inválida.",
-    }),
+    })
+    // A log records something already done — a future date is a typo (e.g.
+    // year 2034). +1 day of slack for users ahead of UTC at night.
+    .refine(
+      (value) => new Date(value).getTime() <= Date.now() + 86_400_000,
+      { error: "La fecha no puede ser futura." },
+    ),
   notes: z.preprocess(
     emptyToUndefined,
     z.string().max(500, { error: "Máximo 500 caracteres." }).optional(),
