@@ -21,6 +21,7 @@ import {
 } from "@/lib/maintenance/next-due";
 import { nextPartStatus } from "@/lib/validation/part";
 import { AdvancePartButton } from "./advance-part-button";
+import { ArchiveVehicleButton } from "./archive-vehicle-button";
 import type { MaintenanceType, Part } from "@/db/schema";
 
 const STATUS_LABEL: Record<NextDueStatus, string> = {
@@ -81,6 +82,8 @@ export default async function VehicleDetailPage({
   const vehicle = await getVehicleForUser(vehicleId, userId);
 
   if (!vehicle) notFound();
+
+  const isArchived = vehicle.archivedAt != null;
 
   const [maintenanceTypes, logs, parts] = await Promise.all([
     listMaintenanceTypesForVehicle(vehicle.id),
@@ -149,12 +152,19 @@ export default async function VehicleDetailPage({
             <h1 className="text-2xl font-black tracking-tight uppercase">
               {vehicle.name}
             </h1>
-            <Link
-              href={`/dashboard/vehiculos/${vehicle.id}/editar`}
-              className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
-            >
-              Editar
-            </Link>
+            {isArchived && (
+              <span className="rounded-full border border-surface-border bg-surface-2 px-2 py-0.5 text-xs font-bold tracking-widest text-muted uppercase">
+                Archivado
+              </span>
+            )}
+            {!isArchived && (
+              <Link
+                href={`/dashboard/vehiculos/${vehicle.id}/editar`}
+                className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
+              >
+                Editar
+              </Link>
+            )}
           </div>
           <p className="text-sm text-muted">
             {vehicle.type}
@@ -163,18 +173,26 @@ export default async function VehicleDetailPage({
           </p>
         </div>
         <div className="flex gap-3 text-xs font-bold tracking-widest uppercase">
-          <Link
-            href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-            className="rounded-2xl border border-surface-border px-4 py-2 text-accent transition-colors hover:text-foreground"
-          >
-            + Mantenimiento
-          </Link>
-          <LinkButton
-            href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-            bare
-          >
-            + Registro
-          </LinkButton>
+          {!isArchived && (
+            <>
+              <Link
+                href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
+                className="rounded-2xl border border-surface-border px-4 py-2 text-accent transition-colors hover:text-foreground"
+              >
+                + Mantenimiento
+              </Link>
+              <LinkButton
+                href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
+                bare
+              >
+                + Registro
+              </LinkButton>
+            </>
+          )}
+          <ArchiveVehicleButton
+            vehicleId={vehicle.id}
+            isArchived={isArchived}
+          />
         </div>
       </div>
 

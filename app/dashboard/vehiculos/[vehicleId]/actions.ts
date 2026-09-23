@@ -1,8 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireUserId } from "@/lib/auth";
-import { getVehicleForUser } from "@/db/queries/vehicles";
+import {
+  archiveVehicle,
+  getVehicleForUser,
+  restoreVehicle,
+} from "@/db/queries/vehicles";
 import { getPartForVehicle, updatePartStatus } from "@/db/queries/parts";
 import { nextPartStatus, type PartStatus } from "@/lib/validation/part";
 import type { ActionState } from "@/lib/validation/action-state";
@@ -57,4 +62,48 @@ export async function advancePartStatusAction(
 
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   return { status: "success" };
+}
+
+export async function archiveVehicleAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  const vehicleId = formData.get("vehicleId");
+
+  if (typeof vehicleId !== "string") {
+    return { status: "error", message: "Solicitud inválida." };
+  }
+
+  const vehicle = await getVehicleForUser(vehicleId, userId);
+  if (!vehicle) {
+    return { status: "error", message: "No encontramos ese vehículo." };
+  }
+
+  await archiveVehicle(vehicle.id, userId);
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
+  redirect("/dashboard");
+}
+
+export async function restoreVehicleAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  const vehicleId = formData.get("vehicleId");
+
+  if (typeof vehicleId !== "string") {
+    return { status: "error", message: "Solicitud inválida." };
+  }
+
+  const vehicle = await getVehicleForUser(vehicleId, userId);
+  if (!vehicle) {
+    return { status: "error", message: "No encontramos ese vehículo." };
+  }
+
+  await restoreVehicle(vehicle.id, userId);
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
+  redirect(`/dashboard/vehiculos/${vehicle.id}`);
 }
