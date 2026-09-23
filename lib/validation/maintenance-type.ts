@@ -56,67 +56,65 @@ export const maintenanceTypeBaseSchema = z.object({
 // added here MUST carry an explicit `path`, including the "at least one
 // interval" case, which is reported on BOTH interval fields so it surfaces
 // next to whichever field the user is looking at.
-export const maintenanceTypeSchema = maintenanceTypeBaseSchema.superRefine(
-  (data, ctx) => {
-    const sinIntervalos =
-      data.intervalValue == null && data.intervalCalendarValue == null;
+function validateIntervals(
+  data: z.infer<typeof maintenanceTypeBaseSchema>,
+  ctx: z.RefinementCtx,
+) {
+  const sinIntervalos =
+    data.intervalValue == null && data.intervalCalendarValue == null;
 
-    if (data.noInterval && !sinIntervalos) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["noInterval"],
-        message:
-          'Destildá "sin intervalo" o borrá los intervalos cargados.',
-      });
-      return;
-    }
+  if (data.noInterval && !sinIntervalos) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["noInterval"],
+      message: 'Destildá "sin intervalo" o borrá los intervalos cargados.',
+    });
+    return;
+  }
 
-    if (!data.noInterval && sinIntervalos) {
-      const message =
-        'Definí un intervalo por uso y/o por calendario, o tildá "sin intervalo".';
-      ctx.addIssue({
-        code: "custom",
-        path: ["intervalValue"],
-        message,
-      });
-      ctx.addIssue({
-        code: "custom",
-        path: ["intervalCalendarValue"],
-        message,
-      });
-      ctx.addIssue({
-        code: "custom",
-        path: ["noInterval"],
-        message,
-      });
-      return;
-    }
+  if (!data.noInterval && sinIntervalos) {
+    const message =
+      'Definí un intervalo por uso y/o por calendario, o tildá "sin intervalo".';
+    ctx.addIssue({ code: "custom", path: ["intervalValue"], message });
+    ctx.addIssue({ code: "custom", path: ["intervalCalendarValue"], message });
+    ctx.addIssue({ code: "custom", path: ["noInterval"], message });
+    return;
+  }
 
-    if (
-      data.intervalCalendarValue != null &&
-      data.intervalCalendarUnit == null
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["intervalCalendarUnit"],
-        message: "Elegí la unidad del intervalo por calendario.",
-      });
-    }
+  if (
+    data.intervalCalendarValue != null &&
+    data.intervalCalendarUnit == null
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["intervalCalendarUnit"],
+      message: "Elegí la unidad del intervalo por calendario.",
+    });
+  }
 
-    if (
-      data.intervalCalendarUnit != null &&
-      data.intervalCalendarValue == null
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["intervalCalendarValue"],
-        message: "Ingresá el valor del intervalo por calendario.",
-      });
-    }
-  },
-);
+  if (
+    data.intervalCalendarUnit != null &&
+    data.intervalCalendarValue == null
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["intervalCalendarValue"],
+      message: "Ingresá el valor del intervalo por calendario.",
+    });
+  }
+}
+
+export const maintenanceTypeSchema =
+  maintenanceTypeBaseSchema.superRefine(validateIntervals);
+
+export const maintenanceTypeUpdateSchema = maintenanceTypeBaseSchema
+  .extend({ typeId: z.uuid({ error: "Mantenimiento inválido." }) })
+  .superRefine(validateIntervals);
 
 export type MaintenanceTypeInput = z.infer<typeof maintenanceTypeSchema>;
+export type MaintenanceTypeUpdateInput = z.infer<
+  typeof maintenanceTypeUpdateSchema
+>;
 
 export function validateMaintenanceTypeFields(formData: FormData) {
   const parsed = maintenanceTypeSchema.safeParse({

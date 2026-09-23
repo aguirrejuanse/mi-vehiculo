@@ -45,12 +45,19 @@ export type MaintenanceLogWithTypeAndEditCount = MaintenanceLogWithType & {
   editCount: number;
 };
 
+// Historial page size — kept next to the query since both the initial
+// server render and the "Cargar más" action slice with it.
+export const LOGS_PAGE_SIZE = 10;
+
 export async function listMaintenanceLogsWithTypeForVehicle(
   vehicleId: string,
+  options?: { limit?: number; offset?: number },
 ): Promise<MaintenanceLogWithTypeAndEditCount[]> {
   const logs = await db.query.maintenanceLogs.findMany({
     where: eq(maintenanceLogs.vehicleId, vehicleId),
     orderBy: desc(maintenanceLogs.performedAtDate),
+    limit: options?.limit,
+    offset: options?.offset,
     with: { maintenanceType: true, edits: true },
   });
 
