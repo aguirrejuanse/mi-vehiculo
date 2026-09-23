@@ -4,6 +4,7 @@ import { ClerkProvider, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
+import { UserEmail } from "@/components/layout/user-email";
 import { Toaster } from "@/components/ui/toast";
 import { SITE_URL, SITE_URL_ORIGIN } from "@/lib/site-url";
 import "./globals.css";
@@ -72,13 +73,30 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               users lose the way back to the top/nav. bg + backdrop-blur so
               content scrolling underneath doesn't show through. */}
           <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-surface-border bg-background/90 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
-            <Link
-              href="/"
-              className="font-display text-sm font-black tracking-widest uppercase"
-            >
-              Mi <span className="text-primary">Vehículo</span>
-            </Link>
-            <HeaderNav />
+            {/* Doubles as the "back to dashboard" link when signed in, so
+                there's no separate "Dashboard" link next to the email. */}
+            <Show when="signed-out">
+              <Link
+                href="/"
+                className="font-display text-sm font-black tracking-widest uppercase"
+              >
+                Mi <span className="text-primary">Vehículo</span>
+              </Link>
+            </Show>
+            <Show when="signed-in">
+              <Link
+                href="/dashboard"
+                className="font-display text-sm font-black tracking-widest uppercase"
+              >
+                Mi <span className="text-primary">Vehículo</span>
+              </Link>
+            </Show>
+            {/* Anchor links only make sense on the landing page itself — a
+                signed-in user is on /dashboard and its subroutes, where
+                "Cómo funciona" etc. would just bounce them back to "/". */}
+            <Show when="signed-out">
+              <HeaderNav />
+            </Show>
             <nav className="flex items-center gap-2 sm:gap-4">
               <Show when="signed-out">
                 <Link
@@ -90,12 +108,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <HeaderCta />
               </Show>
               <Show when="signed-in">
-                <Link
-                  href="/dashboard"
-                  className="text-xs font-semibold tracking-wide uppercase text-muted transition-colors hover:text-foreground sm:text-sm"
-                >
-                  Dashboard
-                </Link>
+                <UserEmail />
                 <UserButton />
               </Show>
             </nav>
