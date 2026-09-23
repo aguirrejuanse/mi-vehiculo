@@ -12,6 +12,8 @@ import { listPartsForVehicle } from "@/db/queries/parts";
 import { SUBTYPE_LABELS, TYPE_LABELS } from "@/lib/validation/vehicle";
 import { formatDateUTC, formatMetric } from "@/lib/format";
 import { filterSuffix } from "@/lib/dashboard-filters";
+import { resolveDetailLayout } from "@/lib/layout-variant";
+import { track } from "@/lib/analytics/server";
 import { BackLink } from "@/components/ui/back-link";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card } from "@/components/ui/card";
@@ -115,15 +117,28 @@ export default async function VehicleDetailPage({
   params,
   searchParams,
 }: PageProps<"/dashboard/vehiculos/[vehicleId]">) {
-  const [{ vehicleId }, { tipo, ver }] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+  const [{ vehicleId }, { tipo, ver, layout: layoutParam }] = await Promise.all(
+    [params, searchParams],
+  );
   const suffix = filterSuffix({ tipo, ver });
   const userId = await requireUserId();
   const vehicle = await getVehicleForUser(vehicleId, userId);
 
   if (!vehicle) notFound();
+
+  // A/B detail layout: "a" = sections grid, "b" = history sidebar.
+  // `?layout=` overrides the userId bucket (manual comparison); the event
+  // carries which one was served so the experiment can be read in PostHog.
+  const layoutVariant = resolveDetailLayout(userId, layoutParam);
+  track(
+    "layout_viewed",
+    {
+      vehicle_id: vehicle.id,
+      variant: layoutVariant,
+      source: layoutParam === "a" || layoutParam === "b" ? "override" : "bucket",
+    },
+    { userId },
+  );
 
   const isArchived = vehicle.archivedAt != null;
 
@@ -211,11 +226,26 @@ export default async function VehicleDetailPage({
       );
     });
 
-  return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-10">
-      <BackLink href={`/dashboard${suffix}`}>Tus vehículos</BackLink>
+  // Same DOM for both variants — only grid placement classes differ.
+  // Mobile is always a single column; columns appear at md+.
+  const historySectionClass =
+    layoutVariant === "b"
+      ? "md:order-last md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-start-2 lg:row-span-6"
+      : "md:order-last md:col-span-2 lg:col-span-3";
+  const nextDueSectionClass =
+    layoutVariant === "b" ? "md:col-span-2" : "";
+  const historyGridClass =
+    layoutVariant === "b"
+      ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-1 lg:max-h-[36rem]"
+      : "md:grid-cols-2 lg:grid-cols-3";
 
-      <Card padding="md" className="flex flex-col gap-4">
+  return (
+    <div className="mx-auto grid w-full max-w-2xl flex-1 grid-cols-1 content-start gap-8 px-6 py-10 md:max-w-4xl md:grid-cols-2 md:items-start lg:max-w-6xl lg:grid-cols-3">
+      <div className="md:col-span-full">
+        <BackLink href={`/dashboard${suffix}`}>Tus vehículos</BackLink>
+      </div>
+
+      <Card padding="md" className="flex flex-col gap-4 md:col-span-full">
         {/* Toolbar row: icon left, actions right. Keeping actions out of the
             name row gives the vehicle name the card's full width — a shared
             row crushed it to a few characters on narrow screens. */}
@@ -262,6 +292,7 @@ export default async function VehicleDetailPage({
 
       <Section
         title="Próximos mantenimientos"
+        className={nextDueSectionClass}
         action={
           !isArchived && (
             <SectionAddLink
@@ -296,7 +327,9 @@ export default async function VehicleDetailPage({
             )}
           </EmptyState>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul
+            className={`flex flex-col gap-3 ${layoutVariant === "b" ? "lg:grid lg:grid-cols-2" : ""}`}
+          >
             {nextDueByType.map(({ type, nextDue }) => (
               <Card as="li" key={type.id} className="flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2">
@@ -415,6 +448,7 @@ export default async function VehicleDetailPage({
 
       <Section
         title="Historial"
+        className={historySectionClass}
         action={
           !isArchived && (
             <SectionAddLink
@@ -451,7 +485,9 @@ export default async function VehicleDetailPage({
           // Bounded-height scroll area so a long history doesn't stretch the
           // page; grid widens with the viewport (1/2/3 cols). "Cargar más"
           // stays at the bottom of the scrolled region.
-          <ul className="grid max-h-[28rem] grid-cols-1 gap-3 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
+          <ul
+            className={`grid max-h-[28rem] grid-cols-1 gap-3 overflow-y-auto ${historyGridClass}`}
+          >
             {logs.map((log) => (
               <LogCard
                 key={log.id}

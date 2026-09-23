@@ -6,12 +6,14 @@ type SectionProps = {
   title: string;
   /** Optional right-aligned header action, e.g. a "+ Repuesto" link. */
   action?: ReactNode;
+  /** Grid placement classes when the section lives inside a grid layout. */
+  className?: string;
   children: ReactNode;
 };
 
-export function Section({ title, action, children }: SectionProps) {
+export function Section({ title, action, className, children }: SectionProps) {
   return (
-    <section className="flex flex-col gap-3">
+    <section className={`flex flex-col gap-3 ${className ?? ""}`}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
           {title}
