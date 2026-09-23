@@ -5,13 +5,17 @@ import { getVehicleForUser } from "@/db/queries/vehicles";
 import { listMaintenanceTypesForVehicle } from "@/db/queries/maintenance-types";
 import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-logs";
 import { listPartsForVehicle } from "@/db/queries/parts";
-import { SUBTYPE_LABELS } from "@/lib/validation/vehicle";
-import { formatDateUTC } from "@/lib/format";
+import { SUBTYPE_LABELS, TYPE_LABELS } from "@/lib/validation/vehicle";
+import { formatDateUTC, formatMetric } from "@/lib/format";
 import { LocalTime } from "@/components/ui/local-time";
 import { BackLink } from "@/components/ui/back-link";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Section, SectionAddLink, SectionLink } from "@/components/ui/section";
+import { EmptyState } from "@/components/ui/empty-state";
+import { VehicleTypeIcon } from "@/components/ui/vehicle-type-icon";
+import { PencilIcon } from "@/components/ui/icons";
 import {
   computeNextDue,
   compareNextDue,
@@ -47,7 +51,7 @@ function hasInterval(type: MaintenanceType): boolean {
 
 const PART_STATUS_LABEL: Record<Part["status"], string> = {
   wishlist: "Wishlist",
-  pendiente_instalar: "Pendiente instalar",
+  pendiente_instalar: "Pendiente",
   instalado: "Instalado",
 };
 
@@ -143,48 +147,48 @@ export default async function VehicleDetailPage({
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-10">
       <BackLink href="/dashboard">Tus vehículos</BackLink>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-tight uppercase">
+      <Card padding="md" className="flex items-start gap-4">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+          <VehicleTypeIcon type={vehicle.type} className="size-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="truncate text-2xl font-black tracking-tight uppercase">
               {vehicle.name}
             </h1>
             <Link
               href={`/dashboard/vehiculos/${vehicle.id}/editar`}
-              className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
+              aria-label={`Editar ${vehicle.name}`}
+              className="mt-1 shrink-0 rounded-lg p-1 text-muted transition-colors hover:text-foreground"
             >
-              Editar
+              <PencilIcon className="size-4" />
             </Link>
           </div>
           <p className="text-sm text-muted">
-            {vehicle.type}
-            {vehicle.subtype ? ` · ${SUBTYPE_LABELS[vehicle.subtype]}` : ""} ·{" "}
-            {vehicle.currentValue} {vehicle.metricUnit}
+            {TYPE_LABELS[vehicle.type]}
+            {vehicle.subtype ? ` · ${SUBTYPE_LABELS[vehicle.subtype]}` : ""}
+          </p>
+          <p className="mt-3 flex items-baseline gap-1.5">
+            <span className="font-mono text-3xl font-bold tracking-tight">
+              {formatMetric(vehicle.currentValue)}
+            </span>
+            <span className="text-sm text-muted">{vehicle.metricUnit}</span>
           </p>
         </div>
-        <div className="flex gap-3 text-xs font-bold tracking-widest uppercase">
-          <Link
+      </Card>
+
+      <Section
+        title="Próximos mantenimientos"
+        action={
+          <SectionAddLink
             href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-            className="rounded-2xl border border-surface-border px-4 py-2 text-accent transition-colors hover:text-foreground"
           >
-            + Mantenimiento
-          </Link>
-          <LinkButton
-            href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-            bare
-          >
-            + Registro
-          </LinkButton>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
-          Próximos mantenimientos
-        </h2>
-
+            Mantenimiento
+          </SectionAddLink>
+        }
+      >
         {nextDueByType.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-border py-16 text-center">
+          <EmptyState>
             {maintenanceTypes.length === 0 ? (
               <>
                 <p className="text-sm text-muted">
@@ -203,12 +207,12 @@ export default async function VehicleDetailPage({
                 vencimientos para calcular.
               </p>
             )}
-          </div>
+          </EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
             {nextDueByType.map(({ type, nextDue }) => (
               <Card as="li" key={type.id} className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <p className="font-bold">{type.name}</p>
                   <Badge tone={STATUS_TONE[nextDue.status]}>
                     {STATUS_LABEL[nextDue.status]}
@@ -230,8 +234,8 @@ export default async function VehicleDetailPage({
                         }
                       >
                         {nextDue.usageRemaining >= 0
-                          ? `Faltan ${Math.round(nextDue.usageRemaining)} ${vehicle.metricUnit}`
-                          : `Vencido por ${Math.round(Math.abs(nextDue.usageRemaining))} ${vehicle.metricUnit}`}
+                          ? `Faltan ${formatMetric(Math.round(nextDue.usageRemaining))} ${vehicle.metricUnit}`
+                          : `Vencido por ${formatMetric(Math.round(Math.abs(nextDue.usageRemaining)))} ${vehicle.metricUnit}`}
                       </p>
                     )}
                     {nextDue.daysRemaining != null && nextDue.dateDue != null && (
@@ -253,23 +257,20 @@ export default async function VehicleDetailPage({
             ))}
           </ul>
         )}
-      </div>
+      </Section>
 
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
-            Repuestos
-          </h2>
-          <Link
+      <Section
+        title="Repuestos"
+        action={
+          <SectionAddLink
             href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
-            className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
           >
-            + Repuesto
-          </Link>
-        </div>
-
+            Repuesto
+          </SectionAddLink>
+        }
+      >
         {partsWithLinks.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-border py-16 text-center">
+          <EmptyState>
             <p className="text-sm text-muted">
               Todavía no cargaste repuestos para este vehículo.
             </p>
@@ -279,14 +280,14 @@ export default async function VehicleDetailPage({
             >
               Cargar repuesto
             </LinkButton>
-          </div>
+          </EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
             {partsWithLinks.map(({ part, linkedType, linkedLog }) => (
               <Card as="li" key={part.id} className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                   <p className="font-bold">{part.name}</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={PART_STATUS_TONE[part.status]}>
                       {PART_STATUS_LABEL[part.status]}
                     </Badge>
@@ -316,15 +317,20 @@ export default async function VehicleDetailPage({
             ))}
           </ul>
         )}
-      </div>
+      </Section>
 
-      <div className="flex flex-col gap-3">
-        <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
-          Historial
-        </h2>
-
+      <Section
+        title="Historial"
+        action={
+          <SectionAddLink
+            href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
+          >
+            Registro
+          </SectionAddLink>
+        }
+      >
         {logs.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-border py-16 text-center">
+          <EmptyState>
             <p className="text-sm text-muted">
               Todavía no hay registros de mantenimiento para este vehículo.
             </p>
@@ -343,12 +349,12 @@ export default async function VehicleDetailPage({
                 Cargar registro
               </LinkButton>
             )}
-          </div>
+          </EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
             {logs.map((log) => (
               <Card as="li" key={log.id} className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                   <p className="font-bold">{log.maintenanceType.name}</p>
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-muted">
@@ -356,23 +362,21 @@ export default async function VehicleDetailPage({
                       <LocalTime value={log.lastEditedAt ?? log.createdAt} />
                     </p>
                     {log.editCount > 0 && (
-                      <Link
+                      <SectionLink
                         href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial`}
-                        className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
                       >
                         Editado ({log.editCount})
-                      </Link>
+                      </SectionLink>
                     )}
-                    <Link
+                    <SectionLink
                       href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar`}
-                      className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
                     >
                       Editar
-                    </Link>
+                    </SectionLink>
                   </div>
                 </div>
                 <p className="text-sm text-muted">
-                  {log.performedAtValue} {vehicle.metricUnit}
+                  {formatMetric(log.performedAtValue)} {vehicle.metricUnit}
                 </p>
                 {log.notes && (
                   <p className="text-sm text-foreground">{log.notes}</p>
@@ -381,7 +385,7 @@ export default async function VehicleDetailPage({
             ))}
           </ul>
         )}
-      </div>
+      </Section>
     </div>
   );
 }
