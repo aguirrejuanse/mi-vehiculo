@@ -8,6 +8,12 @@ export function toDateInputValue(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+// Vehicle metric values arrive as numeric strings from drizzle; format them
+// with es-AR thousand separators ("135000" -> "135.000").
+export function formatMetric(value: string | number): string {
+  return Number(value).toLocaleString("es-AR");
+}
+
 // Formats a Date using UTC getters, not local ones. Use this for any date
 // that was computed in UTC (e.g. lib/maintenance/next-due.ts) or that was
 // parsed from a date-only string stored as UTC midnight. Local getters would

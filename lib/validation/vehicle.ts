@@ -12,6 +12,25 @@ export const SUBTYPES_BY_TYPE = {
 } as const;
 
 export type VehicleType = keyof typeof SUBTYPES_BY_TYPE;
+
+// Canonical display order for vehicle types (also the declared order of
+// SUBTYPES_BY_TYPE keys). Used for group/chip ordering in the dashboard.
+export const VEHICLE_TYPES = Object.keys(SUBTYPES_BY_TYPE) as VehicleType[];
+
+export const TYPE_LABELS: Record<VehicleType, string> = {
+  moto: "Moto",
+  auto: "Auto",
+  bicicleta: "Bicicleta",
+  monopatin: "Monopatín",
+};
+
+// Plural labels for type groups/filters ("Autos", "Motos", ...).
+export const TYPE_GROUP_LABELS: Record<VehicleType, string> = {
+  moto: "Motos",
+  auto: "Autos",
+  bicicleta: "Bicis",
+  monopatin: "Monopatines",
+};
 export type VehicleSubtype = (typeof SUBTYPES_BY_TYPE)[VehicleType][number];
 
 export const SUBTYPE_LABELS: Record<VehicleSubtype, string> = {
