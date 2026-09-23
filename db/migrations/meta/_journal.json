@@ -64,6 +64,13 @@
       "when": 1790189303888,
       "tag": "0008_talented_zodiak",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790196476125,
+      "tag": "0009_gifted_titanium_man",
+      "breakpoints": true
     }
   ]
 }
