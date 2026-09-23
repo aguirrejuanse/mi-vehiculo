@@ -17,6 +17,17 @@ export type VehicleType = keyof typeof SUBTYPES_BY_TYPE;
 // SUBTYPES_BY_TYPE keys). Used for group/chip ordering in the dashboard.
 export const VEHICLE_TYPES = Object.keys(SUBTYPES_BY_TYPE) as VehicleType[];
 
+// Parses the `?tipo=` search param into a VehicleType; invalid/absent values
+// fall back to undefined so the wizard starts empty instead of breaking.
+export function parseVehicleTypeParam(
+  value: string | string[] | undefined,
+): VehicleType | undefined {
+  if (typeof value !== "string") return undefined;
+  return VEHICLE_TYPES.includes(value as VehicleType)
+    ? (value as VehicleType)
+    : undefined;
+}
+
 export const TYPE_LABELS: Record<VehicleType, string> = {
   moto: "Moto",
   auto: "Auto",
