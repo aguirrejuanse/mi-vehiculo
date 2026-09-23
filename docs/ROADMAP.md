@@ -36,9 +36,10 @@ lanzarlo. Ejecutando de a PRs chicos: `feature → dev → master`.
    separadas por entorno, DMARC en modo monitor, CI con migraciones por
    entorno. Falta: páginas de términos y privacidad, verificar
    metadata/OG en prod, monitoreo de errores, DMARC a `p=quarantine`.
-9. ⬜ **Analytics**: instrumentar el funnel de `docs/PRODUCT.md`
-   (visita → wizard iniciado → wizard completado → cuenta creada → primer
-   mantenimiento). Sin esto no se puede iterar la landing.
+9. ✅ **Analytics**: instrumentar el funnel de `docs/PRODUCT.md`
+   con PostHog (`posthog-js` + `posthog-node`), proxy propio `/_posthog`
+   para evitar bloqueadores, y `docs/analytics-events.md` como mapa de
+   eventos — PR #23.
 10. ⬜ **PWA** (decidido): manifest, service worker, instalable en mobile.
     Es también lo que habilita notificaciones push para recordatorios.
 11. ⬜ **Recordatorios de mantenimiento** (push y/o email): es lo que
@@ -49,9 +50,10 @@ lanzarlo. Ejecutando de a PRs chicos: `feature → dev → master`.
     están revisados. Matriz de features, gaps, roadmap por esfuerzo, plan
     de landing y specs de la app logueada en
     `docs/competidores/mi-garage/ANALISIS.md`.
-11c. ⬜ **Archivar/borrar vehículos + selector y vistas** (todos, por
-    tipo, próximos mantenimientos, archivados). Hoy el dashboard no tiene
-    ninguno. Ver `ANALISIS.md` sección 6.
+11c. ✅ **Archivar/restaurar vehículos + índices de DB** (`archivedAt`,
+    queries filtrando archivados, botones en detalle) — PR #21.
+    Falta: selectores y vistas (todos, por tipo, próximos mantenimientos,
+    archivados) en el dashboard. Ver `ANALISIS.md` sección 6.
 11d. ⬜ **Plantillas de mantenimiento por subtipo + plan generado al
     crear** (horas primero para enduro). Habilita wizard con vista
     previa, "para verificar" y fecha estimada (`usageRatePerWeek` ya se
