@@ -15,7 +15,7 @@ type StatusDotProps = {
 
 export function StatusDot({ tone, label }: StatusDotProps) {
   return (
-    <span className="inline-flex items-center">
+    <span title={label} className="inline-flex items-center">
       <span
         aria-hidden
         className={`size-2 rounded-full ${TONE_CLASSES[tone]}`}
