@@ -26,9 +26,7 @@ export default async function NewPartPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>
-        {vehicle.name}
-      </BackLink>
+      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>Volver</BackLink>
       <div className="flex flex-col gap-1">
         <p className="text-xs font-bold tracking-widest text-muted uppercase">
           {vehicle.name}

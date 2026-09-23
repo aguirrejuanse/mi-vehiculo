@@ -30,10 +30,13 @@ export default async function MaintenanceLogHistoryPage({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>
-        {vehicle.name}
-      </BackLink>
-      <PageTitle highlight="registro">Historial del</PageTitle>
+      <BackLink href={`/dashboard/vehiculos/${vehicle.id}`}>Volver</BackLink>
+      <div className="flex flex-col gap-1">
+        <p className="text-xs font-bold tracking-widest text-muted uppercase">
+          {vehicle.name}
+        </p>
+        <PageTitle highlight="registro">Historial del</PageTitle>
+      </div>
       <p className="text-sm text-muted">{log.maintenanceType.name}</p>
 
       {edits.length === 0 ? (
