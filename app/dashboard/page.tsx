@@ -11,6 +11,7 @@ import {
   type VehicleType,
 } from "@/lib/validation/vehicle";
 import { formatMetric } from "@/lib/format";
+import { filterSuffix } from "@/lib/dashboard-filters";
 import {
   compareNextDue,
   computeNextDue,
@@ -31,7 +32,7 @@ const STATUS_DOT_TONE: Record<NextDueStatus, StatusDotTone> = {
   ok: "ok",
   pronto: "warn",
   vencido: "danger",
-  sin_registro: "muted",
+  sin_registro: "warn",
 };
 
 const STATUS_DOT_LABEL: Record<NextDueStatus, string> = {
@@ -39,6 +40,20 @@ const STATUS_DOT_LABEL: Record<NextDueStatus, string> = {
   pronto: "Mantenimiento próximo a vencer",
   vencido: "Mantenimiento vencido",
   sin_registro: "Sin registros de mantenimiento",
+};
+
+// Short inline label for the row meta — the dot alone can't be interrogated
+// on touch devices (no hover → no title tooltip).
+const STATUS_ROW_LABEL: Partial<Record<NextDueStatus, string>> = {
+  pronto: "Próximo",
+  vencido: "Vencido",
+  sin_registro: "Sin registro",
+};
+
+const STATUS_ROW_TONE: Partial<Record<NextDueStatus, string>> = {
+  pronto: "text-accent",
+  vencido: "text-danger",
+  sin_registro: "text-accent",
 };
 
 // Worst next-due status across the vehicle's scheduled types, or null when
@@ -93,6 +108,7 @@ export default async function DashboardPage({
   }
 
   const { tipo, ver } = await searchParams;
+  const suffix = filterSuffix({ tipo, ver });
   const activeType = VEHICLE_TYPES.includes(tipo as VehicleType)
     ? (tipo as VehicleType)
     : null;
@@ -126,22 +142,51 @@ export default async function DashboardPage({
     }
   }
 
+  // Per-vehicle worst status, computed once and reused for sorting + render.
+  const statusByVehicleId = new Map<string, NextDueStatus | null>();
+  for (const vehicle of pool) {
+    statusByVehicleId.set(
+      vehicle.id,
+      worstVehicleStatus(vehicle, allTypes, logsByTypeId),
+    );
+  }
+
+  // Urgency first, name breaks ties — an overdue vehicle buried
+  // alphabetically at the bottom defeats the point of the status dot.
+  const STATUS_RANK: Record<NextDueStatus, number> = {
+    vencido: 0,
+    pronto: 1,
+    sin_registro: 2,
+    ok: 3,
+  };
+  const rankOf = (v: Vehicle) => {
+    const s = statusByVehicleId.get(v.id);
+    return s == null ? 4 : STATUS_RANK[s];
+  };
+
   // Groups in canonical type order, then sorted by fleet size: the types the
   // user actually has come first, empty types sink to the bottom.
   const groups = VEHICLE_TYPES.map((type) => ({
     type,
     vehicles: pool
       .filter((v) => v.type === type)
-      .sort((a, b) => a.name.localeCompare(b.name, "es")),
+      .sort(
+        (a, b) => rankOf(a) - rankOf(b) || a.name.localeCompare(b.name, "es"),
+      ),
   })).sort((a, b) => b.vehicles.length - a.vehicles.length);
 
   const emptyTypes = groups
     .filter((g) => g.vehicles.length === 0)
     .map((g) => g.type);
 
-  const visibleGroups = activeType
-    ? groups.filter((g) => g.type === activeType)
-    : groups.filter((g) => g.vehicles.length > 0);
+  // An empty pool already shows the global empty state — rendering per-type
+  // sections on top of it would stack two empty states saying the same thing.
+  const visibleGroups =
+    pool.length === 0
+      ? []
+      : activeType
+        ? groups.filter((g) => g.type === activeType)
+        : groups.filter((g) => g.vehicles.length > 0);
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-10">
@@ -183,24 +228,33 @@ export default async function DashboardPage({
                 {TYPE_GROUP_LABELS[group.type]}
               </ChipLink>
             ))}
-            {(archivedCount > 0 || showArchived) && (
-              <ChipLink
-                href={dashboardHref(activeType, !showArchived)}
-                active={showArchived}
-                count={archivedCount}
-              >
-                Archivados
-              </ChipLink>
-            )}
           </div>
 
-          {pool.length === 0 ? (
+          {(archivedCount > 0 || showArchived) && (
+            <Link
+              href={dashboardHref(activeType, !showArchived)}
+              className="self-end text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
+            >
+              {showArchived
+                ? `← Ver activos`
+                : `Ver archivados (${archivedCount})`}
+            </Link>
+          )}
+
+          {pool.length === 0 && (
             <EmptyState>
               <p className="text-sm text-muted">
-                No tenés vehículos archivados.
+                {showArchived
+                  ? "No tenés vehículos archivados."
+                  : "No tenés vehículos activos."}
               </p>
+              {!showArchived && (
+                <LinkButton href="/dashboard/vehiculos/nuevo" size="md">
+                  Cargar vehículo
+                </LinkButton>
+              )}
             </EmptyState>
-          ) : null}
+          )}
 
           {visibleGroups.map((group) => (
             <Section key={group.type} title={TYPE_GROUP_LABELS[group.type]}>
@@ -219,15 +273,11 @@ export default async function DashboardPage({
               ) : (
                 <ul className="flex flex-col gap-2">
                   {group.vehicles.map((vehicle) => {
-                    const status = worstVehicleStatus(
-                      vehicle,
-                      allTypes,
-                      logsByTypeId,
-                    );
+                    const status = statusByVehicleId.get(vehicle.id) ?? null;
                     return (
                       <li key={vehicle.id}>
                         <ListRow
-                          href={`/dashboard/vehiculos/${vehicle.id}`}
+                          href={`/dashboard/vehiculos/${vehicle.id}${suffix}`}
                           leading={
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-muted transition-colors group-hover:text-primary">
                               <VehicleTypeIcon
@@ -237,9 +287,29 @@ export default async function DashboardPage({
                             </span>
                           }
                           title={vehicle.name}
-                          meta={`${vehicle.subtype ? `${SUBTYPE_LABELS[vehicle.subtype]} · ` : ""}${formatMetric(vehicle.currentValue)} ${vehicle.metricUnit}`}
+                          meta={
+                            <>
+                              {vehicle.subtype
+                                ? `${SUBTYPE_LABELS[vehicle.subtype]} · `
+                                : ""}
+                              {formatMetric(vehicle.currentValue)}{" "}
+                              {vehicle.metricUnit}
+                              {status && STATUS_ROW_LABEL[status] && (
+                                <span
+                                  className={`font-semibold ${STATUS_ROW_TONE[status]}`}
+                                >
+                                  {" "}
+                                  · {STATUS_ROW_LABEL[status]}
+                                </span>
+                              )}
+                            </>
+                          }
                           trailing={
-                            !showArchived && status ? (
+                            showArchived ? (
+                              <span className="shrink-0 rounded-full border border-surface-border px-2 py-0.5 text-[10px] font-bold tracking-widest whitespace-nowrap text-muted uppercase">
+                                Archivado
+                              </span>
+                            ) : status ? (
                               <StatusDot
                                 tone={STATUS_DOT_TONE[status]}
                                 label={STATUS_DOT_LABEL[status]}
