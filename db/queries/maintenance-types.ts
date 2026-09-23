@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
   maintenanceTypes,
@@ -23,6 +23,18 @@ export async function listMaintenanceTypesForVehicle(
     .select()
     .from(maintenanceTypes)
     .where(eq(maintenanceTypes.vehicleId, vehicleId));
+}
+
+// Batch variant of listMaintenanceTypesForVehicle: one query for a set of
+// vehicle ids (dashboard list needs every type for every user vehicle).
+export async function listMaintenanceTypesForVehicles(
+  vehicleIds: string[],
+): Promise<MaintenanceType[]> {
+  if (vehicleIds.length === 0) return [];
+  return db
+    .select()
+    .from(maintenanceTypes)
+    .where(inArray(maintenanceTypes.vehicleId, vehicleIds));
 }
 
 export async function getMaintenanceTypeForVehicle(
