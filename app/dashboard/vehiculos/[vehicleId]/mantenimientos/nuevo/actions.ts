@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireUserId } from "@/lib/auth";
 import { getVehicleForUser } from "@/db/queries/vehicles";
 import { createMaintenanceType } from "@/db/queries/maintenance-types";
+import { track } from "@/lib/analytics/server";
 import {
   maintenanceTypeSchema,
   type MaintenanceTypeInput,
@@ -60,6 +61,18 @@ export async function createMaintenanceTypeAction(
       message: "No se pudo guardar el mantenimiento. Probá de nuevo.",
     };
   }
+
+  track(
+    "maintenance_type_created",
+    {
+      vehicle_id: vehicle.id,
+      has_interval_value: parsed.data.intervalValue != null,
+      has_calendar_interval:
+        parsed.data.intervalCalendarValue != null &&
+        parsed.data.intervalCalendarUnit != null,
+    },
+    { userId },
+  );
 
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect(`/dashboard/vehiculos/${vehicle.id}`);
