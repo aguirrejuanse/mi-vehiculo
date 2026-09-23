@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
 import { UserEmail } from "@/components/layout/user-email";
+import { SIGN_IN_PATH } from "@/lib/auth/routes";
 import { Toaster } from "@/components/ui/toast";
 import { SITE_URL, SITE_URL_ORIGIN } from "@/lib/site-url";
 import "./globals.css";
@@ -56,7 +57,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider>
+    <ClerkProvider signInUrl={SIGN_IN_PATH}>
       <html
         lang="es"
         // Landing sections opt into `snap-start` (see components/landing/*)
@@ -100,7 +101,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <nav className="flex items-center gap-2 sm:gap-4">
               <Show when="signed-out">
                 <Link
-                  href="/sign-in"
+                  href={SIGN_IN_PATH}
                   className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm"
                 >
                   Iniciar sesión
