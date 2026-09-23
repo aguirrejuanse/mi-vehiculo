@@ -79,6 +79,10 @@ export const maintenanceTypes = pgTable(
     // set together or both left null — enforced in application validation.
     intervalCalendarValue: integer("interval_calendar_value"),
     intervalCalendarUnit: calendarUnitEnum("interval_calendar_unit"),
+    // Soft-delete: null means active; a timestamp means archived on that
+    // date. Logs/parts that reference it keep their data — archiving only
+    // hides the type from selects, next-due and the management list.
+    archivedAt: timestamp("archived_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [index("maintenance_types_vehicle_id_idx").on(table.vehicleId)],
