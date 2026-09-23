@@ -9,13 +9,19 @@ import { z } from "zod";
  * `next build` doesn't need a real connection string), these are required
  * synchronously by clerkMiddleware() itself, so we parse at module load.
  */
+// The custom `error` message must be passed to `z.string()` itself, not just
+// `.min()` — a missing env var is `undefined`, which fails the base string
+// check first (and would otherwise surface Zod's generic "expected string,
+// received undefined" instead of this message).
+const required = (message: string) => z.string({ error: message }).min(1, { error: message });
+
 const envSchema = z.object({
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1, {
-    error: "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. Add it to your .env.local (see .env.local.example).",
-  }),
-  CLERK_SECRET_KEY: z.string().min(1, {
-    error: "CLERK_SECRET_KEY is not set. Add it to your .env.local (see .env.local.example).",
-  }),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: required(
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set. Add it to your .env.local (see .env.local.example).",
+  ),
+  CLERK_SECRET_KEY: required(
+    "CLERK_SECRET_KEY is not set. Add it to your .env.local (see .env.local.example).",
+  ),
 });
 
 export const env = envSchema.parse({
