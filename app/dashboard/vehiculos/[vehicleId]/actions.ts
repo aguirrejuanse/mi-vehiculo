@@ -9,6 +9,7 @@ import {
   restoreVehicle,
 } from "@/db/queries/vehicles";
 import { getPartForVehicle, updatePartStatus } from "@/db/queries/parts";
+import { track } from "@/lib/analytics/server";
 import { nextPartStatus, type PartStatus } from "@/lib/validation/part";
 import type { ActionState } from "@/lib/validation/action-state";
 
@@ -81,6 +82,9 @@ export async function archiveVehicleAction(
   }
 
   await archiveVehicle(vehicle.id, userId);
+
+  track("vehicle_archived", { vehicle_id: vehicle.id }, { userId });
+
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect("/dashboard");
@@ -103,6 +107,9 @@ export async function restoreVehicleAction(
   }
 
   await restoreVehicle(vehicle.id, userId);
+
+  track("vehicle_restored", { vehicle_id: vehicle.id }, { userId });
+
   revalidatePath("/dashboard");
   revalidatePath(`/dashboard/vehiculos/${vehicle.id}`);
   redirect(`/dashboard/vehiculos/${vehicle.id}`);
