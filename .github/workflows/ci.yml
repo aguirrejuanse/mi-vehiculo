@@ -40,7 +40,7 @@ jobs:
       - run: pnpm test
 
   migrate:
-    name: Migrate database (${{ github.ref_name }})
+    name: Migrate database
     needs: checks
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
