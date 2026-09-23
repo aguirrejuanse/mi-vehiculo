@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { createMaintenanceTypeAction } from "@/app/dashboard/vehiculos/[vehicleId]/mantenimientos/nuevo/actions";
 import { validateMaintenanceTypeFields } from "@/lib/validation/maintenance-type";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
@@ -42,10 +43,14 @@ export function MaintenanceTypeForm({
   const { state, formAction, isPending, handleSubmit, fieldErrors } =
     useActionFormState(action, validateMaintenanceTypeFields);
 
-  const noInterval =
+  // "Sin intervalo" disables the interval fields: disabled inputs are not
+  // submitted, so checking it also clears any typed values from FormData
+  // (and makes the contradictory state impossible, not just an error).
+  const [noInterval, setNoInterval] = useState(
     initial != null &&
-    initial.intervalValue == null &&
-    initial.intervalCalendarValue == null;
+      initial.intervalValue == null &&
+      initial.intervalCalendarValue == null,
+  );
 
   return (
     <Card
@@ -70,7 +75,8 @@ export function MaintenanceTypeForm({
       <CheckboxField
         label="Este mantenimiento no se repite (sin intervalo)"
         name="noInterval"
-        defaultChecked={noInterval || undefined}
+        checked={noInterval}
+        onChange={(event) => setNoInterval(event.target.checked)}
         error={fieldErrors?.noInterval}
       />
 
@@ -82,6 +88,7 @@ export function MaintenanceTypeForm({
         min={0}
         placeholder="Ej: 3000"
         defaultValue={initial?.intervalValue ?? ""}
+        disabled={noInterval}
         error={fieldErrors?.intervalValue}
       />
 
@@ -98,6 +105,7 @@ export function MaintenanceTypeForm({
             min={0}
             placeholder="Ej: 6"
             defaultValue={initial?.intervalCalendarValue ?? ""}
+            disabled={noInterval}
             error={fieldErrors?.intervalCalendarValue}
           />
         </div>
@@ -107,6 +115,7 @@ export function MaintenanceTypeForm({
             label="Unidad"
             name="intervalCalendarUnit"
             defaultValue={initial?.intervalCalendarUnit ?? ""}
+            disabled={noInterval}
             error={fieldErrors?.intervalCalendarUnit}
           >
             <option value="">Elegí una</option>
