@@ -1,9 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
 import { db } from "@/db";
 import { vehicles, type NewVehicle, type Vehicle } from "@/db/schema";
-
-const vehicleIdSchema = z.uuid();
+import { idSchema } from "@/lib/validation/id";
 
 export async function createVehicle(input: NewVehicle): Promise<Vehicle> {
   const [vehicle] = await db.insert(vehicles).values(input).returning();
@@ -16,7 +14,7 @@ export async function getVehicleForUser(
 ): Promise<Vehicle | null> {
   // A malformed route param (e.g. ".../id&layout=b") can never match a uuid —
   // bail early instead of letting Postgres throw invalid input syntax.
-  if (!vehicleIdSchema.safeParse(vehicleId).success) return null;
+  if (!idSchema.safeParse(vehicleId).success) return null;
   const [vehicle] = await db
     .select()
     .from(vehicles)

@@ -8,6 +8,7 @@ import {
   type MaintenanceType,
   type NewMaintenanceLog,
 } from "@/db/schema";
+import { idSchema } from "@/lib/validation/id";
 
 export async function createMaintenanceLog(
   input: NewMaintenanceLog,
@@ -71,6 +72,12 @@ export async function getMaintenanceLogWithTypeForVehicle(
   logId: string,
   vehicleId: string,
 ): Promise<MaintenanceLogWithType | null> {
+  if (
+    !idSchema.safeParse(logId).success ||
+    !idSchema.safeParse(vehicleId).success
+  ) {
+    return null;
+  }
   const log = await db.query.maintenanceLogs.findFirst({
     where: and(
       eq(maintenanceLogs.id, logId),

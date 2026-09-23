@@ -3,6 +3,7 @@ import {
   emptyToUndefined,
   fieldErrorsFromZodError,
 } from "@/lib/validation/action-state";
+import { isDecimalString } from "@/lib/validation/numeric";
 
 export const SUBTYPES_BY_TYPE = {
   moto: ["moto_calle", "moto_enduro"],
@@ -66,7 +67,7 @@ const numericString = z.preprocess(
   emptyToUndefined,
   z
     .string({ error: "Ingresá un valor." })
-    .refine((value) => !Number.isNaN(Number(value)), {
+    .refine(isDecimalString, {
       error: "Tiene que ser un número.",
     })
     .refine((value) => Number(value) >= 0, {
@@ -107,7 +108,7 @@ export const vehicleBaseSchema = z.object({
     emptyToUndefined,
     z
       .string()
-      .refine((value) => !Number.isNaN(Number(value)), {
+      .refine(isDecimalString, {
         error: "Tiene que ser un número.",
       })
       .refine((value) => Number(value) >= 0, {
