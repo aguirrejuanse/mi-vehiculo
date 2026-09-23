@@ -265,7 +265,10 @@ export default async function DashboardPage({
                     {showArchived ? "archivados" : "cargados"}.
                   </p>
                   {!showArchived && (
-                    <LinkButton href="/dashboard/vehiculos/nuevo" size="md">
+                    <LinkButton
+                      href={`/dashboard/vehiculos/nuevo?tipo=${group.type}`}
+                      size="md"
+                    >
                       Cargar {TYPE_LABELS[group.type].toLowerCase()}
                     </LinkButton>
                   )}
@@ -333,7 +336,7 @@ export default async function DashboardPage({
               {emptyTypes.map((type) => (
                 <Link
                   key={type}
-                  href="/dashboard/vehiculos/nuevo"
+                  href={`/dashboard/vehiculos/nuevo?tipo=${type}`}
                   className="text-xs font-bold tracking-widest text-muted uppercase transition-colors hover:text-primary"
                 >
                   {TYPE_LABELS[type]}

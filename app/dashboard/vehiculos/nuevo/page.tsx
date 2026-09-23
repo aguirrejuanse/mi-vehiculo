@@ -1,13 +1,21 @@
 import { VehicleWizard } from "@/app/nuevo/vehicle-wizard";
 import { BackLink } from "@/components/ui/back-link";
 import { PageTitle } from "@/components/ui/page-title";
+import { VEHICLE_TYPES, type VehicleType } from "@/lib/validation/vehicle";
 
-export default function NewVehiclePage() {
+export default async function NewVehiclePage({
+  searchParams,
+}: PageProps<"/dashboard/vehiculos/nuevo">) {
+  const { tipo } = await searchParams;
+  const initialType = VEHICLE_TYPES.includes(tipo as VehicleType)
+    ? (tipo as VehicleType)
+    : undefined;
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
       <BackLink href="/dashboard">Tus vehículos</BackLink>
       <PageTitle highlight="vehículo">Nuevo</PageTitle>
-      <VehicleWizard />
+      <VehicleWizard initialType={initialType} />
     </div>
   );
 }

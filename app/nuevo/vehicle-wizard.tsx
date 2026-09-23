@@ -42,7 +42,11 @@ function pickFields(
   return Object.keys(picked).length > 0 ? picked : null;
 }
 
-export function VehicleWizard() {
+export function VehicleWizard({
+  initialType,
+}: {
+  initialType?: VehicleType;
+}) {
   const { state, formAction, isPending, handleSubmit, fieldErrors } =
     useActionFormState(createVehicleAction, validateVehicleFields);
 
@@ -61,7 +65,7 @@ export function VehicleWizard() {
   const [confirmPhase, setConfirmPhase] = useState<ConfirmPhase>("review");
   const [pendingSave, setPendingSave] = useState(false);
 
-  const [type, setType] = useState<VehicleType | "">("");
+  const [type, setType] = useState<VehicleType | "">(initialType ?? "");
   const [subtype, setSubtype] = useState<VehicleSubtype | "">("");
   const [metricUnit, setMetricUnit] = useState<"horas" | "km" | "">("");
   const [summary, setSummary] = useState({
@@ -211,7 +215,7 @@ export function VehicleWizard() {
           onVerified={() => setPendingSave(true)}
         />
       ) : (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
           {!isFirstStep ? (
             <button
               type="button"
@@ -227,7 +231,7 @@ export function VehicleWizard() {
               <button
                 type="button"
                 onClick={() => setConfirmPhase("email")}
-                className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
+                className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
               >
                 Continuar
               </button>
@@ -242,7 +246,7 @@ export function VehicleWizard() {
             <button
               type="button"
               onClick={goNext}
-              className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
+              className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
             >
               Continuar
             </button>
