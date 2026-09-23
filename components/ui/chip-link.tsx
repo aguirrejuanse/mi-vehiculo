@@ -10,7 +10,7 @@ type ChipLinkProps = LinkProps & {
 export function ChipLink({ active, count, children, ...props }: ChipLinkProps) {
   return (
     <Link
-      aria-current={active ? "true" : undefined}
+      aria-current={active ? "page" : undefined}
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase transition-colors ${
         active
           ? "border-primary bg-primary-soft text-primary"

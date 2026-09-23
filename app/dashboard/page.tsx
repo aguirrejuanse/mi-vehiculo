@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LinkButton } from "@/components/ui/link-button";
 import { ListRow } from "@/components/ui/list-row";
 import { PageTitle } from "@/components/ui/page-title";
+import { Section } from "@/components/ui/section";
 import { StatusDot, type StatusDotTone } from "@/components/ui/status-dot";
 import { VehicleTypeIcon } from "@/components/ui/vehicle-type-icon";
 import type { MaintenanceLog, MaintenanceType, Vehicle } from "@/db/schema";
@@ -164,10 +165,7 @@ export default async function DashboardPage({
           </div>
 
           {visibleGroups.map((group) => (
-            <section key={group.type} className="flex flex-col gap-3">
-              <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
-                {TYPE_GROUP_LABELS[group.type]}
-              </h2>
+            <Section key={group.type} title={TYPE_GROUP_LABELS[group.type]}>
               {group.vehicles.length === 0 ? (
                 <EmptyState>
                   <p className="text-sm text-muted">
@@ -214,7 +212,7 @@ export default async function DashboardPage({
                   })}
                 </ul>
               )}
-            </section>
+            </Section>
           ))}
 
           {!activeType && emptyTypes.length > 0 && (
