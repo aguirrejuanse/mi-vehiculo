@@ -6,14 +6,16 @@ import { HERO_VARIANTS } from "@/lib/landing/hero-variants";
 import "@/lib/env";
 
 // Public routes: the landing page (and its per-vehicle variants), the guest
-// vehicle wizard, and the file-based metadata routes crawlers/social bots
-// hit (sitemap, robots, OG image, icons — most have no extension, or one
-// not covered by the matcher's static-asset exclusion below, so without
-// this they'd 307 to sign-in for every crawler request). Everything else
-// under the app (dashboard, etc.) requires authentication.
+// vehicle wizard, our own embedded /sign-in, and the file-based metadata
+// routes crawlers/social bots hit (sitemap, robots, OG image, icons — most
+// have no extension, or one not covered by the matcher's static-asset
+// exclusion below, so without this they'd 307 to sign-in for every crawler
+// request). Everything else under the app (dashboard, etc.) requires
+// authentication.
 const isPublicRoute = createRouteMatcher([
   "/",
   "/nuevo",
+  "/sign-in",
   "/sitemap.xml",
   "/robots.txt",
   "/icon",

@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Sora } from "next/font/google";
-import { ClerkProvider, SignInButton, Show, UserButton } from "@clerk/nextjs";
+import { ClerkProvider, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
 import { Toaster } from "@/components/ui/toast";
-import { SITE_URL } from "@/lib/site-url";
+import { SITE_URL, SITE_URL_ORIGIN } from "@/lib/site-url";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -29,7 +29,7 @@ const sora = Sora({
 const DESCRIPTION = "Llevá el control del mantenimiento de tus vehículos";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  metadataBase: SITE_URL_ORIGIN,
   title: "Mi Vehículo",
   description: DESCRIPTION,
   openGraph: {
@@ -81,11 +81,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <HeaderNav />
             <nav className="flex items-center gap-2 sm:gap-4">
               <Show when="signed-out">
-                <SignInButton>
-                  <button className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm">
-                    Iniciar sesión
-                  </button>
-                </SignInButton>
+                <Link
+                  href="/sign-in"
+                  className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm"
+                >
+                  Iniciar sesión
+                </Link>
                 <HeaderCta />
               </Show>
               <Show when="signed-in">
