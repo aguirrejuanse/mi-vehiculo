@@ -31,6 +31,8 @@ export async function createVehicleAction(
     };
   }
 
+  const source = String(formData.get("source") ?? "unknown");
+
   const parsed = vehicleSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
@@ -70,6 +72,7 @@ export async function createVehicleAction(
     {
       vehicle_type: parsed.data.type,
       has_usage_rate: parsed.data.usageRatePerWeek != null,
+      source,
     },
     { userId },
   );

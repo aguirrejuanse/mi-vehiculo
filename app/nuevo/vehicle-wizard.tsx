@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 import { createVehicleAction } from "@/app/nuevo/actions";
 import { GuestAuthStep, type ConfirmPhase } from "@/app/nuevo/guest-auth-step";
 import {
@@ -48,6 +49,13 @@ export function VehicleWizard() {
     useActionFormState(createVehicleAction, validateVehicleFields);
 
   const { isLoaded, isSignedIn } = useAuth();
+  const pathname = usePathname();
+  const source =
+    pathname === "/nuevo"
+      ? "public"
+      : pathname?.startsWith("/dashboard")
+        ? "dashboard"
+        : "landing";
 
   const formRef = useRef<HTMLFormElement>(null);
   const guestPrimaryActionRef = useRef<(() => void) | null>(null);
@@ -108,7 +116,7 @@ export function VehicleWizard() {
       return;
     }
     setStepErrors(null);
-    track("wizard_step_completed", { step: stepId });
+    track("wizard_step_completed", { step: stepId, source });
 
     const currentIndex = steps.indexOf(stepId);
     const nextStep = steps[currentIndex + 1];
@@ -151,8 +159,8 @@ export function VehicleWizard() {
   useEffect(() => {
     if (!isLoaded || wizardStartedRef.current) return;
     wizardStartedRef.current = true;
-    track("wizard_started", { is_signed_in: Boolean(isSignedIn) });
-  }, [isLoaded, isSignedIn]);
+    track("wizard_started", { is_signed_in: Boolean(isSignedIn), source });
+  }, [isLoaded, isSignedIn, source]);
 
   // A form with a single visible text input performs implicit submission on
   // Enter even with no submit button in the accessibility tree — real
@@ -192,6 +200,7 @@ export function VehicleWizard() {
       padding="md"
       className="flex flex-col gap-6"
     >
+      <input type="hidden" name="source" value={source} />
       <WizardProgress current={currentIndex + 1} total={steps.length} />
 
       <WizardSteps
@@ -218,7 +227,7 @@ export function VehicleWizard() {
           actionRef={guestPrimaryActionRef}
           onEmailSent={() => setConfirmPhase("code")}
           onVerified={() => {
-            track("account_created");
+            track("account_created", { source });
             setPendingSave(true);
           }}
         />
