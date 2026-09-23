@@ -230,8 +230,8 @@ export default async function VehicleDetailPage({
   // Mobile is always a single column; columns appear at md+.
   const historySectionClass =
     layoutVariant === "b"
-      ? "md:order-last md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-start-2 lg:row-span-6"
-      : "md:order-last md:col-span-2 lg:col-span-3";
+      ? "order-last md:col-span-2 lg:col-span-1 lg:col-start-3 lg:row-start-3 lg:row-span-2"
+      : "order-last md:col-span-2 lg:col-span-3";
   const nextDueSectionClass =
     layoutVariant === "b" ? "md:col-span-2" : "";
   const historyGridClass =

@@ -14,7 +14,7 @@ type SectionProps = {
 export function Section({ title, action, className, children }: SectionProps) {
   return (
     <section className={`flex flex-col gap-3 ${className ?? ""}`}>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 md:min-h-10">
         <h2 className="text-sm font-bold tracking-widest text-muted uppercase">
           {title}
         </h2>
