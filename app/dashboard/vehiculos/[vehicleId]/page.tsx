@@ -7,7 +7,7 @@ import { listMaintenanceLogsWithTypeForVehicle } from "@/db/queries/maintenance-
 import { listPartsForVehicle } from "@/db/queries/parts";
 import { SUBTYPE_LABELS, TYPE_LABELS } from "@/lib/validation/vehicle";
 import { formatDateUTC, formatMetric } from "@/lib/format";
-import { LocalTime } from "@/components/ui/local-time";
+import { filterSuffix } from "@/lib/dashboard-filters";
 import { BackLink } from "@/components/ui/back-link";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card } from "@/components/ui/card";
@@ -39,7 +39,7 @@ const STATUS_TONE: Record<NextDueStatus, "ok" | "warn" | "danger" | "muted"> = {
   [NEXT_DUE_STATUS.OK]: "ok",
   [NEXT_DUE_STATUS.PRONTO]: "warn",
   [NEXT_DUE_STATUS.VENCIDO]: "danger",
-  [NEXT_DUE_STATUS.SIN_REGISTRO]: "muted",
+  [NEXT_DUE_STATUS.SIN_REGISTRO]: "warn",
 };
 
 // A maintenanceType with no interval configured (opted out via the
@@ -80,8 +80,13 @@ export const dynamic = "force-dynamic";
 
 export default async function VehicleDetailPage({
   params,
+  searchParams,
 }: PageProps<"/dashboard/vehiculos/[vehicleId]">) {
-  const { vehicleId } = await params;
+  const [{ vehicleId }, { tipo, ver }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
+  const suffix = filterSuffix({ tipo, ver });
   const userId = await requireUserId();
   const vehicle = await getVehicleForUser(vehicleId, userId);
 
@@ -148,7 +153,7 @@ export default async function VehicleDetailPage({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-6 py-10">
-      <BackLink href="/dashboard">Tus vehículos</BackLink>
+      <BackLink href={`/dashboard${suffix}`}>Tus vehículos</BackLink>
 
       <Card padding="md" className="flex flex-col gap-4">
         {/* Toolbar row: icon left, actions right. Keeping actions out of the
@@ -165,9 +170,9 @@ export default async function VehicleDetailPage({
               </span>
             ) : (
               <Link
-                href={`/dashboard/vehiculos/${vehicle.id}/editar`}
+                href={`/dashboard/vehiculos/${vehicle.id}/editar${suffix}`}
                 aria-label={`Editar ${vehicle.name}`}
-                className="rounded-lg p-1 text-muted transition-colors hover:text-foreground"
+                className="-m-1 rounded-lg p-2 text-muted transition-colors hover:text-foreground"
               >
                 <PencilIcon className="size-4" />
               </Link>
@@ -200,7 +205,7 @@ export default async function VehicleDetailPage({
         action={
           !isArchived && (
             <SectionAddLink
-              href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
+              href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo${suffix}`}
             >
               Mantenimiento
             </SectionAddLink>
@@ -214,12 +219,14 @@ export default async function VehicleDetailPage({
                 <p className="text-sm text-muted">
                   Todavía no cargaste mantenimientos para este vehículo.
                 </p>
-                <LinkButton
-                  href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-                  size="md"
-                >
-                  Cargar mantenimiento
-                </LinkButton>
+                {!isArchived && (
+                  <LinkButton
+                    href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo${suffix}`}
+                    size="md"
+                  >
+                    Cargar mantenimiento
+                  </LinkButton>
+                )}
               </>
             ) : (
               <p className="text-sm text-muted">
@@ -284,7 +291,7 @@ export default async function VehicleDetailPage({
         action={
           !isArchived && (
             <SectionAddLink
-              href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
+              href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo${suffix}`}
             >
               Repuesto
             </SectionAddLink>
@@ -296,12 +303,14 @@ export default async function VehicleDetailPage({
             <p className="text-sm text-muted">
               Todavía no cargaste repuestos para este vehículo.
             </p>
-            <LinkButton
-              href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo`}
-              size="md"
-            >
-              Cargar repuesto
-            </LinkButton>
+            {!isArchived && (
+              <LinkButton
+                href={`/dashboard/vehiculos/${vehicle.id}/repuestos/nuevo${suffix}`}
+                size="md"
+              >
+                Cargar repuesto
+              </LinkButton>
+            )}
           </EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -313,7 +322,7 @@ export default async function VehicleDetailPage({
                     <Badge tone={PART_STATUS_TONE[part.status]}>
                       {PART_STATUS_LABEL[part.status]}
                     </Badge>
-                    {nextPartStatus(part.status) && (
+                    {!isArchived && nextPartStatus(part.status) && (
                       <AdvancePartButton
                         partId={part.id}
                         vehicleId={vehicle.id}
@@ -346,7 +355,7 @@ export default async function VehicleDetailPage({
         action={
           !isArchived && (
             <SectionAddLink
-              href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
+              href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo${suffix}`}
             >
               Registro
             </SectionAddLink>
@@ -358,21 +367,22 @@ export default async function VehicleDetailPage({
             <p className="text-sm text-muted">
               Todavía no hay registros de mantenimiento para este vehículo.
             </p>
-            {maintenanceTypes.length === 0 ? (
-              <LinkButton
-                href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo`}
-                size="md"
-              >
-                Cargar mantenimiento
-              </LinkButton>
-            ) : (
-              <LinkButton
-                href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo`}
-                size="md"
-              >
-                Cargar registro
-              </LinkButton>
-            )}
+            {!isArchived &&
+              (maintenanceTypes.length === 0 ? (
+                <LinkButton
+                  href={`/dashboard/vehiculos/${vehicle.id}/mantenimientos/nuevo${suffix}`}
+                  size="md"
+                >
+                  Cargar mantenimiento
+                </LinkButton>
+              ) : (
+                <LinkButton
+                  href={`/dashboard/vehiculos/${vehicle.id}/registros/nuevo${suffix}`}
+                  size="md"
+                >
+                  Cargar registro
+                </LinkButton>
+              ))}
           </EmptyState>
         ) : (
           <ul className="flex flex-col gap-3">
@@ -382,21 +392,22 @@ export default async function VehicleDetailPage({
                   <p className="font-bold">{log.maintenanceType.name}</p>
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-muted">
-                      {formatDateUTC(log.performedAtDate)} ·{" "}
-                      <LocalTime value={log.lastEditedAt ?? log.createdAt} />
+                      {formatDateUTC(log.performedAtDate)}
                     </p>
                     {log.editCount > 0 && (
                       <SectionLink
-                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial`}
+                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/historial${suffix}`}
                       >
                         Editado ({log.editCount})
                       </SectionLink>
                     )}
-                    <SectionLink
-                      href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar`}
-                    >
-                      Editar
-                    </SectionLink>
+                    {!isArchived && (
+                      <SectionLink
+                        href={`/dashboard/vehiculos/${vehicle.id}/registros/${log.id}/editar${suffix}`}
+                      >
+                        Editar
+                      </SectionLink>
+                    )}
                   </div>
                 </div>
                 <p className="text-sm text-muted">

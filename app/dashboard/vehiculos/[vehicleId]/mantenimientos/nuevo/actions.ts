@@ -45,6 +45,9 @@ export async function createMaintenanceTypeAction(
       message: "No encontramos ese vehículo.",
     };
   }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
 
   try {
     await createMaintenanceType({

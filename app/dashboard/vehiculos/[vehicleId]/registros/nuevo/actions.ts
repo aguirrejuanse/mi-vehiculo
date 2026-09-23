@@ -42,6 +42,9 @@ export async function createMaintenanceLogAction(
   if (!vehicle) {
     return { status: "error", message: "No encontramos ese vehículo." };
   }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
 
   const [maintenanceType] = await db
     .select()

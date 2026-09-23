@@ -32,6 +32,9 @@ export async function advancePartStatusAction(
   if (!vehicle) {
     return { status: "error", message: "No encontramos ese vehículo." };
   }
+  if (vehicle.archivedAt) {
+    return { status: "error", message: "Este vehículo está archivado." };
+  }
 
   const part = await getPartForVehicle(partId, vehicle.id);
   if (!part) {
