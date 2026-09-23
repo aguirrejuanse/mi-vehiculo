@@ -448,7 +448,10 @@ export default async function VehicleDetailPage({
               ))}
           </EmptyState>
         ) : (
-          <ul className="flex flex-col gap-3">
+          // Bounded-height scroll area so a long history doesn't stretch the
+          // page; grid widens with the viewport (1/2/3 cols). "Cargar más"
+          // stays at the bottom of the scrolled region.
+          <ul className="grid max-h-[28rem] grid-cols-1 gap-3 overflow-y-auto md:grid-cols-2 lg:grid-cols-3">
             {logs.map((log) => (
               <LogCard
                 key={log.id}

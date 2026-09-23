@@ -59,7 +59,7 @@ export function LoadMoreLogs({
         />
       ))}
       {(hasMore || error) && (
-        <li className="flex flex-col items-center gap-2">
+        <li className="col-span-full flex flex-col items-center gap-2">
           <button
             type="button"
             onClick={loadMore}
