@@ -10,6 +10,8 @@ on:
   pull_request:
   push:
     branches: [dev, master]
+  # Manual full-suite runs from the Actions tab.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -65,3 +67,49 @@ jobs:
       - run: pnpm db:migrate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  e2e:
+    name: E2E (Playwright)
+    # Smoke on every PR; the full suite on dev pushes and manual dispatches.
+    # Master pushes are skipped on purpose: the suite seeds a test garage in
+    # the dev database, it must never write to production.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref_name == 'dev'
+    runs-on: ubuntu-latest
+    # DATABASE_URL comes from the "dev" GitHub Environment; the Clerk dev
+    # keys are repo/environment secrets with the same values as .env.local.
+    environment: dev
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Apply the PR's pending migrations before testing — a schema-touching
+      # PR fails on missing columns otherwise. Idempotent when there's
+      # nothing to apply.
+      - run: pnpm db:migrate
+      # Production build + `next start` (see playwright.config.ts webServer):
+      # no per-route cold compiles, so the suite is faster and less flaky
+      # than against `next dev`. The runner's preinstalled Chrome satisfies
+      # `channel: "chrome"` — no browser download needed.
+      - run: pnpm exec next build
+      - name: E2E (smoke only)
+        if: github.event_name == 'pull_request'
+        run: pnpm test:e2e:smoke
+      - name: E2E (full suite)
+        if: github.event_name != 'pull_request'
+        run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7

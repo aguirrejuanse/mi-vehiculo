@@ -37,7 +37,12 @@ export default defineConfig({
     { name: "dashboard", testMatch: "dashboard/**/*.spec.ts" },
   ],
   webServer: {
-    command: `pnpm exec next dev -p ${PORT}`,
+    // CI builds once and serves `next start` — no per-route cold compiles,
+    // which is what made dev-mode timeouts flake. Locally `next dev` keeps
+    // the loop fast since routes compile on demand.
+    command: process.env.CI
+      ? `pnpm exec next start -p ${PORT}`
+      : `pnpm exec next dev -p ${PORT}`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
