@@ -1,10 +1,29 @@
 # Análisis de competencia — Mi Garage y LookOver
 
-Fecha: 2026-09-21. Fuentes: 76 screenshots en esta carpeta, `migarage.app`,
+Fecha: 2026-09-21. Fuentes: 76 screenshots (organizados por flujo en
+subcarpetas, ver índice abajo), `migarage.app`,
 `migarage.app/talleres`, `lookover.app` y el código de Mi Vehículo en `master`.
 Los datos de las landings salen de WebFetch (resumidos por un modelo chico);
 los textos entre comillas no se re-verificaron contra el HTML salvo H1, meta
 y schema.
+
+### Índice de screenshots
+
+| Carpeta | N | Contenido |
+|---|---|---|
+| `01-inicio/` | 19 | Home / dashboard, tour guiado (1 de 9), activar avisos, cards RTO/seguro/patente, pedir presupuesto desde home |
+| `02-gastos/` | 8 | Página de gastos, nuevo gasto fijo, cargar nafta, "otro gasto" (peaje, lavado, multa…) |
+| `03-talleres/` | 6 | Directorio de talleres, buscar/filtrar, "proponer taller" |
+| `04-vender-auto/` | 2 | Publicación de venta con historial de mantenimiento verificado |
+| `05-menu-cuenta/` | 4 | Menú, ajustes del vehículo (editar/archivar/eliminar), perfil de cuenta |
+| `06-taller-onboarding/` | 7 | Onboarding B2B del taller (4 pasos + revisión) |
+| `07-presupuestos/` | 3 | "Mis presupuestos" y modal de solicitud (VIN opcional) |
+| `08-mantenimientos/` | 1 | Timeline de próximos mantenimientos + "agregar mantenimiento realizado" |
+| `09-asistente-ia/` | 2 | Chat del asistente ("¿qué le toca al auto?") |
+| `10-notificaciones/` | 1 | Centro de notificaciones (tabs por categoría) |
+| `11-instagram/` | 11 | Perfil y posts de `@migarage.app` (marketing) |
+| `12-onboarding-vehiculo/` | 8 | Alta de vehículo (4 pasos: marca/modelo/año/km) → plan de mantenimiento generado |
+| `13-entrevista/` | 4 | "Entrevista de mantenimiento" (7 pasos: lo hice / no me acuerdo / nunca) |
 
 ## 1. Conclusión
 
