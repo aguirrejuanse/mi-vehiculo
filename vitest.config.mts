@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, defaultExclude } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
@@ -9,5 +9,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // `*.spec.ts` is Playwright territory — vitest would try to run them and
+    // blow up on test.beforeEach outside its runner.
+    exclude: [...defaultExclude, "e2e/**"],
   },
 });
