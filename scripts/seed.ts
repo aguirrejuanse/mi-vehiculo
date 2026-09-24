@@ -244,7 +244,7 @@ async function main() {
       notes: "Vino sin jaula, la reutilicé",
     });
   }
-  await addPart(husky.id, { name: "Maneta de embrague", status: "wishlist" });
+  await addPart(husky.id, { name: "Manija de embrague", status: "wishlist" });
 
   // ── Autos ──
   const fitito = await addVehicle({

@@ -36,6 +36,19 @@ export default defineConfig({
     { name: "smoke", testMatch: "smoke/**/*.spec.ts" },
     { name: "e2e", testMatch: ["auth/**/*.spec.ts", "nuevo/**/*.spec.ts"] },
     { name: "dashboard", testMatch: "dashboard/**/*.spec.ts" },
+    // Guide screenshots generator — excluded from `test:e2e` (it writes to
+    // public/, not assertions); run it on demand via `pnpm screenshots`.
+    {
+      name: "screenshots",
+      testMatch: "screenshots/**/*.spec.ts",
+      // Marketing shots: mobile viewport + dark mode, retina density so the
+      // PNGs stay sharp on hidpi displays.
+      use: {
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2,
+        colorScheme: "dark",
+      },
+    },
   ],
   webServer: {
     // CI builds once and serves `next start` — no per-route cold compiles,

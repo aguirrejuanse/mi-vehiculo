@@ -1,3 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
 import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 
 type Step = {
@@ -55,7 +57,46 @@ export function HowItWorks() {
             </div>
           ))}
         </div>
-        <div className="self-center">
+        {/* Real app screenshots — public/guia/*.png, regenerated with
+            `pnpm screenshots` against the seeded garage. */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              src: "/guia/nuevo-vehiculo.png",
+              alt: "Asistente de nuevo vehículo: elegir el tipo",
+              width: 780,
+              height: 1688,
+            },
+            {
+              src: "/guia/detalle-vencimientos.png",
+              alt: "Próximos mantenimientos con sus estados",
+              width: 684,
+              height: 1180,
+            },
+            {
+              src: "/guia/dashboard.png",
+              alt: "Dashboard con vehículos agrupados por tipo",
+              width: 780,
+              height: 2478,
+            },
+          ].map((shot) => (
+            <Image
+              key={shot.src}
+              src={shot.src}
+              alt={shot.alt}
+              width={shot.width}
+              height={shot.height}
+              className="h-auto w-full rounded-xl border border-surface-border"
+            />
+          ))}
+        </div>
+        <div className="flex flex-col items-center gap-4">
+          <Link
+            href="/guia"
+            className="text-sm font-bold tracking-widest text-box-title uppercase underline underline-offset-4 transition-colors hover:text-primary"
+          >
+            Mirá la guía completa
+          </Link>
           <CreateVehicleLink />
         </div>
       </div>

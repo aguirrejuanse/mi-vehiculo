@@ -70,6 +70,26 @@ test.describe("public pages", { tag: "@smoke" }, () => {
     ).toBeVisible();
   });
 
+  test("the guide page is public and explains the core concepts", async ({
+    page,
+  }) => {
+    await page.goto("/guia");
+
+    await expect(page).toHaveTitle(/guía/i);
+    await expect(
+      page.getByRole("heading", { name: /guía de mi vehículo/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /próximos vencimientos/i }),
+    ).toBeVisible();
+    // Scoped to main: the header CTA has the same name.
+    await expect(
+      page
+        .getByRole("main")
+        .getByRole("link", { name: "Crear tu vehículo" }),
+    ).toBeVisible();
+  });
+
   test("crawler metadata routes respond", async ({ request }) => {
     for (const path of [
       "/robots.txt",
