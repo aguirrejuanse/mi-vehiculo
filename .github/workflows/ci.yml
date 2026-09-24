@@ -92,20 +92,34 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Environment secrets are withheld on fork PRs (and until the Clerk
+      # keys are added to the "dev" environment). Skip the run instead of
+      # failing red — the job summary notes it was skipped.
+      - name: Check e2e secrets
+        id: secrets
+        run: |
+          if [ -n "$CLERK_SECRET_KEY" ] && [ -n "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ] && [ -n "$DATABASE_URL" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::e2e secrets not configured — skipping Playwright run"
+          fi
       # Apply the PR's pending migrations before testing — a schema-touching
       # PR fails on missing columns otherwise. Idempotent when there's
       # nothing to apply.
-      - run: pnpm db:migrate
+      - if: steps.secrets.outputs.available == 'true'
+        run: pnpm db:migrate
       # Production build + `next start` (see playwright.config.ts webServer):
       # no per-route cold compiles, so the suite is faster and less flaky
       # than against `next dev`. The runner's preinstalled Chrome satisfies
       # `channel: "chrome"` — no browser download needed.
-      - run: pnpm exec next build
+      - if: steps.secrets.outputs.available == 'true'
+        run: pnpm exec next build
       - name: E2E (smoke only)
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.secrets.outputs.available == 'true'
         run: pnpm test:e2e:smoke
       - name: E2E (full suite)
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.secrets.outputs.available == 'true'
         run: pnpm test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
