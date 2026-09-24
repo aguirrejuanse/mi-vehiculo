@@ -66,7 +66,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         // sets overflow, so the document itself (this element) is what
         // actually scrolls. `proximity`, not `mandatory`, so long sections
         // (FAQ, the wizard, use-cases) stay freely scrollable.
-        className={`${plexSans.variable} ${plexMono.variable} ${sora.variable} h-full snap-y snap-proximity antialiased`}
+        // md+ only: on mobile the dynamic browser chrome makes 100vh taller
+        // than the visible area, so snapping clips section tops and fights
+        // the user's scroll. Without a snap container, `snap-start` is inert.
+        className={`${plexSans.variable} ${plexMono.variable} ${sora.variable} h-full antialiased md:snap-y md:snap-proximity`}
       >
         <body className="min-h-full flex flex-col bg-background text-foreground">
           {/* Sticky so it stays visible through the landing's snap-scroll
