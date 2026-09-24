@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { createMaintenanceTypeAction } from "@/app/dashboard/vehiculos/[vehicleId]/mantenimientos/nuevo/actions";
 import { validateMaintenanceTypeFields } from "@/lib/validation/maintenance-type";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
+import type { ActionState } from "@/lib/validation/action-state";
+import type { MaintenanceTypeInput } from "@/lib/validation/maintenance-type";
 import { TextField } from "@/components/ui/text-field";
 import { SelectField } from "@/components/ui/select-field";
 import { CheckboxField } from "@/components/ui/checkbox-field";
@@ -10,18 +13,44 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
 
+type MaintenanceTypeFormAction = (
+  prevState: ActionState<MaintenanceTypeInput>,
+  formData: FormData,
+) => Promise<ActionState<MaintenanceTypeInput>>;
+
+export type MaintenanceTypeFormInitial = {
+  name: string;
+  intervalValue: string | null;
+  intervalCalendarValue: number | null;
+  intervalCalendarUnit: "dias" | "meses" | null;
+};
+
 export function MaintenanceTypeForm({
   vehicleId,
   metricUnitLabel,
+  action = createMaintenanceTypeAction,
+  typeId,
+  initial,
+  submitLabel = "Guardar mantenimiento",
 }: {
   vehicleId: string;
   metricUnitLabel: string;
+  action?: MaintenanceTypeFormAction;
+  typeId?: string;
+  initial?: MaintenanceTypeFormInitial;
+  submitLabel?: string;
 }) {
   const { state, formAction, isPending, handleSubmit, fieldErrors } =
-    useActionFormState(
-      createMaintenanceTypeAction,
-      validateMaintenanceTypeFields,
-    );
+    useActionFormState(action, validateMaintenanceTypeFields);
+
+  // "Sin intervalo" disables the interval fields: disabled inputs are not
+  // submitted, so checking it also clears any typed values from FormData
+  // (and makes the contradictory state impossible, not just an error).
+  const [noInterval, setNoInterval] = useState(
+    initial != null &&
+      initial.intervalValue == null &&
+      initial.intervalCalendarValue == null,
+  );
 
   return (
     <Card
@@ -33,17 +62,21 @@ export function MaintenanceTypeForm({
       className="flex flex-col gap-5"
     >
       <input type="hidden" name="vehicleId" value={vehicleId} />
+      {typeId ? <input type="hidden" name="typeId" value={typeId} /> : null}
 
       <TextField
         label="Nombre"
         name="name"
         placeholder="Cambio de aceite"
+        defaultValue={initial?.name}
         error={fieldErrors?.name}
       />
 
       <CheckboxField
         label="Este mantenimiento no se repite (sin intervalo)"
         name="noInterval"
+        checked={noInterval}
+        onChange={(event) => setNoInterval(event.target.checked)}
         error={fieldErrors?.noInterval}
       />
 
@@ -54,10 +87,15 @@ export function MaintenanceTypeForm({
         step="any"
         min={0}
         placeholder="Ej: 3000"
+        defaultValue={initial?.intervalValue ?? ""}
+        disabled={noInterval}
         error={fieldErrors?.intervalValue}
       />
 
-      <div className="flex gap-3">
+      {/* Vertical below md (labels+inputs overflow side-by-side on narrow
+          screens); items-end aligns the inputs when the left label wraps to
+          two lines and "Unidad" stays on one. */}
+      <div className="flex flex-col gap-5 md:flex-row md:items-end md:gap-3">
         <div className="flex-1">
           <TextField
             label="Intervalo por calendario (opcional)"
@@ -66,6 +104,8 @@ export function MaintenanceTypeForm({
             step="1"
             min={0}
             placeholder="Ej: 6"
+            defaultValue={initial?.intervalCalendarValue ?? ""}
+            disabled={noInterval}
             error={fieldErrors?.intervalCalendarValue}
           />
         </div>
@@ -74,7 +114,8 @@ export function MaintenanceTypeForm({
           <SelectField
             label="Unidad"
             name="intervalCalendarUnit"
-            defaultValue=""
+            defaultValue={initial?.intervalCalendarUnit ?? ""}
+            disabled={noInterval}
             error={fieldErrors?.intervalCalendarUnit}
           >
             <option value="">Elegí una</option>
@@ -88,7 +129,7 @@ export function MaintenanceTypeForm({
 
       <SubmitButton
         isPending={isPending}
-        label="Guardar mantenimiento"
+        label={submitLabel}
         pendingLabel="Guardando..."
       />
     </Card>

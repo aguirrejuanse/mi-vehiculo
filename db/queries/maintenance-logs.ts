@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
   maintenanceLogEdits,
@@ -8,6 +8,7 @@ import {
   type MaintenanceType,
   type NewMaintenanceLog,
 } from "@/db/schema";
+import { idSchema } from "@/lib/validation/id";
 
 export async function createMaintenanceLog(
   input: NewMaintenanceLog,
@@ -25,6 +26,18 @@ export async function listMaintenanceLogsForVehicle(
     .where(eq(maintenanceLogs.vehicleId, vehicleId));
 }
 
+// Batch variant of listMaintenanceLogsForVehicle: one query for a set of
+// vehicle ids (dashboard list computes next-due status per vehicle).
+export async function listMaintenanceLogsForVehicles(
+  vehicleIds: string[],
+): Promise<MaintenanceLog[]> {
+  if (vehicleIds.length === 0) return [];
+  return db
+    .select()
+    .from(maintenanceLogs)
+    .where(inArray(maintenanceLogs.vehicleId, vehicleIds));
+}
+
 export type MaintenanceLogWithType = MaintenanceLog & {
   maintenanceType: MaintenanceType;
 };
@@ -33,12 +46,19 @@ export type MaintenanceLogWithTypeAndEditCount = MaintenanceLogWithType & {
   editCount: number;
 };
 
+// Historial page size — kept next to the query since both the initial
+// server render and the "Cargar más" action slice with it.
+export const LOGS_PAGE_SIZE = 10;
+
 export async function listMaintenanceLogsWithTypeForVehicle(
   vehicleId: string,
+  options?: { limit?: number; offset?: number },
 ): Promise<MaintenanceLogWithTypeAndEditCount[]> {
   const logs = await db.query.maintenanceLogs.findMany({
     where: eq(maintenanceLogs.vehicleId, vehicleId),
     orderBy: desc(maintenanceLogs.performedAtDate),
+    limit: options?.limit,
+    offset: options?.offset,
     with: { maintenanceType: true, edits: true },
   });
 
@@ -52,6 +72,12 @@ export async function getMaintenanceLogWithTypeForVehicle(
   logId: string,
   vehicleId: string,
 ): Promise<MaintenanceLogWithType | null> {
+  if (
+    !idSchema.safeParse(logId).success ||
+    !idSchema.safeParse(vehicleId).success
+  ) {
+    return null;
+  }
   const log = await db.query.maintenanceLogs.findFirst({
     where: and(
       eq(maintenanceLogs.id, logId),

@@ -38,7 +38,7 @@ export function OptionCardGroup<V extends string>({
         {label}
       </legend>
       <div
-        className={`grid gap-3 ${columns === 2 ? "grid-cols-2" : "grid-cols-1"}`}
+        className={`grid gap-3 ${columns === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}
       >
         {options.map((option) => {
           const checked = value === option.value;

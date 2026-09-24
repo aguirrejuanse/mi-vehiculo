@@ -9,4 +9,13 @@
 - Prettier is not installed; rely on ESLint.
 - Competitor research and screenshots go in `docs/competidores/<name>/`.
 - Landing: component-level decorative color variants (e.g. the "dark box" pattern in pain-banner/how-it-works/final-cta/founder-quote) get their own dedicated token in `globals.css` (`--color-box*`), never reuse semantic tokens (`--foreground`/`--background`) — reusing them breaks the pattern whenever the theme changes for unrelated reasons.
+- Branch flow: `feature → dev → master`. PRs target `dev`. CI (`.github/workflows/ci.yml`) applies Drizzle migrations to the matching Neon branch on push to `dev`/`master`, in parallel with Vercel's deploy, so migrations must be backwards-compatible. Split destructive changes across two PRs.
+- The sign-in page lives at `/ingresar` (`SIGN_IN_PATH` in `lib/auth/routes.ts`). Never run `clerk env pull --instance prod` locally: it overwrites the dev keys in `.env.local`, and live keys don't work on localhost.
+- Clerk dev answers curl with a 307 handshake redirect, so verify auth redirects in a browser.
 - Landing: full-bleed sections (their own `w-full`, like the "dark box" pattern) must be top-level siblings in `landing-page.tsx`, not nested inside the `max-w-5xl` `CONTAINER_CLASSES` wrapper — nesting silently constrains their width.
+- Clerk middleware runs BEFORE rewrites: any reverse-proxy path (e.g. `/_posthog` in next.config) must be in `isPublicRoute` in proxy.ts or anonymous traffic 307s to /ingresar and is silently lost.
+- PR previews share the dev `DATABASE_URL` but CI only migrates on push to `dev`/`master` — run `pnpm db:migrate` locally before testing a schema-touching PR preview.
+- Route params and FormData ids: never pass raw strings to uuid columns — the `get*ForVehicle` queries guard via `idSchema` (`lib/validation/id.ts`); keep that pattern for new lookups.
+- Numeric FormData fields use `isDecimalString` (`lib/validation/numeric.ts`) — `Number()` accepts "0x10"/"Infinity" that Postgres numeric rejects.
+- `requireUserId()` redirects to `/ingresar` (expired sessions mid-action should not hit the error boundary).
+- Standalone scripts (`scripts/*.ts`) run via Node type-stripping: relative `.ts` imports only, no `@/` alias. `pnpm db:seed [userId] [--fresh]` fills dev DB with all UI states.

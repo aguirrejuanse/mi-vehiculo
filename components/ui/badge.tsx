@@ -14,7 +14,7 @@ type BadgeProps = ComponentProps<"span"> & {
 export function Badge({ tone, className, ...props }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold tracking-widest uppercase ${TONE_CLASSES[tone]} ${className ?? ""}`}
+      className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-bold tracking-widest whitespace-nowrap uppercase ${TONE_CLASSES[tone]} ${className ?? ""}`}
       {...props}
     />
   );

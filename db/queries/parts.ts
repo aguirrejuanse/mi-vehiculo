@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { parts, type NewPart, type Part } from "@/db/schema";
 import type { PartStatus } from "@/lib/validation/part";
+import { idSchema } from "@/lib/validation/id";
 
 export async function createPart(input: NewPart): Promise<Part> {
   const [part] = await db.insert(parts).values(input).returning();
@@ -22,6 +23,12 @@ export async function getPartForVehicle(
   partId: string,
   vehicleId: string,
 ): Promise<Part | null> {
+  if (
+    !idSchema.safeParse(partId).success ||
+    !idSchema.safeParse(vehicleId).success
+  ) {
+    return null;
+  }
   const [part] = await db
     .select()
     .from(parts)

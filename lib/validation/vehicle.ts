@@ -3,6 +3,7 @@ import {
   emptyToUndefined,
   fieldErrorsFromZodError,
 } from "@/lib/validation/action-state";
+import { isDecimalString } from "@/lib/validation/numeric";
 
 export const SUBTYPES_BY_TYPE = {
   moto: ["moto_calle", "moto_enduro"],
@@ -12,6 +13,36 @@ export const SUBTYPES_BY_TYPE = {
 } as const;
 
 export type VehicleType = keyof typeof SUBTYPES_BY_TYPE;
+
+// Canonical display order for vehicle types (also the declared order of
+// SUBTYPES_BY_TYPE keys). Used for group/chip ordering in the dashboard.
+export const VEHICLE_TYPES = Object.keys(SUBTYPES_BY_TYPE) as VehicleType[];
+
+// Parses the `?tipo=` search param into a VehicleType; invalid/absent values
+// fall back to undefined so the wizard starts empty instead of breaking.
+export function parseVehicleTypeParam(
+  value: string | string[] | undefined,
+): VehicleType | undefined {
+  if (typeof value !== "string") return undefined;
+  return VEHICLE_TYPES.includes(value as VehicleType)
+    ? (value as VehicleType)
+    : undefined;
+}
+
+export const TYPE_LABELS: Record<VehicleType, string> = {
+  moto: "Moto",
+  auto: "Auto",
+  bicicleta: "Bicicleta",
+  monopatin: "Monopatín",
+};
+
+// Plural labels for type groups/filters ("Autos", "Motos", ...).
+export const TYPE_GROUP_LABELS: Record<VehicleType, string> = {
+  moto: "Motos",
+  auto: "Autos",
+  bicicleta: "Bicis",
+  monopatin: "Monopatines",
+};
 export type VehicleSubtype = (typeof SUBTYPES_BY_TYPE)[VehicleType][number];
 
 export const SUBTYPE_LABELS: Record<VehicleSubtype, string> = {
@@ -36,7 +67,7 @@ const numericString = z.preprocess(
   emptyToUndefined,
   z
     .string({ error: "Ingresá un valor." })
-    .refine((value) => !Number.isNaN(Number(value)), {
+    .refine(isDecimalString, {
       error: "Tiene que ser un número.",
     })
     .refine((value) => Number(value) >= 0, {
@@ -77,7 +108,7 @@ export const vehicleBaseSchema = z.object({
     emptyToUndefined,
     z
       .string()
-      .refine((value) => !Number.isNaN(Number(value)), {
+      .refine(isDecimalString, {
         error: "Tiene que ser un número.",
       })
       .refine((value) => Number(value) >= 0, {

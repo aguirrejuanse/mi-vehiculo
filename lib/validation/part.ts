@@ -27,8 +27,14 @@ export const partBaseSchema = z.object({
       })
       .default("wishlist"),
   ),
-  maintenanceTypeId: z.preprocess(emptyToUndefined, z.uuid().optional()),
-  maintenanceLogId: z.preprocess(emptyToUndefined, z.uuid().optional()),
+  maintenanceTypeId: z.preprocess(
+    emptyToUndefined,
+    z.uuid({ error: "Mantenimiento inválido." }).optional(),
+  ),
+  maintenanceLogId: z.preprocess(
+    emptyToUndefined,
+    z.uuid({ error: "Registro inválido." }).optional(),
+  ),
   notes: z.preprocess(
     emptyToUndefined,
     z.string().trim().max(500).optional(),

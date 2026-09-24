@@ -22,6 +22,9 @@ const isPublicRoute = createRouteMatcher([
   "/icon",
   "/apple-icon",
   "/opengraph-image",
+  // PostHog reverse proxy: middleware runs before rewrites, so without this
+  // every event from signed-out visitors 307s to sign-in and is lost.
+  "/_posthog(.*)",
   ...HERO_VARIANTS.map((variant) => `/${variant.slug}`),
 ]);
 

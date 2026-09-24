@@ -24,5 +24,5 @@ export function fieldErrorsFromZodError<T>(
 }
 
 export function emptyToUndefined(value: unknown): unknown {
-  return value === "" ? undefined : value;
+  return typeof value === "string" && value.trim() === "" ? undefined : value;
 }

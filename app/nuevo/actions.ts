@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { createVehicle } from "@/db/queries/vehicles";
+import { track } from "@/lib/analytics/server";
 import {
   vehicleSchema,
   type VehicleInput,
@@ -29,6 +30,8 @@ export async function createVehicleAction(
       message: "Tu sesión todavía se está activando. Probá de nuevo.",
     };
   }
+
+  const source = String(formData.get("source") ?? "unknown");
 
   const parsed = vehicleSchema.safeParse({
     name: formData.get("name"),
@@ -63,6 +66,16 @@ export async function createVehicleAction(
       message: "No se pudo guardar el vehículo. Probá de nuevo.",
     };
   }
+
+  track(
+    "wizard_completed",
+    {
+      vehicle_type: parsed.data.type,
+      has_usage_rate: parsed.data.usageRatePerWeek != null,
+      source,
+    },
+    { userId },
+  );
 
   revalidatePath("/dashboard");
   redirect(`/dashboard/vehiculos/${vehicle.id}`);

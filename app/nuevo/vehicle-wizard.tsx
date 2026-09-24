@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 import { createVehicleAction } from "@/app/nuevo/actions";
 import { GuestAuthStep, type ConfirmPhase } from "@/app/nuevo/guest-auth-step";
 import {
@@ -24,6 +25,7 @@ import {
   type VehicleType,
 } from "@/lib/validation/vehicle";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
+import { track } from "@/lib/analytics/client";
 import { WizardProgress } from "@/components/ui/wizard-progress";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
@@ -42,11 +44,22 @@ function pickFields(
   return Object.keys(picked).length > 0 ? picked : null;
 }
 
-export function VehicleWizard() {
+export function VehicleWizard({
+  initialType,
+}: {
+  initialType?: VehicleType;
+}) {
   const { state, formAction, isPending, handleSubmit, fieldErrors } =
     useActionFormState(createVehicleAction, validateVehicleFields);
 
   const { isLoaded, isSignedIn } = useAuth();
+  const pathname = usePathname();
+  const source =
+    pathname === "/nuevo"
+      ? "public"
+      : pathname?.startsWith("/dashboard")
+        ? "dashboard"
+        : "landing";
 
   const formRef = useRef<HTMLFormElement>(null);
   const guestPrimaryActionRef = useRef<(() => void) | null>(null);
@@ -61,7 +74,7 @@ export function VehicleWizard() {
   const [confirmPhase, setConfirmPhase] = useState<ConfirmPhase>("review");
   const [pendingSave, setPendingSave] = useState(false);
 
-  const [type, setType] = useState<VehicleType | "">("");
+  const [type, setType] = useState<VehicleType | "">(initialType ?? "");
   const [subtype, setSubtype] = useState<VehicleSubtype | "">("");
   const [metricUnit, setMetricUnit] = useState<"horas" | "km" | "">("");
   const [summary, setSummary] = useState({
@@ -107,6 +120,7 @@ export function VehicleWizard() {
       return;
     }
     setStepErrors(null);
+    track("wizard_step_completed", { step: stepId, source });
 
     const currentIndex = steps.indexOf(stepId);
     const nextStep = steps[currentIndex + 1];
@@ -144,6 +158,13 @@ export function VehicleWizard() {
       formAction(new FormData(formRef.current!));
     });
   }, [pendingSave, isSignedIn, formAction]);
+
+  const wizardStartedRef = useRef(false);
+  useEffect(() => {
+    if (!isLoaded || wizardStartedRef.current) return;
+    wizardStartedRef.current = true;
+    track("wizard_started", { is_signed_in: Boolean(isSignedIn), source });
+  }, [isLoaded, isSignedIn, source]);
 
   // A form with a single visible text input performs implicit submission on
   // Enter even with no submit button in the accessibility tree — real
@@ -183,6 +204,7 @@ export function VehicleWizard() {
       padding="md"
       className="flex flex-col gap-6"
     >
+      <input type="hidden" name="source" value={source} />
       <WizardProgress current={currentIndex + 1} total={steps.length} />
 
       <WizardSteps
@@ -208,10 +230,13 @@ export function VehicleWizard() {
           confirmPhase={confirmPhase}
           actionRef={guestPrimaryActionRef}
           onEmailSent={() => setConfirmPhase("code")}
-          onVerified={() => setPendingSave(true)}
+          onVerified={() => {
+            track("account_created", { source });
+            setPendingSave(true);
+          }}
         />
       ) : (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
           {!isFirstStep ? (
             <button
               type="button"
@@ -227,7 +252,7 @@ export function VehicleWizard() {
               <button
                 type="button"
                 onClick={() => setConfirmPhase("email")}
-                className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
+                className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
               >
                 Continuar
               </button>
@@ -242,7 +267,7 @@ export function VehicleWizard() {
             <button
               type="button"
               onClick={goNext}
-              className="ml-auto cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover"
+              className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
             >
               Continuar
             </button>
