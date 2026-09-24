@@ -54,18 +54,14 @@ test.describe("public pages", { tag: "@smoke" }, () => {
     await expect(
       page.getByRole("heading", { name: /nuevo/i }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("radio", { name: "Moto" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("radio", { name: "Auto/Camioneta" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("radio", { name: "Bicicleta" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("radio", { name: "Monopatín" }),
-    ).toBeVisible();
+    // The radio inputs are sr-only (1px-clipped) — assert attachment, the
+    // visible card labels are what the user actually sees.
+    for (const type of ["Moto", "Auto/Camioneta", "Bicicleta", "Monopatín"]) {
+      await expect(page.getByRole("radio", { name: type })).toBeAttached();
+      await expect(
+        page.getByText(type, { exact: true }).first(),
+      ).toBeVisible();
+    }
 
     // Continuar on an untouched step surfaces the field error in place.
     await page.getByRole("button", { name: "Continuar" }).click();

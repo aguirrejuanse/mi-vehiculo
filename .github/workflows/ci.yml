@@ -75,11 +75,22 @@ jobs:
     # the dev database, it must never write to production.
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref_name == 'dev'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The suite seeds and mutates ONE shared dev garage/Clerk instance —
+    # serialize all e2e runs repo-wide (the workflow-level group is per-ref,
+    # so a PR smoke could otherwise overlap a dev full-suite and both would
+    # reseed/delete each other's data mid-run).
+    concurrency:
+      group: e2e-shared-dev
+      cancel-in-progress: false
     # DATABASE_URL comes from the "dev" GitHub Environment; the Clerk dev
     # keys are repo/environment secrets with the same values as .env.local.
     environment: dev
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Explicit marker for the suite's destructive operations (seed --fresh,
+      # teardown deletes) — never let them fall back to a production URL.
+      E2E_DATABASE_URL: ${{ secrets.DATABASE_URL }}
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
     steps:
@@ -125,5 +136,9 @@ jobs:
         if: failure()
         with:
           name: playwright-report
-          path: playwright-report
+          # test-results/ carries the traces and failure screenshots the
+          # HTML report links to — without it the artifact has no evidence.
+          path: |
+            playwright-report
+            test-results
           retention-days: 7

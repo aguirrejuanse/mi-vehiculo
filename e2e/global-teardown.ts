@@ -23,7 +23,12 @@ export default async function globalTeardown() {
 
     await deleteVehiclesForUsers(guests.map((user) => user.id));
     for (const user of guests) {
-      await deleteUser(user.id);
+      try {
+        await deleteUser(user.id);
+      } catch (error) {
+        // One failed delete must not abort cleanup of the rest.
+        console.warn(`e2e teardown: could not delete ${user.id}:`, error);
+      }
     }
   } catch (error) {
     // Teardown must never mask test results — a stray test user is harmless.

@@ -1,4 +1,8 @@
-import { signInSeededUser } from "../helpers";
+import {
+  deleteVehicleById,
+  sectionByHeading,
+  signInSeededUser,
+} from "../helpers";
 import { VehicleWizardPage } from "../nuevo/vehicle-wizard-page";
 import { expect, test } from "../fixtures";
 
@@ -8,11 +12,20 @@ test.beforeEach(async ({ page }) => {
 
 // Mutations run serially against a vehicle created by the suite itself, so
 // the seeded garage stays pristine for the read-only dashboard specs running
-// in parallel.
-test.describe.configure({ mode: "serial" });
+// in parallel. Retries are off: a post-commit flake would retry a mutation
+// and create duplicate entities, which strict-mode assertions can never
+// survive — one clean failure beats a poisoned chain.
+test.describe.configure({ mode: "serial", retries: 0 });
 
 test.describe("vehicle crud", { tag: "@e2e" }, () => {
   let vehiclePath: string;
+
+  // Whatever the chain managed to create gets deleted — otherwise a killed
+  // run leaves "Renault 12 E2E" in the seeded garage until the next reseed.
+  test.afterAll(async () => {
+    const vehicleId = vehiclePath?.split("/").pop();
+    if (vehicleId) await deleteVehicleById(vehicleId);
+  });
 
   test("a signed-in user creates a vehicle through the wizard", async ({
     page,
@@ -48,8 +61,12 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
     ).toBeVisible();
     vehiclePath = new URL(page.url()).pathname;
     await expect(page.getByText("Auto", { exact: true })).toBeVisible();
-    await expect(page.getByText("42.000")).toBeVisible();
-    await expect(page.getByText("km")).toBeVisible();
+    // The header metric: value and unit in sibling spans of one <p> (no
+    // joining whitespace node, hence the flexible regex).
+    const metric = page
+      .locator("p")
+      .filter({ has: page.getByText("42.000", { exact: true }) });
+    await expect(metric).toContainText(/42\.000\s*km/);
   });
 
   test("adds a maintenance type with an interval", async ({ page }) => {
@@ -71,18 +88,10 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
 
     // The new type shows up in the management list and in "Próximos" as
     // "Sin registro" until its first log.
-    const tipos = page
-      .locator("section")
-      .filter({
-        has: page.getByRole("heading", { name: "Tipos de mantenimiento" }),
-      });
+    const tipos = sectionByHeading(page, "Tipos de mantenimiento");
     await expect(tipos.getByText("Cambio aceite E2E")).toBeVisible();
 
-    const proximos = page
-      .locator("section")
-      .filter({
-        has: page.getByRole("heading", { name: "Próximos mantenimientos" }),
-      });
+    const proximos = sectionByHeading(page, "Próximos mantenimientos");
     await expect(proximos.getByText("Cambio aceite E2E")).toBeVisible();
     await expect(proximos.getByText("Sin registro")).toBeVisible();
   });
@@ -103,18 +112,12 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
 
     await page.waitForURL(vehiclePath);
 
-    const historial = page
-      .locator("section")
-      .filter({ has: page.getByRole("heading", { name: "Historial" }) });
+    const historial = sectionByHeading(page, "Historial");
     await expect(historial.getByText("Cambio aceite E2E")).toBeVisible();
     await expect(historial.getByText("41.000 km")).toBeVisible();
 
     // With one log at 41.000 km and a 5.000 km interval, next-due is 46.000.
-    const proximos = page
-      .locator("section")
-      .filter({
-        has: page.getByRole("heading", { name: "Próximos mantenimientos" }),
-      });
+    const proximos = sectionByHeading(page, "Próximos mantenimientos");
     await expect(proximos.getByText("Al día")).toBeVisible();
   });
 
@@ -131,9 +134,7 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
 
     await page.waitForURL(vehiclePath);
 
-    const repuestos = page
-      .locator("section")
-      .filter({ has: page.getByRole("heading", { name: "Repuestos" }) });
+    const repuestos = sectionByHeading(page, "Repuestos");
     const part = repuestos.locator("li").filter({ hasText: "Filtro E2E" });
     await expect(part.getByText("Wishlist")).toBeVisible();
 

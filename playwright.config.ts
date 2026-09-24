@@ -15,6 +15,7 @@ export default defineConfig({
   // navigation commits well past the default 5s.
   expect: { timeout: 30_000 },
   fullyParallel: true,
+  forbidOnly: !!process.env.CI,
   // `next dev` compiles routes on demand — more parallel browsers starve it
   // and renderer processes get killed mid-test.
   workers: 2,

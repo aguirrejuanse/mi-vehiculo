@@ -1,4 +1,4 @@
-import { signInSeededUser } from "../helpers";
+import { sectionByHeading, signInSeededUser } from "../helpers";
 import { expect, test } from "../fixtures";
 
 test.beforeEach(async ({ page }) => {
@@ -79,11 +79,7 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
     await expect(page.getByText(/120\s*horas/)).toBeVisible();
 
     // Próximos mantenimientos: the seed covers every status badge.
-    const proximos = page
-      .locator("section")
-      .filter({
-        has: page.getByRole("heading", { name: "Próximos mantenimientos" }),
-      });
+    const proximos = sectionByHeading(page, "Próximos mantenimientos");
     await expect(proximos.getByText("Cambio de aceite")).toBeVisible();
     await expect(proximos.getByText("Vencido").first()).toBeVisible();
     await expect(proximos.getByText("Pronto").first()).toBeVisible();
@@ -91,9 +87,7 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
     await expect(proximos.getByText("Sin registro")).toBeVisible();
 
     // Repuestos: seeded parts in each lifecycle state.
-    const repuestos = page
-      .locator("section")
-      .filter({ has: page.getByRole("heading", { name: "Repuestos" }) });
+    const repuestos = sectionByHeading(page, "Repuestos");
     await expect(
       repuestos.getByText("Pastillas de freno delantero"),
     ).toBeVisible();
@@ -104,11 +98,7 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
     await expect(repuestos.getByText("Instalado").first()).toBeVisible();
 
     // Tipos de mantenimiento: management list, archived type included.
-    const tipos = page
-      .locator("section")
-      .filter({
-        has: page.getByRole("heading", { name: "Tipos de mantenimiento" }),
-      });
+    const tipos = sectionByHeading(page, "Tipos de mantenimiento");
     await expect(tipos.getByText("Lavado general")).toBeVisible();
     await expect(tipos.getByText("Bujía (tipo viejo)")).toBeVisible();
   });
@@ -117,9 +107,7 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
     await page.goto("/dashboard");
     await page.getByRole("link", { name: /Husqvarna TE 300/ }).click();
 
-    const historial = page
-      .locator("section")
-      .filter({ has: page.getByRole("heading", { name: "Historial" }) });
+    const historial = sectionByHeading(page, "Historial");
     // Log cards all carry an "Editar" link — the "Cargar más" wrapper <li>
     // doesn't, so it stays out of the count.
     const logs = historial

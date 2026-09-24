@@ -1,5 +1,5 @@
 import { clerk } from "@clerk/testing/playwright";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import { neon } from "@neondatabase/serverless";
 
 // Clerk dev instances verify any `+clerk_test` email with this fixed code —
@@ -15,6 +15,15 @@ export const SEEDED_USER_EMAIL = "e2e-dashboard+clerk_test@example.com";
 export async function signInSeededUser(page: Page): Promise<void> {
   await page.goto("/ingresar");
   await clerk.signIn({ page, emailAddress: SEEDED_USER_EMAIL });
+}
+
+// Detail pages render each feature area inside a <section> headed by an h2 —
+// scope assertions to the section so repeated labels (badges, type names)
+// don't collide across "Próximos", "Historial" and "Tipos de mantenimiento".
+export function sectionByHeading(page: Page, name: string): Locator {
+  return page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name }) });
 }
 
 const CLERK_API = "https://api.clerk.com/v1";
@@ -35,17 +44,26 @@ type ClerkUser = {
   email_addresses: { email_address: string }[];
 };
 
+const USERS_PAGE_SIZE = 100;
+
 export async function listUsersByEmailQuery(
   query: string,
 ): Promise<ClerkUser[]> {
-  const res = await fetch(
-    `${CLERK_API}/users?email_address_query=${encodeURIComponent(query)}&limit=100`,
-    { headers: clerkHeaders() },
-  );
-  if (!res.ok) {
-    throw new Error(`Clerk user list failed: ${res.status} ${await res.text()}`);
+  const users: ClerkUser[] = [];
+  for (let offset = 0; ; offset += USERS_PAGE_SIZE) {
+    const res = await fetch(
+      `${CLERK_API}/users?email_address_query=${encodeURIComponent(query)}&limit=${USERS_PAGE_SIZE}&offset=${offset}`,
+      { headers: clerkHeaders() },
+    );
+    if (!res.ok) {
+      throw new Error(
+        `Clerk user list failed: ${res.status} ${await res.text()}`,
+      );
+    }
+    const page = (await res.json()) as ClerkUser[];
+    users.push(...page);
+    if (page.length < USERS_PAGE_SIZE) return users;
   }
-  return res.json();
 }
 
 export async function findUserByEmail(
@@ -90,10 +108,29 @@ export async function deleteUser(userId: string): Promise<void> {
   }
 }
 
+// E2E_DATABASE_URL exists so CI/scripts can point the suite at a dedicated
+// database explicitly — the suite DELETES rows (seed --fresh, teardown), so
+// it must never silently inherit a production URL.
+export function e2eDatabaseUrl(): string | undefined {
+  return process.env.E2E_DATABASE_URL ?? process.env.DATABASE_URL;
+}
+
 // Deleting a vehicle cascades to maintenance types, logs, edits and parts.
 export async function deleteVehiclesForUsers(userIds: string[]): Promise<void> {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl || userIds.length === 0) return;
+  const databaseUrl = e2eDatabaseUrl();
+  if (!databaseUrl || userIds.length === 0) {
+    if (userIds.length > 0) {
+      console.warn("e2e: no DATABASE_URL — guest vehicles left orphaned");
+    }
+    return;
+  }
   const sql = neon(databaseUrl);
   await sql`DELETE FROM vehicles WHERE user_id = ANY(${userIds})`;
+}
+
+export async function deleteVehicleById(vehicleId: string): Promise<void> {
+  const databaseUrl = e2eDatabaseUrl();
+  if (!databaseUrl) return;
+  const sql = neon(databaseUrl);
+  await sql`DELETE FROM vehicles WHERE id = ${vehicleId}`;
 }
