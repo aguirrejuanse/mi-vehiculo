@@ -15,7 +15,7 @@ import type { ActionState } from "@/lib/validation/action-state";
 // The client submits catalog KEYS only — names and intervals are resolved
 // here from the template, so a crafted request can pick a subset of the
 // catalog but can never inject its own intervals or names.
-export async function addSuggestedTypesAction(
+async function addSuggestedTypesAction(
   vehicleId: string,
   keys: string[],
 ): Promise<ActionState> {

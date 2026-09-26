@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { addSuggestedTypesFormAction } from "./actions";
-import { formatMetric } from "@/lib/format";
+import { CALENDAR_UNIT_LABEL, formatMetric } from "@/lib/format";
 import type { SuggestedMaintenance } from "@/lib/maintenance/templates";
 import type { ActionState } from "@/lib/validation/action-state";
 import { Card } from "@/components/ui/card";
@@ -11,14 +11,6 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 
 const INITIAL_STATE: ActionState = { status: "idle" };
-
-const CALENDAR_UNIT_LABEL: Record<
-  "dias" | "meses",
-  [singular: string, plural: string]
-> = {
-  dias: ["día", "días"],
-  meses: ["mes", "meses"],
-};
 
 // "cada 12 h" / "cada 10.000 km · cada 12 meses" / "sin intervalo" — the
 // configured cadence, same summary style as intervalSummary on the vehicle
