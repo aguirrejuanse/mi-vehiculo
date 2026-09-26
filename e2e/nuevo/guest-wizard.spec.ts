@@ -35,6 +35,9 @@ test.describe("guest vehicle wizard", { tag: "@e2e" }, () => {
     await wizard.submitGuestEmail(email);
     await wizard.submitGuestCode();
     await wizard.waitForVehicleRedirect();
+    // moto_enduro has a catalog-backed plan → the redirect lands on /listo;
+    // this spec asserts the vehicle detail, so skip it.
+    await wizard.skipSuggestedPlan();
 
     await expect(
       page.getByRole("heading", { name: vehicleName }),

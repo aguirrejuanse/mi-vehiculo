@@ -54,8 +54,10 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
     await wizard.expectSummaryValue("Renault 12 E2E");
     await wizard.confirmSave();
 
-    // "nuevo" also matches /vehiculos/[\w-]+ — wait on the vehicle heading
-    // (the wizard page's heading is "Nuevo vehículo") before capturing the URL.
+    // autos have a catalog-backed plan → the redirect lands on /listo;
+    // this spec asserts the detail page, so skip it before capturing the URL.
+    await wizard.waitForVehicleRedirect();
+    await wizard.skipSuggestedPlan();
     await expect(
       page.getByRole("heading", { name: "Renault 12 E2E" }),
     ).toBeVisible();
