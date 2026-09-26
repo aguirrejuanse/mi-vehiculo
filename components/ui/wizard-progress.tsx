@@ -13,7 +13,7 @@ export function WizardProgress({ current, total }: WizardProgressProps) {
       </span>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
         <div
-          className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+          className="h-full rounded-full bg-primary transition-[width] duration-[var(--duration-very-slow)] ease-[var(--ease-smooth-out)]"
           style={{ width: `${percent}%` }}
         />
       </div>

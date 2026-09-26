@@ -194,6 +194,21 @@ describe("validateMaintenanceTypeFields", () => {
     expect(errors).toBeNull();
   });
 
+  // Regression: checking "sin intervalo" disables the interval inputs, and
+  // disabled controls are absent from FormData — `formData.get` returns
+  // null, which used to fail validation and block the submit.
+  it("passes when noInterval is checked and the disabled interval inputs are absent from FormData", () => {
+    const errors = validateMaintenanceTypeFields(
+      formData({
+        vehicleId: VEHICLE_ID,
+        name: "Revisión visual",
+        noInterval: "on",
+      }),
+    );
+
+    expect(errors).toBeNull();
+  });
+
   it("fails when noInterval is checked but a usage interval is also set, with the error on issue.path[0]", () => {
     const errors = validateMaintenanceTypeFields(
       formData({

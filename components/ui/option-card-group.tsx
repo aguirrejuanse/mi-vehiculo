@@ -45,7 +45,7 @@ export function OptionCardGroup<V extends string>({
           return (
             <label
               key={option.value}
-              className={`flex min-w-0 flex-col gap-0.5 rounded-xl border px-4 py-3 text-sm break-words transition duration-150 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
+              className={`flex min-w-0 flex-col gap-0.5 rounded-xl border px-4 py-3 text-sm break-words transition duration-[var(--duration-quick)] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary ${
                 checked
                   ? "border-primary bg-primary-soft ring-1 ring-primary"
                   : "border-surface-border bg-surface-2"
