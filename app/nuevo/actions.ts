@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { createVehicle } from "@/db/queries/vehicles";
+import { getSuggestedMaintenances } from "@/lib/maintenance/templates";
 import { track } from "@/lib/analytics/server";
 import {
   vehicleSchema,
@@ -78,5 +79,18 @@ export async function createVehicleAction(
   );
 
   revalidatePath("/dashboard");
-  redirect(`/dashboard/vehiculos/${vehicle.id}`);
+  // Vehicles with a suggested plan land on the "listo" interstitial first;
+  // type/subtype combos the catalog doesn't cover go straight to the
+  // vehicle page.
+  const hasSuggestions =
+    getSuggestedMaintenances(
+      vehicle.type,
+      vehicle.subtype,
+      vehicle.metricUnit,
+    ).length > 0;
+  redirect(
+    hasSuggestions
+      ? `/dashboard/vehiculos/${vehicle.id}/listo`
+      : `/dashboard/vehiculos/${vehicle.id}`,
+  );
 }

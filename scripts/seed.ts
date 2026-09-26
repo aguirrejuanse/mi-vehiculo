@@ -25,6 +25,7 @@ import {
   parts,
   type Vehicle,
 } from "../db/schema.ts";
+import { getSuggestedMaintenances } from "../lib/maintenance/templates.ts";
 
 const url = process.env.DATABASE_URL;
 if (!url) {
@@ -132,6 +133,31 @@ async function main() {
     return p;
   }
 
+  // Maintenance types for the moto come from the suggested catalog
+  // (lib/maintenance/templates.ts) so seed data stays canonical — same
+  // names/intervals the "listo" screen offers right after vehicle creation.
+  const enduroCatalog = new Map(
+    getSuggestedMaintenances("moto", "moto_enduro", "horas").map((item) => [
+      item.key,
+      item,
+    ]),
+  );
+  function addSuggested(
+    vehicleId: string,
+    key: string,
+    extra?: Partial<typeof maintenanceTypes.$inferInsert>,
+  ) {
+    const item = enduroCatalog.get(key);
+    if (!item) throw new Error(`Unknown template key: ${key}`);
+    return addType(vehicleId, {
+      name: item.name,
+      intervalValue: item.intervalValue ?? null,
+      intervalCalendarValue: item.intervalCalendarValue ?? null,
+      intervalCalendarUnit: item.intervalCalendarUnit ?? null,
+      ...extra,
+    });
+  }
+
   // ── Moto principal: every urgency state + paginated history + edits ──
   const husky = await addVehicle({
     name: "Husqvarna TE 300",
@@ -142,10 +168,7 @@ async function main() {
     usageRatePerWeek: "3",
   });
 
-  const aceite = await addType(husky.id, {
-    name: "Cambio de aceite",
-    intervalValue: "10",
-  });
+  const aceite = await addSuggested(husky.id, "aceite-caja-2t");
   // 14 logs → history pagination (>10 shows "Cargar más").
   const aceiteLogs: [number, number][] = [
     [5, 720], [15, 660], [22, 600], [30, 540], [38, 480], [45, 420],
@@ -162,7 +185,7 @@ async function main() {
       ago === 25 ? "Motul 300V 10w40" : undefined,
     );
   }
-  // Latest log at 105h, bike at 120h, interval 10h → due 115 → VENCIDO.
+  // Latest log at 105h, bike at 120h, interval 12h → due 117 → VENCIDO.
   // Give the newest log an edit history → "Editado (2)".
   if (lastAceiteLog) {
     for (const [prevValue, prevDays, note] of [
@@ -183,51 +206,32 @@ async function main() {
       .where(eq(maintenanceLogs.id, lastAceiteLog.id));
   }
 
-  const filtro = await addType(husky.id, {
-    name: "Filtro de aire",
-    intervalValue: "20",
-  });
+  const filtro = await addSuggested(husky.id, "filtro-aire");
   await addLog(husky.id, filtro.id, 104, daysAgo(30));
   // due 124, remaining 4 → ratio 0.2 → PRONTO.
 
-  const transmision = await addType(husky.id, {
-    name: "Kit de transmisión",
-    intervalValue: "50",
-  });
+  const transmision = await addSuggested(husky.id, "kit-transmision");
   await addLog(husky.id, transmision.id, 100, daysAgo(45), "DID ERT3");
   // due 150, remaining 30 → OK.
 
-  await addType(husky.id, {
-    name: "Registro de válvulas",
-    intervalValue: "40",
-  });
+  await addSuggested(husky.id, "monoshock");
   // No logs → SIN_REGISTRO.
 
-  const suspension = await addType(husky.id, {
-    name: "Revisión suspensión",
-    intervalCalendarValue: 6,
-    intervalCalendarUnit: "meses",
-  });
-  await addLog(husky.id, suspension.id, 95, monthsAgo(5));
-  // ~1 month left of 6 → ratio <0.2 → PRONTO.
+  const refrigerante = await addSuggested(husky.id, "refrigerante");
+  await addLog(husky.id, refrigerante.id, 95, monthsAgo(23));
+  // ~1 month left of 24 → ratio <0.2 → PRONTO.
 
-  const frenos = await addType(husky.id, {
-    name: "Líquido de frenos",
-    intervalCalendarValue: 12,
-    intervalCalendarUnit: "meses",
-  });
+  const frenos = await addSuggested(husky.id, "liquido-frenos");
   await addLog(husky.id, frenos.id, 60, monthsAgo(14));
   // overdue by ~2 months → VENCIDO.
 
-  await addType(husky.id, { name: "Lavado general" });
+  await addSuggested(husky.id, "lavado");
   // No intervals → only visible in the "Tipos de mantenimiento" management list.
 
-  const tipoArchivado = await addType(husky.id, {
-    name: "Bujía (tipo viejo)",
-    intervalValue: "30",
+  const tipoArchivado = await addSuggested(husky.id, "piston-2t-chico", {
     archivedAt: daysAgo(15),
   });
-  await addLog(husky.id, tipoArchivado.id, 90, daysAgo(90), "NGK");
+  await addLog(husky.id, tipoArchivado.id, 90, daysAgo(90), "Vertex");
   await addLog(husky.id, tipoArchivado.id, 60, daysAgo(200));
   // Archived: hidden from próximos/selects, but its logs keep the name.
 

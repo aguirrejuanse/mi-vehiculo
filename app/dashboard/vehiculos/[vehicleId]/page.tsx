@@ -85,9 +85,9 @@ const PART_ADVANCE_LABEL: Record<Part["status"], string> = {
   instalado: "",
 };
 
-const CALENDAR_UNIT_LABEL: Record<string, string> = {
-  dias: "días",
-  meses: "meses",
+const CALENDAR_UNIT_LABEL: Record<string, [singular: string, plural: string]> = {
+  dias: ["día", "días"],
+  meses: ["mes", "meses"],
 };
 
 // "Cada 5000 km · cada 6 meses" / "Sin intervalo" — the management list shows
@@ -104,8 +104,13 @@ function intervalSummary(
     type.intervalCalendarValue != null &&
     type.intervalCalendarUnit != null
   ) {
+    const [singular, plural] = CALENDAR_UNIT_LABEL[
+      type.intervalCalendarUnit
+    ] ?? [type.intervalCalendarUnit, type.intervalCalendarUnit];
     parts.push(
-      `cada ${type.intervalCalendarValue} ${CALENDAR_UNIT_LABEL[type.intervalCalendarUnit] ?? type.intervalCalendarUnit}`,
+      `cada ${type.intervalCalendarValue} ${
+        type.intervalCalendarValue === 1 ? singular : plural
+      }`,
     );
   }
   return parts.length > 0 ? parts.join(" · ") : "Sin intervalo";
