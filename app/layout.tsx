@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Sora } from "next/font/google";
 import { ClerkProvider, Show, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { Suspense } from "react";
 import { HeaderCta } from "@/components/landing/header-cta";
 import { HeaderNav } from "@/components/landing/header-nav";
+import { TopLoader } from "@/components/layout/top-loader";
 import { UserEmail } from "@/components/layout/user-email";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { SIGN_IN_PATH } from "@/lib/auth/routes";
@@ -72,6 +74,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         className={`${plexSans.variable} ${plexMono.variable} ${sora.variable} h-full antialiased md:snap-y md:snap-proximity`}
       >
         <body className="min-h-full flex flex-col bg-background text-foreground">
+          {/* useSearchParams inside TopLoader needs a Suspense boundary or
+              every page bails out of static rendering. */}
+          <Suspense fallback={null}>
+            <TopLoader />
+          </Suspense>
           {/* Sticky so it stays visible through the landing's snap-scroll
               sections — otherwise the smooth-scroll to an anchor (see
               lib/landing/smooth-scroll.ts) scrolls it out of view, and mobile

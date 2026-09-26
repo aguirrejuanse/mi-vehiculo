@@ -8,28 +8,29 @@ type HeroProps = {
   activeIndex: number;
 };
 
-const ITEM_STAGGER_MS = 60;
+// Per-item stagger offset — see the motion-token scale in globals.css.
+const ITEM_STAGGER_MS = 40;
 
 // Every variant is rendered in the same grid cell so the cell (and therefore
 // the H1 width and the card height) always matches the largest one: swapping
 // the active variant never shifts the layout. Only the active one is exposed
 // to assistive tech.
 const WORD_CLASSES =
-  "col-start-1 row-start-1 transition-[opacity,transform,filter,visibility] duration-500 ease-out motion-reduce:transition-none";
+  "col-start-1 row-start-1 transition-[opacity,transform,filter,visibility] duration-[var(--duration-very-slow)] ease-[var(--ease-smooth-out)] motion-reduce:transition-none";
 
 function wordStateClasses(isActive: boolean) {
   return isActive
     ? "translate-y-0 opacity-100 blur-0"
-    : "invisible translate-y-2 opacity-0 blur-sm";
+    : "invisible translate-y-[var(--distance-medium)] opacity-0 blur-[var(--blur-medium)]";
 }
 
 // The <ul> only toggles visibility (delayed on exit by the transition
 // duration) so the items can fade and slide on their own, staggered.
 const LIST_CLASSES =
-  "col-start-1 row-start-1 flex flex-col divide-y divide-surface-border transition-[visibility] duration-500 motion-reduce:transition-none";
+  "col-start-1 row-start-1 flex flex-col divide-y divide-surface-border transition-[visibility] duration-[var(--duration-very-slow)] motion-reduce:transition-none";
 
 const ITEM_CLASSES =
-  "flex flex-col gap-0.5 py-3 transition-[opacity,transform] duration-500 ease-out first:pt-0 last:pb-0 motion-reduce:transition-none sm:flex-row sm:items-baseline sm:justify-between sm:gap-4";
+  "flex flex-col gap-0.5 py-3 transition-[opacity,transform] duration-[var(--duration-very-slow)] ease-[var(--ease-smooth-out)] first:pt-0 last:pb-0 motion-reduce:transition-none sm:flex-row sm:items-baseline sm:justify-between sm:gap-4";
 
 function itemStateClasses(isActive: boolean) {
   return isActive ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0";
