@@ -67,8 +67,9 @@ const MOTO_ENDURO: SuggestedMaintenance[] = [
   {
     key: "piston-2t",
     name: "Pistón",
-    intervalValue: "30",
-    note: "85-125 cc; 250 cc: ~40 h",
+    intervalValue: "60",
+    // 60 h is the hard-use number — medium use stretches to ~80 h.
+    note: "Uso fuerte; ~80 h uso medio",
     engines: ["2t"],
   },
   {
