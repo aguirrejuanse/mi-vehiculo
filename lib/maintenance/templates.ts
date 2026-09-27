@@ -60,7 +60,7 @@ const MOTO_ENDURO: SuggestedMaintenance[] = [
   },
   {
     key: "engrase",
-    name: "Engrase completo (linkages, caja de dirección)",
+    name: "Engrase completo (torringtons de bieletas y cristo)",
     intervalValue: "45",
     note: "Cada 40-50 h",
   },

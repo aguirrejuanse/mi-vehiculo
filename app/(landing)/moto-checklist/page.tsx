@@ -1,35 +1,27 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
 import { FounderQuote } from "@/components/landing/founder-quote";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { RaceChecklist } from "@/components/landing/race-checklist";
-import { TransmontanaHero } from "@/components/landing/transmontana-hero";
+import { ScrollLink } from "@/components/landing/scroll-link";
 
-const TITLE = "Dejá tu moto lista para el Transmontaña | Mi Vehículo";
+const TITLE = "Checklist pre-carrera para tu moto | Mi Vehículo";
 const DESCRIPTION =
-  "Checklist pre-carrera para el Transmontaña: enduro en parejas del 9 al 11 de octubre en San Salvador de Jujuy. Marcá lo que ya le hiciste a tu moto y creá tu vehículo para que el plan cuente los intervalos solo.";
+  "Checklist pre-carrera: cubiertas, transmisión, suspensión, frenos, fluidos y herramientas. Tachá lo que ya le hiciste a tu moto y creá tu vehículo para que el plan cuente los intervalos solo.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  // Every og/twitter field inherits the root layout's homepage values —
-  // without these, a shared link renders generic title/description and
-  // og:url pointing at /. The route's opengraph-image.tsx file covers
-  // og:image; twitter needs the explicit path.
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: "/transmontana",
-    images: ["/transmontana/opengraph-image"],
+    url: "/moto-checklist",
   },
   twitter: {
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/transmontana/opengraph-image"],
   },
 };
 
@@ -38,19 +30,34 @@ export const metadata: Metadata = {
 const CONTAINER_CLASSES =
   "mx-auto flex w-full max-w-5xl flex-col px-4 py-12 sm:px-6 md:py-16";
 
-export default async function TransmontanaPage() {
-  const { userId } = await auth();
-  if (userId) redirect("/dashboard");
-
+// Generic evergreen sibling of /carreras/[slug]: same checklist, no event
+// branding — for "tengo carrera pronto" traffic that isn't tied to a race.
+// Signed-in users are redirected to /dashboard by proxy.ts, same as the
+// other (landing) routes, so the page prerenders as static.
+export default function MotoChecklistPage() {
   return (
     <div className="flex flex-1 flex-col">
       <section id="inicio" className={CONTAINER_CLASSES}>
-        <TransmontanaHero />
+        {/* No event image to anchor a two-column grid — single centered
+            column instead, matching the wizard/checklist sections. */}
+        <div className="mx-auto flex min-h-screen w-full max-w-md snap-start flex-col items-center justify-center gap-6 text-center">
+          <h1 className="text-3xl leading-tight font-black tracking-tight uppercase sm:text-4xl lg:text-5xl">
+            Dejá tu moto{" "}
+            <span className="text-primary">lista para la carrera</span>
+          </h1>
+          <p className="text-lg text-muted">
+            El checklist pre-carrera que usan los riders antes del día de
+            largada — tachá lo que ya le hiciste.
+          </p>
+          <ScrollLink
+            hash="#checklist"
+            className="cursor-pointer rounded-2xl bg-primary px-6 py-3 text-center text-base font-bold tracking-widest text-white uppercase transition-colors hover:bg-primary-hover"
+          >
+            Ver el checklist
+          </ScrollLink>
+        </div>
       </section>
 
-      {/* The centerpiece. Narrower than the other sections (max-w-md, same
-          treatment as the wizard section in landing-page.tsx): a checklist
-          reads as a form-like column, not a wide grid. */}
       <section
         id="checklist"
         tabIndex={-1}
@@ -68,13 +75,9 @@ export default async function TransmontanaPage() {
             Tachá lo que ya le hiciste a tu moto.
           </p>
         </div>
-        <RaceChecklist />
+        <RaceChecklist storageKey="mv:moto-checklist" source="moto-checklist" />
       </section>
 
-      {/* Bridge from the one-off checklist to the product: deliberately NOT
-          the "dark box" pattern — it sits right before HowItWorks (which
-          uses bg-box-section + bg-box) and two adjacent dark boxes would
-          read as one section. Flat centered column instead. */}
       <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 px-4 py-12 text-center sm:px-6 md:py-16">
         <h2 className="text-3xl font-black tracking-tight uppercase sm:text-4xl">
           La carrera pasa,{" "}

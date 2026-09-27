@@ -9,13 +9,13 @@ import {
 } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
-import { createVehicleAction } from "@/app/nuevo/actions";
-import { GuestAuthStep, type ConfirmPhase } from "@/app/nuevo/guest-auth-step";
+import { createVehicleAction } from "@/app/(public)/nuevo/actions";
+import { GuestAuthStep, type ConfirmPhase } from "@/app/(public)/nuevo/guest-auth-step";
 import {
   STEP_FIELDS,
   WizardSteps,
   type StepId,
-} from "@/app/nuevo/wizard-steps";
+} from "@/app/(public)/nuevo/wizard-steps";
 import {
   SUBTYPES_BY_TYPE,
   METRIC_UNIT_BY_SUBTYPE,

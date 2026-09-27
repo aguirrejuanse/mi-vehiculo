@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
-import { VehicleWizard } from "@/app/nuevo/vehicle-wizard";
+import { VehicleWizard } from "@/app/(public)/nuevo/vehicle-wizard";
 import { Benefits } from "@/components/landing/benefits";
 import { Faq } from "@/components/landing/faq";
 import { FeaturesGrid } from "@/components/landing/features-grid";
@@ -25,10 +23,9 @@ type LandingPageProps = {
 const CONTAINER_CLASSES =
   "mx-auto flex w-full max-w-5xl flex-col px-4 py-12 sm:px-6 md:py-16";
 
-export async function LandingPage({ variant }: LandingPageProps) {
-  const { userId } = await auth();
-  if (userId) redirect("/dashboard");
-
+// Signed-in users are redirected to /dashboard by proxy.ts — keeping that
+// check out of this component is what lets the landing prerender as static.
+export function LandingPage({ variant }: LandingPageProps) {
   return (
     <div className="flex flex-1 flex-col">
       <section id="inicio" className={CONTAINER_CLASSES}>

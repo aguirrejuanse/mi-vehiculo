@@ -4,7 +4,7 @@ import type { MouseEvent } from "react";
 import { scrollToHash } from "@/lib/landing/smooth-scroll";
 
 // Points at the creation section on the same page (`id="crear"` on the
-// landing page, `id="checklist"` on /transmontana — there the checklist
+// landing page, `id="checklist"` on the race pages — there the checklist
 // card IS the creation form). Without JS, or with reduced motion, the
 // plain anchor jumps there; otherwise we scroll smoothly — see
 // lib/landing/smooth-scroll for why this isn't `scroll-behavior` on <html>.

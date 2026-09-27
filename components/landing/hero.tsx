@@ -41,7 +41,7 @@ export function Hero({ variants, activeIndex }: HeroProps) {
     <div className="grid min-h-screen snap-start content-center items-center gap-10 md:grid-cols-2">
       {/* Centered below md: single-column stack reads awkward hugging the
           left edge. From md the two-column grid takes over and
-          left-alignment is right again — same call as transmontana-hero. */}
+          left-alignment is right again — same call as race-hero. */}
       <div className="flex flex-col items-center gap-6 text-center md:items-start md:text-left">
         <h1 className="text-3xl leading-tight font-black tracking-tight uppercase sm:text-4xl lg:text-5xl">
           Todo lo que tu{" "}
