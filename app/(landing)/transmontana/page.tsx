@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
@@ -38,10 +36,9 @@ export const metadata: Metadata = {
 const CONTAINER_CLASSES =
   "mx-auto flex w-full max-w-5xl flex-col px-4 py-12 sm:px-6 md:py-16";
 
-export default async function TransmontanaPage() {
-  const { userId } = await auth();
-  if (userId) redirect("/dashboard");
-
+// Signed-in users are redirected to /dashboard by proxy.ts — keeping that
+// check out of this page is what lets the route prerender as static.
+export default function TransmontanaPage() {
   return (
     <div className="flex flex-1 flex-col">
       <section id="inicio" className={CONTAINER_CLASSES}>

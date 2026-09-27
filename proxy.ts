@@ -35,6 +35,16 @@ const isPublicRoute = createRouteMatcher([
   ...HERO_VARIANTS.map((variant) => `/${variant.slug}`),
 ]);
 
+// Landing routes redirect signed-in users to /dashboard. Doing it here —
+// auth already runs on every request — keeps the pages themselves free of
+// `await auth()`, which would make them dynamic and force a server render
+// (and a visible loader wait) on every client-side nav to them.
+const isLandingRoute = createRouteMatcher([
+  "/",
+  "/transmontana",
+  ...HERO_VARIANTS.map((variant) => `/${variant.slug}`),
+]);
+
 export default clerkMiddleware(
   async (auth, req) => {
     // /transmontaña → /transmontana: people type/share the event's name
@@ -50,7 +60,11 @@ export default clerkMiddleware(
     if (pathname === "/transmontaña") {
       return NextResponse.redirect(new URL("/transmontana", req.url), 308);
     }
-    if (!isPublicRoute(req)) {
+    const { userId } = await auth();
+    if (userId && isLandingRoute(req)) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    if (!userId && !isPublicRoute(req)) {
       await auth.protect();
     }
   },

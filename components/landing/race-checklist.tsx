@@ -9,11 +9,11 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { createVehicleAction } from "@/app/nuevo/actions";
+import { createVehicleAction } from "@/app/(public)/nuevo/actions";
 import {
   GuestAuthStep,
   type ConfirmPhase,
-} from "@/app/nuevo/guest-auth-step";
+} from "@/app/(public)/nuevo/guest-auth-step";
 import {
   ENGINE_LABELS,
   ENGINE_OPTIONS_BY_TYPE,
