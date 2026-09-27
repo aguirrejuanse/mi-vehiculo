@@ -57,7 +57,7 @@ export function TransmontanaHero() {
           frame it IS the dark tile (same visual idea as the TopLoader mark),
           no inner padding needed. order-first: on mobile the brand mark
           leads, then the headline; from md it sits in the right column. */}
-      <div className="relative order-first aspect-square w-full max-w-xs self-center overflow-hidden rounded-[2rem] border border-surface-border sm:max-w-sm md:order-none md:justify-self-end">
+      <div className="relative order-first aspect-square w-full max-w-xs justify-self-center overflow-hidden rounded-[2rem] border border-surface-border sm:max-w-sm md:order-none md:justify-self-end">
         <Image
           src="/transmontana.png"
           alt="Transmontaña — enduro en parejas, San Salvador de Jujuy"
