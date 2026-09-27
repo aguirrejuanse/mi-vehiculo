@@ -335,7 +335,7 @@ export function RaceChecklist() {
       ))}
 
       <p className="text-xs text-muted">
-        Tu progreso se guarda solo en este navegador — no hace falta cuenta.
+        Creá tu cuenta con tu email para guardar tu progreso y tu vehículo.
       </p>
 
       <FieldError
