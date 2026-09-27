@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@clerk/nextjs/server";
 import { createVehicle } from "@/db/queries/vehicles";
+import { getSuggestedMaintenances } from "@/lib/maintenance/templates";
 import { track } from "@/lib/analytics/server";
 import {
   vehicleSchema,
@@ -37,6 +38,8 @@ export async function createVehicleAction(
     name: formData.get("name"),
     type: formData.get("type"),
     subtype: formData.get("subtype"),
+    engine: formData.get("engine"),
+    displacementCc: formData.get("displacementCc"),
     metricUnit: formData.get("metricUnit"),
     currentValue: formData.get("currentValue"),
     usageRatePerWeek: formData.get("usageRatePerWeek"),
@@ -56,6 +59,11 @@ export async function createVehicleAction(
       name: parsed.data.name,
       type: parsed.data.type,
       subtype: parsed.data.subtype ?? null,
+      engine: parsed.data.engine ?? null,
+      displacementCc:
+        parsed.data.displacementCc != null
+          ? Number(parsed.data.displacementCc)
+          : null,
       metricUnit: parsed.data.metricUnit,
       currentValue: parsed.data.currentValue,
       usageRatePerWeek: parsed.data.usageRatePerWeek ?? null,
@@ -72,11 +80,26 @@ export async function createVehicleAction(
     {
       vehicle_type: parsed.data.type,
       has_usage_rate: parsed.data.usageRatePerWeek != null,
+      has_engine: parsed.data.engine != null,
       source,
     },
     { userId },
   );
 
   revalidatePath("/dashboard");
-  redirect(`/dashboard/vehiculos/${vehicle.id}`);
+  // Vehicles with a suggested plan land on the "listo" interstitial first;
+  // type/subtype combos the catalog doesn't cover go straight to the
+  // vehicle page.
+  const hasSuggestions =
+    getSuggestedMaintenances(
+      vehicle.type,
+      vehicle.subtype,
+      vehicle.metricUnit,
+      vehicle.engine,
+    ).length > 0;
+  redirect(
+    hasSuggestions
+      ? `/dashboard/vehiculos/${vehicle.id}/listo`
+      : `/dashboard/vehiculos/${vehicle.id}`,
+  );
 }

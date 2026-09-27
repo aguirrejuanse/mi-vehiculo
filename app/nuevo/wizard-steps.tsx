@@ -1,6 +1,9 @@
 import {
   SUBTYPES_BY_TYPE,
   SUBTYPE_LABELS,
+  ENGINE_OPTIONS_BY_TYPE,
+  ENGINE_LABELS,
+  type VehicleEngine,
   type VehicleInput,
   type VehicleSubtype,
   type VehicleType,
@@ -11,6 +14,7 @@ import { TextField } from "@/components/ui/text-field";
 export type StepId =
   | "tipo"
   | "subtipo"
+  | "motor"
   | "apodo"
   | "estado"
   | "uso"
@@ -22,6 +26,7 @@ export type StepId =
 export const STEP_FIELDS: Record<StepId, readonly (keyof VehicleInput)[]> = {
   tipo: ["type"],
   subtipo: ["subtype"],
+  motor: ["engine", "displacementCc"],
   apodo: ["name"],
   estado: ["currentValue", "metricUnit"],
   uso: ["usageRatePerWeek"],
@@ -82,16 +87,21 @@ type ConfirmSummary = {
   name: string;
   currentValue: string;
   usageRatePerWeek: string;
+  engine: string;
+  displacementCc: string;
 };
 
 type WizardStepsProps = {
   stepId: StepId;
   hasSubtypes: boolean;
+  hasEngine: boolean;
   type: VehicleType | "";
   subtype: VehicleSubtype | "";
+  engine: VehicleEngine | "";
   metricUnit: "horas" | "km" | "";
   onTypeChange: (type: VehicleType) => void;
   onSubtypeChange: (subtype: VehicleSubtype) => void;
+  onEngineChange: (engine: VehicleEngine) => void;
   onMetricUnitChange: (metricUnit: "horas" | "km") => void;
   stepErrors: StepErrors;
   fieldErrors: StepErrors;
@@ -106,24 +116,39 @@ function errorFor(
   return stepErrors?.[field] ?? fieldErrors?.[field];
 }
 
-// All six step fieldsets stay mounted at all times — only `hidden` toggles
-// visibility (never `disabled`, which would strip values from FormData).
-// The single final submit on "confirmar" posts a complete payload built from
-// every step's still-mounted inputs. See design ADR #7.
+// All step fieldsets stay mounted at all times — `hidden` toggles
+// visibility. Steps that don't apply to the selected type (subtipo for
+// auto/monopatin, motor for bici/monopatin) additionally DISABLE their
+// controls: a disabled input never reaches FormData, so a stale choice from
+// a previous type can't sneak into the payload. The single final submit on
+// "confirmar" posts a complete payload from every still-enabled input.
+// See design ADR #7 / ADR #10.
 export function WizardSteps({
   stepId,
   hasSubtypes,
+  hasEngine,
   type,
   subtype,
+  engine,
   metricUnit,
   onTypeChange,
   onSubtypeChange,
+  onEngineChange,
   onMetricUnitChange,
   stepErrors,
   fieldErrors,
   summary,
 }: WizardStepsProps) {
   const subtypeOptions = type ? SUBTYPES_BY_TYPE[type] : [];
+  // No "No sé" escape hatch: at this point everyone knows their engine,
+  // and the schema still accepts "unknown"→null for the API anyway. The
+  // motor step gates on an explicit pick either way.
+  const engineOptions: { value: VehicleEngine; label: string }[] = type
+    ? ENGINE_OPTIONS_BY_TYPE[type].map((option) => ({
+        value: option as VehicleEngine,
+        label: ENGINE_LABELS[option],
+      }))
+    : [];
 
   return (
     <>
@@ -154,6 +179,32 @@ export function WizardSteps({
           }))}
           disabled={!hasSubtypes}
           error={errorFor("subtype", stepErrors, fieldErrors)}
+        />
+      </fieldset>
+
+      <fieldset
+        hidden={stepId !== "motor"}
+        disabled={!hasEngine}
+        className="wizard-step flex flex-col gap-5"
+      >
+        <OptionCardGroup
+          label="Motor"
+          name="engine"
+          value={engine}
+          onChange={onEngineChange}
+          options={engineOptions}
+          disabled={!hasEngine}
+          error={errorFor("engine", stepErrors, fieldErrors)}
+        />
+        <TextField
+          label="Cilindrada en cc (opcional)"
+          name="displacementCc"
+          type="number"
+          inputMode="numeric"
+          min={1}
+          placeholder="Ej: 300"
+          defaultValue=""
+          error={errorFor("displacementCc", stepErrors, fieldErrors)}
         />
       </fieldset>
 
@@ -216,6 +267,23 @@ export function WizardSteps({
               value={subtype ? SUBTYPE_LABELS[subtype] : "—"}
             />
           ) : null}
+          {hasEngine ? (
+            <SummaryRow
+              label="Motor"
+              value={
+                summary.engine
+                  ? (ENGINE_LABELS[summary.engine as VehicleEngine] ??
+                    summary.engine)
+                  : "No especificado"
+              }
+            />
+          ) : null}
+          {hasEngine && summary.displacementCc ? (
+            <SummaryRow
+              label="Cilindrada"
+              value={`${summary.displacementCc} cc`}
+            />
+          ) : null}
           <SummaryRow label="Nombre" value={summary.name || "—"} />
           <SummaryRow
             label="Unidad de medida"
@@ -231,8 +299,9 @@ export function WizardSteps({
           />
         </div>
         <p className="text-xs font-semibold text-danger">
-          El tipo y el subtipo no se pueden cambiar después de crear el
-          vehículo. Revisá que estén bien antes de confirmar.
+          El tipo, el subtipo, el motor y la cilindrada no se pueden cambiar
+          después de crear el vehículo. Revisá que estén bien antes de
+          confirmar.
         </p>
       </fieldset>
     </>

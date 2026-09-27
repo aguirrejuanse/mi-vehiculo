@@ -19,7 +19,9 @@ import {
 import {
   SUBTYPES_BY_TYPE,
   METRIC_UNIT_BY_SUBTYPE,
+  ENGINE_OPTIONS_BY_TYPE,
   validateVehicleFields,
+  type VehicleEngine,
   type VehicleInput,
   type VehicleSubtype,
   type VehicleType,
@@ -76,21 +78,28 @@ export function VehicleWizard({
 
   const [type, setType] = useState<VehicleType | "">(initialType ?? "");
   const [subtype, setSubtype] = useState<VehicleSubtype | "">("");
+  // "" means nothing picked yet (no option submits it) — the motor step
+  // requires an explicit pick, so a blank gate check blocks progress.
+  const [engine, setEngine] = useState<VehicleEngine | "">("");
   const [metricUnit, setMetricUnit] = useState<"horas" | "km" | "">("");
   const [summary, setSummary] = useState({
     name: "",
     currentValue: "",
     usageRatePerWeek: "",
+    engine: "",
+    displacementCc: "",
   });
 
   const hasSubtypes = type ? SUBTYPES_BY_TYPE[type].length > 0 : false;
+  const hasEngine = type ? ENGINE_OPTIONS_BY_TYPE[type].length > 0 : false;
 
   // Steps are DERIVED, never stored as an index — the array length changes
-  // depending on whether the chosen type has a subtype taxonomy. See design
-  // "Wizard State Machine".
+  // depending on whether the chosen type has a subtype taxonomy or an
+  // engine taxonomy. See design "Wizard State Machine".
   const steps: StepId[] = [
     "tipo",
     ...(hasSubtypes ? (["subtipo"] as const) : []),
+    ...(hasEngine ? (["motor"] as const) : []),
     "apodo",
     "estado",
     "uso",
@@ -100,9 +109,13 @@ export function VehicleWizard({
   function handleTypeChange(nextType: VehicleType) {
     setType(nextType);
     // Fixes the stale-subtype bug from the slice-1 interim form: switching
-    // type must never leave a subtype from the previous type in FormData.
-    // See design ADR #10.
+    // type must never leave a subtype (or an engine) from the previous type
+    // in FormData. See design ADR #10.
     setSubtype("");
+    setEngine("");
+    // Same for the unit: a subtype-derived default (e.g. moto_enduro →
+    // horas) is meaningless after switching to a type with no subtype.
+    setMetricUnit("");
   }
 
   function handleSubtypeChange(nextSubtype: VehicleSubtype) {
@@ -113,7 +126,17 @@ export function VehicleWizard({
   function goNext() {
     const fd = new FormData(formRef.current!);
     const errors = validateVehicleFields(fd);
-    const nextStepErrors = errors ? pickFields(errors, STEP_FIELDS[stepId]) : null;
+    let nextStepErrors = errors ? pickFields(errors, STEP_FIELDS[stepId]) : null;
+
+    // engine is optional in the schema ("No sé" → null is legitimate) but
+    // the motor step still demands an explicit pick — otherwise the
+    // click-through default silently drops the plan's oil/piston rows.
+    if (stepId === "motor" && fd.get("engine") == null) {
+      nextStepErrors = {
+        ...(nextStepErrors ?? {}),
+        engine: "Elegí una opción.",
+      };
+    }
 
     if (nextStepErrors) {
       setStepErrors(nextStepErrors);
@@ -131,6 +154,8 @@ export function VehicleWizard({
         name: String(fd.get("name") ?? ""),
         currentValue: String(fd.get("currentValue") ?? ""),
         usageRatePerWeek: String(fd.get("usageRatePerWeek") ?? ""),
+        engine: String(fd.get("engine") ?? ""),
+        displacementCc: String(fd.get("displacementCc") ?? ""),
       });
     }
 
@@ -207,14 +232,22 @@ export function VehicleWizard({
       <input type="hidden" name="source" value={source} />
       <WizardProgress current={currentIndex + 1} total={steps.length} />
 
+      {/* key={type}: remounts every fieldset on type change so uncontrolled
+          inputs (name, currentValue, usageRatePerWeek, displacementCc) go
+          back to empty — "Husqvarna 300" must not survive a switch to auto.
+          Controlled fields are reset in handleTypeChange. */}
       <WizardSteps
+        key={type}
         stepId={stepId}
         hasSubtypes={hasSubtypes}
+        hasEngine={hasEngine}
         type={type}
         subtype={subtype}
+        engine={engine}
         metricUnit={metricUnit}
         onTypeChange={handleTypeChange}
         onSubtypeChange={handleSubtypeChange}
+        onEngineChange={setEngine}
         onMetricUnitChange={setMetricUnit}
         stepErrors={stepErrors}
         fieldErrors={fieldErrors ?? null}
@@ -241,7 +274,7 @@ export function VehicleWizard({
             <button
               type="button"
               onClick={goBack}
-              className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground"
+              className="cursor-pointer rounded-xl border border-surface-border px-5 py-3 text-sm font-bold tracking-widest text-muted uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:text-foreground"
             >
               Volver
             </button>
@@ -252,7 +285,7 @@ export function VehicleWizard({
               <button
                 type="button"
                 onClick={() => setConfirmPhase("email")}
-                className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
+                className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
               >
                 Continuar
               </button>
@@ -267,7 +300,7 @@ export function VehicleWizard({
             <button
               type="button"
               onClick={goNext}
-              className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
+              className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:bg-primary-hover sm:ml-auto"
             >
               Continuar
             </button>

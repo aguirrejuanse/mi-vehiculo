@@ -10,7 +10,11 @@ import {
 } from "@/db/queries/maintenance-logs";
 import { listPartsForVehicle } from "@/db/queries/parts";
 import { SUBTYPE_LABELS, TYPE_LABELS } from "@/lib/validation/vehicle";
-import { formatDateUTC, formatMetric } from "@/lib/format";
+import {
+  CALENDAR_UNIT_LABEL,
+  formatDateUTC,
+  formatMetric,
+} from "@/lib/format";
 import { filterSuffix } from "@/lib/dashboard-filters";
 import { resolveDetailLayout } from "@/lib/layout-variant";
 import { track } from "@/lib/analytics/server";
@@ -85,11 +89,6 @@ const PART_ADVANCE_LABEL: Record<Part["status"], string> = {
   instalado: "",
 };
 
-const CALENDAR_UNIT_LABEL: Record<string, string> = {
-  dias: "días",
-  meses: "meses",
-};
-
 // "Cada 5000 km · cada 6 meses" / "Sin intervalo" — the management list shows
 // the configured cadence, not the computed next-due (that's "Próximos").
 function intervalSummary(
@@ -104,8 +103,13 @@ function intervalSummary(
     type.intervalCalendarValue != null &&
     type.intervalCalendarUnit != null
   ) {
+    const [singular, plural] = CALENDAR_UNIT_LABEL[
+      type.intervalCalendarUnit
+    ];
     parts.push(
-      `cada ${type.intervalCalendarValue} ${CALENDAR_UNIT_LABEL[type.intervalCalendarUnit] ?? type.intervalCalendarUnit}`,
+      `cada ${type.intervalCalendarValue} ${
+        type.intervalCalendarValue === 1 ? singular : plural
+      }`,
     );
   }
   return parts.length > 0 ? parts.join(" · ") : "Sin intervalo";

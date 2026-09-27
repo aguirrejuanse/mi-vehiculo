@@ -71,6 +71,13 @@
       "when": 1790196476125,
       "tag": "0009_gifted_titanium_man",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790523579160,
+      "tag": "0010_oval_switch",
+      "breakpoints": true
     }
   ]
 }

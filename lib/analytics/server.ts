@@ -22,3 +22,21 @@ export function track(
     properties: { ...(properties ?? {}), environment },
   });
 }
+
+// Immediate (awaited) variant: serverless functions can freeze before a
+// batched captureException() flushes, silently dropping the error.
+export async function trackError(
+  error: unknown,
+  options?: { userId?: string; properties?: Record<string, unknown> },
+) {
+  if (!analytics) return;
+  await analytics.captureExceptionImmediate(
+    error,
+    options?.userId ?? "server",
+    {
+      ...(options?.properties ?? {}),
+      environment,
+      $process_person_profile: false,
+    },
+  );
+}
