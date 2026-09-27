@@ -17,6 +17,10 @@ export type SuggestedMaintenance = {
   intervalCalendarValue?: number;
   intervalCalendarUnit?: "dias" | "meses";
   note?: string;
+  // Restricts the row to vehicles with one of these engine values
+  // (ENGINE_OPTIONS_BY_TYPE). Rows without `engines` apply to every engine —
+  // and to vehicles whose engine is unknown (null).
+  engines?: readonly string[];
 };
 
 // moto_enduro is the deep set — intervals are in HORAS (the subtype's
@@ -26,14 +30,16 @@ export type SuggestedMaintenance = {
 const MOTO_ENDURO: SuggestedMaintenance[] = [
   {
     key: "aceite-caja-2t",
-    name: "Aceite de caja (2T)",
+    name: "Aceite de caja",
     intervalValue: "12",
     note: "Cada 10-15 h según uso",
+    engines: ["2t"],
   },
   {
     key: "aceite-motor-4t",
-    name: "Aceite de motor (4T)",
+    name: "Aceite de motor",
     intervalValue: "10",
+    engines: ["4t"],
   },
   // Interval-less like "Lavado general": in enduro the filter gets washed
   // after EVERY ride, there's no hour cadence to track.
@@ -59,15 +65,17 @@ const MOTO_ENDURO: SuggestedMaintenance[] = [
     note: "Cada 40-50 h",
   },
   {
-    key: "piston-2t-chico",
-    name: "Pistón (2T 85-125 cc)",
+    key: "piston-2t",
+    name: "Pistón",
     intervalValue: "30",
-    note: "250 cc 2T: ~40 h",
+    note: "85-125 cc; 250 cc: ~40 h",
+    engines: ["2t"],
   },
   {
     key: "piston-4t",
-    name: "Pistón + reglaje de válvulas (4T)",
+    name: "Pistón + reglaje de válvulas",
     intervalValue: "100",
+    engines: ["4t"],
   },
   {
     key: "kit-transmision",
@@ -239,16 +247,24 @@ const BY_TYPE: Partial<
 };
 
 // Empty array for uncovered type/subtype combos — callers treat that as
-// "skip the listo screen" rather than an error.
+// "skip the listo screen" rather than an error. `engine` is the vehicle's
+// engine spec (vehicles.engine, null when unknown or N/A): a row tagged
+// `engines` only applies when the vehicle's engine is in that list, so an
+// unknown engine drops every engine-tagged row instead of guessing.
 export function getSuggestedMaintenances(
   type: VehicleType,
   subtype: VehicleSubtype | null | undefined,
   metricUnit: "horas" | "km",
+  engine: string | null | undefined,
 ): SuggestedMaintenance[] {
   const set = (subtype ? BY_SUBTYPE[subtype] : undefined) ?? BY_TYPE[type];
   if (!set) return [];
-  if (metricUnit !== set.unit) {
-    return set.items.filter((item) => item.intervalValue == null);
-  }
-  return set.items;
+  const items =
+    metricUnit !== set.unit
+      ? set.items.filter((item) => item.intervalValue == null)
+      : set.items;
+  return items.filter(
+    (item) =>
+      item.engines == null || (engine != null && item.engines.includes(engine)),
+  );
 }

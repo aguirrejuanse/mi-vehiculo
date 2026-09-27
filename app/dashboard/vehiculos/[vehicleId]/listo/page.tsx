@@ -33,6 +33,7 @@ export default async function SuggestedPlanPage({
     vehicle.type,
     vehicle.subtype,
     vehicle.metricUnit,
+    vehicle.engine,
   );
   if (suggestions.length === 0) {
     redirect(`/dashboard/vehiculos/${vehicle.id}`);

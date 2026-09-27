@@ -137,10 +137,9 @@ async function main() {
   // (lib/maintenance/templates.ts) so seed data stays canonical — same
   // names/intervals the "listo" screen offers right after vehicle creation.
   const enduroCatalog = new Map(
-    getSuggestedMaintenances("moto", "moto_enduro", "horas").map((item) => [
-      item.key,
-      item,
-    ]),
+    getSuggestedMaintenances("moto", "moto_enduro", "horas", "2t").map(
+      (item) => [item.key, item],
+    ),
   );
   function addSuggested(
     vehicleId: string,
@@ -163,6 +162,8 @@ async function main() {
     name: "Husqvarna TE 300",
     type: "moto",
     subtype: "moto_enduro",
+    engine: "2t",
+    displacementCc: 300,
     metricUnit: "horas",
     currentValue: "120",
     usageRatePerWeek: "3",
@@ -233,7 +234,7 @@ async function main() {
   await addSuggested(husky.id, "lavado");
   // No intervals → only visible in the "Tipos de mantenimiento" management list.
 
-  const tipoArchivado = await addSuggested(husky.id, "piston-2t-chico", {
+  const tipoArchivado = await addSuggested(husky.id, "piston-2t", {
     archivedAt: daysAgo(15),
   });
   await addLog(husky.id, tipoArchivado.id, 90, daysAgo(90), "Vertex");

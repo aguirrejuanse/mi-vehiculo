@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getSuggestedMaintenances } from "@/lib/maintenance/templates";
 import { isDecimalString } from "@/lib/validation/numeric";
 import {
+  ENGINE_OPTIONS_BY_TYPE,
   METRIC_UNIT_BY_SUBTYPE,
   SUBTYPES_BY_TYPE,
   VEHICLE_TYPES,
@@ -13,22 +14,29 @@ import {
 // maintenance_types (see maintenance-type.ts): positive decimal-string
 // usage intervals, calendar value+unit both set or both absent, unique keys.
 describe("getSuggestedMaintenances catalog invariants", () => {
+  // Every engine value (plus null for "unknown"/N/A) is exercised against
+  // every combo so a misplaced `engines` tag surfaces instead of silently
+  // never matching.
+  const ALL_ENGINES: (string | null)[] = [null, "2t", "4t", "nafta", "diesel"];
   const all = VEHICLE_TYPES.flatMap((type) =>
     [
       ...SUBTYPES_BY_TYPE[type].map((subtype) => [type, subtype] as const),
       [type, undefined] as const,
     ].flatMap(([, subtype]) =>
-      (["horas", "km"] as const).map((unit) => ({ type, subtype, unit })),
+      (["horas", "km"] as const).flatMap((unit) =>
+        ALL_ENGINES.map((engine) => ({ type, subtype, unit, engine })),
+      ),
     ),
   ) as {
     type: VehicleType;
     subtype: VehicleSubtype | undefined;
     unit: "horas" | "km";
+    engine: string | null;
   }[];
 
   it("every entry satisfies the maintenance-type interval rules", () => {
-    for (const { type, subtype, unit } of all) {
-      const items = getSuggestedMaintenances(type, subtype, unit);
+    for (const { type, subtype, unit, engine } of all) {
+      const items = getSuggestedMaintenances(type, subtype, unit, engine);
       for (const item of items) {
         if (item.intervalValue != null) {
           expect(
@@ -51,13 +59,27 @@ describe("getSuggestedMaintenances catalog invariants", () => {
             `${item.key}: calendar value`,
           ).toBe(true);
         }
+        // An engines-tagged row only ever returns when the vehicle's engine
+        // is in its list — and a tag must name an engine the type allows.
+        if (item.engines != null) {
+          expect(
+            item.engines,
+            `${item.key}: returned for a non-matching engine`,
+          ).toContain(engine);
+          for (const tag of item.engines) {
+            expect(
+              ENGINE_OPTIONS_BY_TYPE[type] as readonly string[],
+              `${item.key}: "${tag}" is not a ${type} engine`,
+            ).toContain(tag);
+          }
+        }
       }
     }
   });
 
   it("keys are unique within each set", () => {
-    for (const { type, subtype, unit } of all) {
-      const keys = getSuggestedMaintenances(type, subtype, unit).map(
+    for (const { type, subtype, unit, engine } of all) {
+      const keys = getSuggestedMaintenances(type, subtype, unit, engine).map(
         (item) => item.key,
       );
       expect(new Set(keys).size).toBe(keys.length);
@@ -65,8 +87,18 @@ describe("getSuggestedMaintenances catalog invariants", () => {
   });
 
   it("drops usage intervals when the vehicle is tracked in the other unit", () => {
-    const horasSet = getSuggestedMaintenances("moto", "moto_enduro", "horas");
-    const kmSet = getSuggestedMaintenances("moto", "moto_enduro", "km");
+    const horasSet = getSuggestedMaintenances(
+      "moto",
+      "moto_enduro",
+      "horas",
+      "2t",
+    );
+    const kmSet = getSuggestedMaintenances(
+      "moto",
+      "moto_enduro",
+      "km",
+      "2t",
+    );
 
     expect(horasSet.some((item) => item.intervalValue != null)).toBe(true);
     expect(kmSet.every((item) => item.intervalValue == null)).toBe(true);
@@ -81,6 +113,11 @@ describe("getSuggestedMaintenances catalog invariants", () => {
     // A mislabeled `unit` would silently drop usage rows for the vehicles
     // the catalog was written for.
     for (const [type, subtypes] of Object.entries(SUBTYPES_BY_TYPE)) {
+      // A representative engine for the type so engine-tagged rows stay in
+      // the comparison (null would drop them from both sides).
+      const engine =
+        (ENGINE_OPTIONS_BY_TYPE[type as VehicleType] as readonly string[])[0] ??
+        null;
       for (const subtype of subtypes) {
         const defaultUnit = METRIC_UNIT_BY_SUBTYPE[subtype];
         const otherUnit = defaultUnit === "horas" ? "km" : "horas";
@@ -88,11 +125,13 @@ describe("getSuggestedMaintenances catalog invariants", () => {
           type as VehicleType,
           subtype,
           defaultUnit,
+          engine,
         );
         const withOther = getSuggestedMaintenances(
           type as VehicleType,
           subtype,
           otherUnit,
+          engine,
         );
         if (withDefault.length === 0 && withOther.length === 0) continue;
         expect(
@@ -111,12 +150,66 @@ describe("getSuggestedMaintenances catalog invariants", () => {
 
   it("returns [] for uncovered type/subtype combos", () => {
     // moto has no type-level set — only subtypes.
-    expect(getSuggestedMaintenances("moto", undefined, "horas")).toEqual([]);
+    expect(getSuggestedMaintenances("moto", undefined, "horas", null)).toEqual(
+      [],
+    );
     // Subtype lookup wins over type — schema validation guarantees valid
     // pairs, but a corrupt "auto + bici_ruta" row resolves to bici_ruta's
     // set rather than [].
-    expect(getSuggestedMaintenances("auto", "bici_ruta", "km")).toEqual(
-      getSuggestedMaintenances("bicicleta", "bici_ruta", "km"),
+    expect(getSuggestedMaintenances("auto", "bici_ruta", "km", null)).toEqual(
+      getSuggestedMaintenances("bicicleta", "bici_ruta", "km", null),
     );
+  });
+
+  it("filters engine-tagged rows by the vehicle's engine", () => {
+    const keys2t = getSuggestedMaintenances(
+      "moto",
+      "moto_enduro",
+      "horas",
+      "2t",
+    ).map((item) => item.key);
+    const keys4t = getSuggestedMaintenances(
+      "moto",
+      "moto_enduro",
+      "horas",
+      "4t",
+    ).map((item) => item.key);
+
+    expect(keys2t).toContain("aceite-caja-2t");
+    expect(keys2t).toContain("piston-2t");
+    expect(keys2t).not.toContain("aceite-motor-4t");
+    expect(keys2t).not.toContain("piston-4t");
+
+    expect(keys4t).toContain("aceite-motor-4t");
+    expect(keys4t).toContain("piston-4t");
+    expect(keys4t).not.toContain("aceite-caja-2t");
+    expect(keys4t).not.toContain("piston-2t");
+
+    // Engine-agnostic rows apply either way.
+    expect(keys2t).toContain("filtro-aire");
+    expect(keys4t).toContain("filtro-aire");
+  });
+
+  it("drops every engines-tagged row when the engine is unknown", () => {
+    const items = getSuggestedMaintenances(
+      "moto",
+      "moto_enduro",
+      "horas",
+      null,
+    );
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every((item) => item.engines == null)).toBe(true);
+  });
+
+  it("sets without engines-tagged rows ignore the engine param", () => {
+    for (const [type, subtype, unit] of [
+      ["auto", undefined, "km"],
+      ["bicicleta", "bici_ruta", "km"],
+      ["moto", "moto_calle", "km"],
+    ] as const) {
+      expect(
+        getSuggestedMaintenances(type, subtype, unit, null),
+      ).toEqual(getSuggestedMaintenances(type, subtype, unit, "4t"));
+    }
   });
 });

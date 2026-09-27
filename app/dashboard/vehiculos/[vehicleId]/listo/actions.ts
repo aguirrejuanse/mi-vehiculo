@@ -46,6 +46,7 @@ async function addSuggestedTypesAction(
     vehicle.type,
     vehicle.subtype,
     vehicle.metricUnit,
+    vehicle.engine,
   ).filter((item) => selected.has(item.key) && !existingNames.has(item.name));
 
   try {

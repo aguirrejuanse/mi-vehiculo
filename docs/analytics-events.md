@@ -9,7 +9,7 @@ Referencia cruzada entre los eventos instrumentados en `lib/analytics/`, los flu
 | `wizard_started` | Cliente (`/`, `/[variante]`, `/nuevo`, `/dashboard/vehiculos/nuevo`) | `is_signed_in`, `source` (`landing` / `public` / `dashboard`), `environment` | Intención de onboarding |
 | `wizard_step_completed` | Cliente | `step`, `source`, `environment` | Avance en el wizard |
 | `account_created` | Cliente (verificación de guest) | `source`, `environment` | Sign-up |
-| `wizard_completed` | Server (`createVehicleAction`) | `vehicle_type`, `has_usage_rate`, `source`, `environment` | Vehículo creado |
+| `wizard_completed` | Server (`createVehicleAction`) | `vehicle_type`, `has_usage_rate`, `has_engine`, `source`, `environment` | Vehículo creado |
 | `maintenance_type_created` | Server | `vehicle_id`, `has_interval_value`, `has_calendar_interval`, `source` (`manual` o `suggested` — plan de la pantalla "listo"), `environment` | Setup completo para mantenimientos |
 | `maintenance_log_created` | Server | `vehicle_id`, `maintenance_type_id`, `computed_due_at`, `is_overdue`, `days_overdue`, `usage_overdue`, `trigger`, `environment` | Core event: usuario registró un mantenimiento |
 | `maintenance_log_edited` | Server | `vehicle_id`, `log_id`, `environment` | Corrección de un log |
