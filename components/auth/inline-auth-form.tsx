@@ -151,7 +151,7 @@ export function InlineAuthForm({ redirectTo = "/dashboard" }: { redirectTo?: str
           type="button"
           disabled={isSubmitting || !isValidEmail(email)}
           onClick={() => void sendCode()}
-          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "Enviando..." : "Continuar"}
         </button>
@@ -194,7 +194,7 @@ export function InlineAuthForm({ redirectTo = "/dashboard" }: { redirectTo?: str
         type="button"
         disabled={isSubmitting || code.length !== CODE_LENGTH}
         onClick={() => void verifyCode()}
-        className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-150 enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+        className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Verificando..." : "Verificar código"}
       </button>
@@ -202,7 +202,7 @@ export function InlineAuthForm({ redirectTo = "/dashboard" }: { redirectTo?: str
         type="button"
         disabled={resendSeconds > 0 || isSubmitting}
         onClick={() => void sendCode()}
-        className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition duration-150 enabled:active:scale-[0.98] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+        className="cursor-pointer text-xs font-bold tracking-widest text-muted uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
       >
         {resendSeconds > 0
           ? `Reenviar código (${resendSeconds}s)`

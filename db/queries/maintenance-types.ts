@@ -17,6 +17,15 @@ export async function createMaintenanceType(
   return maintenanceType;
 }
 
+// Bulk variant for the suggested-plan insert — a single statement so a
+// mid-loop failure can't leave half a plan committed.
+export async function createMaintenanceTypes(
+  inputs: NewMaintenanceType[],
+): Promise<void> {
+  if (inputs.length === 0) return;
+  await db.insert(maintenanceTypes).values(inputs);
+}
+
 // Archived types are excluded by default — they must not appear in selects,
 // next-due computation, or the dashboard status dots. Pass includeArchived
 // for the management list (which needs to show them with a "archived" badge).

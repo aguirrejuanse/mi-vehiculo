@@ -19,3 +19,5 @@
 - Numeric FormData fields use `isDecimalString` (`lib/validation/numeric.ts`) — `Number()` accepts "0x10"/"Infinity" that Postgres numeric rejects.
 - `requireUserId()` redirects to `/ingresar` (expired sessions mid-action should not hit the error boundary).
 - Standalone scripts (`scripts/*.ts`) run via Node type-stripping: relative `.ts` imports only, no `@/` alias. `pnpm db:seed [userId] [--fresh]` fills dev DB with all UI states.
+- PostHog sourcemaps upload via `withPostHogConfig` (`@posthog/nextjs-config`) in `next.config.ts`, gated on `process.env.VERCEL` so local `pnpm build` never uploads. `@posthog/cli` needs `allowBuilds: true` in `pnpm-workspace.yaml` — its postinstall downloads the binary and pnpm blocks it otherwise. Personal API key lives in Vercel as `POSTHOG_PERSONAL_API_KEY` (secret); project id in `POSTHOG_PROJECT_ID`.
+- `vercel env add` quirks: `NEXT_PUBLIC_*` values that look like credentials require explicit `--type config` (real secrets use `--type secret`); adding to multiple environments in one call fails with a `gitBranch` error — run once per target.

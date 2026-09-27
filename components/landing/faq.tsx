@@ -84,7 +84,9 @@ export function Faq() {
                   letting `grid-template-rows` (an animatable track-sizing
                   function, unlike `height: auto`) transition from 0fr to 1fr.
                   `overflow-hidden` clips the 0fr state to zero height. */}
-              <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none group-open:grid-rows-[1fr]">
+              {/* Accordion is a symmetric open/close — same duration both
+                  ways (fast, 250ms), not the asymmetric open>close split. */}
+              <div className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)] motion-reduce:transition-none group-open:grid-rows-[1fr]">
                 <div className="overflow-hidden">
                   <p className="mt-3 text-base text-muted">{item.answer}</p>
                 </div>
