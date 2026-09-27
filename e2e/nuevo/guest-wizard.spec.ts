@@ -11,10 +11,12 @@ test.describe("guest vehicle wizard", { tag: "@e2e" }, () => {
 
     await wizard.gotoGuest();
 
-    // tipo → subtipo → apodo → estado → uso → confirmar
+    // tipo → subtipo → motor → apodo → estado → uso → confirmar
     await wizard.pickOption("Moto");
     await wizard.next();
     await wizard.pickOption("Enduro/MX");
+    await wizard.next();
+    await wizard.pickOption("2 tiempos");
     await wizard.next();
     await wizard.fillName(vehicleName);
     await wizard.next();
@@ -62,7 +64,14 @@ test.describe("guest vehicle wizard", { tag: "@e2e" }, () => {
     await wizard.pickOption("Auto/Camioneta");
     await wizard.next();
 
-    // autos have no subtype step → lands on apodo; empty name must not pass.
+    // autos have no subtype step → lands on motor; skipping the engine
+    // pick must not pass either.
+    await wizard.next();
+    await expect(page.getByText("Elegí una opción.")).toBeVisible();
+    await wizard.pickOption("Nafta");
+    await wizard.next();
+
+    // apodo: empty name must not pass.
     await wizard.next();
     await expect(
       page.getByText("Ponele un nombre al vehículo."),

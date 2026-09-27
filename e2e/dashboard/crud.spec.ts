@@ -37,6 +37,10 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
     await wizard.pickOption("Auto/Camioneta");
     await wizard.next();
 
+    // motor — autos do get the engine step (Nafta/Diésel).
+    await wizard.pickOption("Nafta");
+    await wizard.next();
+
     // apodo
     await wizard.fillName("Renault 12 E2E");
     await wizard.next();
