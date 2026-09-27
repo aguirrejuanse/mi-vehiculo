@@ -1,12 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Sora } from "next/font/google";
-import { ClerkProvider, Show, UserButton } from "@clerk/nextjs";
-import Link from "next/link";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Suspense } from "react";
-import { HeaderCta } from "@/components/landing/header-cta";
-import { HeaderNav } from "@/components/landing/header-nav";
 import { TopLoader } from "@/components/layout/top-loader";
-import { UserEmail } from "@/components/layout/user-email";
 import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import { SIGN_IN_PATH } from "@/lib/auth/routes";
 import { Toaster } from "@/components/ui/toast";
@@ -79,55 +75,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Suspense fallback={null}>
             <TopLoader />
           </Suspense>
-          {/* Sticky so it stays visible through the landing's snap-scroll
-              sections — otherwise the smooth-scroll to an anchor (see
-              lib/landing/smooth-scroll.ts) scrolls it out of view, and mobile
-              users lose the way back to the top/nav. bg + backdrop-blur so
-              content scrolling underneath doesn't show through. */}
-          <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-surface-border bg-background/90 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
-            {/* Doubles as the "back to dashboard" link when signed in, so
-                there's no separate "Dashboard" link next to the email. */}
-            <Show when="signed-out">
-              <Link
-                href="/"
-                className="font-display text-sm font-black tracking-widest uppercase"
-              >
-                Mi <span className="text-primary">Vehículo</span>
-              </Link>
-            </Show>
-            <Show when="signed-in">
-              <Link
-                href="/dashboard"
-                className="font-display text-sm font-black tracking-widest uppercase"
-              >
-                Mi <span className="text-primary">Vehículo</span>
-              </Link>
-            </Show>
-            {/* Anchor links only make sense on the landing page itself — a
-                signed-in user is on /dashboard and its subroutes, where
-                "Cómo funciona" etc. would just bounce them back to "/". */}
-            <Show when="signed-out">
-              <HeaderNav />
-            </Show>
-            <nav className="flex items-center gap-2 sm:gap-4">
-              <Show when="signed-out">
-                <Link
-                  href={SIGN_IN_PATH}
-                  className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm"
-                >
-                  Iniciar sesión
-                </Link>
-                <HeaderCta />
-              </Show>
-              <Show when="signed-in">
-                <UserEmail />
-                <UserButton />
-              </Show>
-            </nav>
-          </header>
-          <main className="flex flex-1 flex-col">
-            <PostHogProvider>{children}</PostHogProvider>
-          </main>
+          {/* No header here: the auth-aware <Show> header would force every
+              route dynamic. Route-group layouts render it instead —
+              (landing) gets the static signed-out variant, (public) and
+              dashboard get the auth-aware one (see site-header.tsx). */}
+          <PostHogProvider>{children}</PostHogProvider>
           <Toaster />
         </body>
       </html>

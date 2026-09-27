@@ -47,7 +47,7 @@ function FooterColumn({
           <li key={link.href}>
             {link.href.startsWith("#") ? (
               // Absolute `/#hash` like HeaderNav: on pages where the section
-              // doesn't exist (e.g. /transmontana) the link still lands on
+              // doesn't exist (e.g. /carreras/*) the link still lands on
               // the landing's section instead of silently dying.
               <Link
                 href={`/${link.href}`}

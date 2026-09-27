@@ -1,4 +1,4 @@
-import { VehicleWizard } from "@/app/nuevo/vehicle-wizard";
+import { VehicleWizard } from "@/app/(public)/nuevo/vehicle-wizard";
 import { BackLink } from "@/components/ui/back-link";
 import { PageTitle } from "@/components/ui/page-title";
 import { parseVehicleTypeParam } from "@/lib/validation/vehicle";

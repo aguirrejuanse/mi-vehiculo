@@ -19,10 +19,10 @@ const isPublicRoute = createRouteMatcher([
   "/nuevo",
   "/terminos",
   "/privacidad",
-  // Transmontaña campaign landing + its OG image: anonymous traffic is the
-  // whole point of the page, and middleware runs before everything.
-  "/transmontana",
-  "/transmontana/opengraph-image",
+  // Race checklist landings + their OG images: anonymous traffic is the
+  // whole point of these pages, and middleware runs before everything.
+  "/carreras(.*)",
+  "/moto-checklist",
   SIGN_IN_PATH,
   "/sitemap.xml",
   "/robots.txt",
@@ -35,22 +35,42 @@ const isPublicRoute = createRouteMatcher([
   ...HERO_VARIANTS.map((variant) => `/${variant.slug}`),
 ]);
 
+// Landing routes redirect signed-in users to /dashboard. Doing it here —
+// auth already runs on every request — keeps the pages themselves free of
+// `await auth()`, which would make them dynamic and force a server render
+// (and a visible loader wait) on every client-side nav to them.
+const isLandingRoute = createRouteMatcher([
+  "/",
+  "/carreras(.*)",
+  "/moto-checklist",
+  ...HERO_VARIANTS.map((variant) => `/${variant.slug}`),
+]);
+
 export default clerkMiddleware(
   async (auth, req) => {
-    // /transmontaña → /transmontana: people type/share the event's name
-    // with the ñ, but a non-ASCII filesystem route doesn't resolve under
-    // Turbopack (dev 404s). Proxy runs before routing so the 308 lives
-    // here — nextUrl.pathname stays percent-encoded, decode it first.
+    // Legacy event URLs → /carreras/transmontana: the race landing moved
+    // under /carreras/* when the checklist went multi-event. People also
+    // type/share the event's name with a ñ, but a non-ASCII filesystem
+    // route doesn't resolve under Turbopack (dev 404s). Proxy runs before
+    // routing so the 308s live here — nextUrl.pathname stays
+    // percent-encoded, decode it first.
     let pathname = req.nextUrl.pathname;
     try {
       pathname = decodeURIComponent(pathname);
     } catch {
       // Malformed percent-encoding — nothing to match, fall through.
     }
-    if (pathname === "/transmontaña") {
-      return NextResponse.redirect(new URL("/transmontana", req.url), 308);
+    if (pathname === "/transmontaña" || pathname === "/transmontana") {
+      return NextResponse.redirect(
+        new URL("/carreras/transmontana", req.url),
+        308,
+      );
     }
-    if (!isPublicRoute(req)) {
+    const { userId } = await auth();
+    if (userId && isLandingRoute(req)) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    if (!userId && !isPublicRoute(req)) {
       await auth.protect();
     }
   },
