@@ -28,6 +28,10 @@ export function TopLoader() {
   const [progress, setProgress] = useState(0);
   const [logoDue, setLogoDue] = useState(false);
 
+  // Last committed path+search — the popstate guard compares against it
+  // (hash is excluded on purpose: a same-page anchor isn't a nav).
+  const prevLocation = useRef(location);
+
   // Start on internal link click or history back/forward. A click whose
   // target keeps the same path+search (hash-only jump — the landing's
   // smooth-scroll anchors, see lib/landing/smooth-scroll.ts) isn't a nav.
@@ -36,6 +40,15 @@ export function TopLoader() {
       setPhase("nav");
       setLogoDue(false);
       setProgress(15);
+    };
+    // iOS Safari fires popstate for same-page navigations (hash anchors,
+    // bfcache restores) that Chrome doesn't. Without this guard the bar
+    // pins until the failsafe — the completion check below never sees a
+    // location change because it ignores the hash too.
+    const onPopState = () => {
+      const next = `${window.location.pathname}?${window.location.search.slice(1)}`;
+      if (next === prevLocation.current) return;
+      startNav();
     };
     const onClick = (event: MouseEvent) => {
       if (
@@ -64,15 +77,14 @@ export function TopLoader() {
       startNav();
     };
     document.addEventListener("click", onClick, true);
-    window.addEventListener("popstate", startNav);
+    window.addEventListener("popstate", onPopState);
     return () => {
       document.removeEventListener("click", onClick, true);
-      window.removeEventListener("popstate", startNav);
+      window.removeEventListener("popstate", onPopState);
     };
   }, []);
 
   // A committed URL change completes the pending navigation.
-  const prevLocation = useRef(location);
   useEffect(() => {
     if (prevLocation.current === location) return;
     prevLocation.current = location;
