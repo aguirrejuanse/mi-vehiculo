@@ -8,6 +8,16 @@ name: CI
 # push, so a second build would only duplicate that work.
 on:
   pull_request:
+    # Docs-only PRs (research, *.md, env template) can't affect the build —
+    # skip the whole workflow instead of burning a lint + E2E smoke run.
+    # Deliberately NOT ignored: e2e/** and .github/** — changes to the
+    # suite or this workflow must still exercise CI.
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - ".gitignore"
+      - ".env.local.example"
+      - "LICENSE"
   push:
     branches: [dev, master]
   # Manual full-suite runs from the Actions tab.
