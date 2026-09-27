@@ -16,6 +16,8 @@ import "@/lib/env";
 const isPublicRoute = createRouteMatcher([
   "/",
   "/nuevo",
+  "/terminos",
+  "/privacidad",
   SIGN_IN_PATH,
   "/sitemap.xml",
   "/robots.txt",
