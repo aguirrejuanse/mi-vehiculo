@@ -346,7 +346,7 @@ export function RaceChecklist() {
       ))}
 
       <p className="text-xs text-muted">
-        Creá tu cuenta con tu email para guardar tu progreso y tu vehículo.
+        Creá tu cuenta con tu email para guardar tu progreso y tu moto.
       </p>
 
       <FieldError
