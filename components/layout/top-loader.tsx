@@ -76,10 +76,15 @@ export function TopLoader() {
       }
       startNav();
     };
-    document.addEventListener("click", onClick, true);
+    // Bubble phase, not capture: React's delegated handlers (which run on
+    // the root container during bubble) must get to preventDefault() first
+    // — e.g. scrollToHash intercepting a `/#section` link whose target is
+    // on this page. In capture we'd start the loader for a nav that never
+    // happens and it would pin until the failsafe.
+    document.addEventListener("click", onClick);
     window.addEventListener("popstate", onPopState);
     return () => {
-      document.removeEventListener("click", onClick, true);
+      document.removeEventListener("click", onClick);
       window.removeEventListener("popstate", onPopState);
     };
   }, []);
