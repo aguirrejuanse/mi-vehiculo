@@ -140,7 +140,10 @@ export function RaceChecklist() {
       return;
     }
     setSubmitErrors(null);
-    track("wizard_started", { source: "transmontana" });
+    track("wizard_started", {
+      source: "transmontana",
+      checklist_done: checked.size,
+    });
     handleSubmit(event);
   }
 
@@ -154,7 +157,10 @@ export function RaceChecklist() {
       return;
     }
     setSubmitErrors(null);
-    track("wizard_started", { source: "transmontana" });
+    track("wizard_started", {
+      source: "transmontana",
+      checklist_done: checked.size,
+    });
     setConfirmPhase("email");
   }
 
@@ -186,6 +192,11 @@ export function RaceChecklist() {
     } else {
       updated.delete(key);
     }
+    track("checklist_item_toggled", {
+      item: key,
+      checked: next,
+      source: "transmontana",
+    });
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([...updated]));
     } catch {

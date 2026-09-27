@@ -6,7 +6,8 @@ Referencia cruzada entre los eventos instrumentados en `lib/analytics/`, los flu
 
 | Evento | Origen | Props clave | Qué mide |
 |---|---|---|---|
-| `wizard_started` | Cliente (`/`, `/[variante]`, `/nuevo`, `/dashboard/vehiculos/nuevo`, `/transmontana`) | `is_signed_in`*, `source` (`landing` / `public` / `dashboard` / `transmontana`), `environment` | Intención de onboarding (*`is_signed_in` solo en el wizard; en `/transmontana` se dispara al validar "Crear moto") |
+| `wizard_started` | Cliente (`/`, `/[variante]`, `/nuevo`, `/dashboard/vehiculos/nuevo`, `/transmontana`) | `is_signed_in`*, `source` (`landing` / `public` / `dashboard` / `transmontana`), `checklist_done`*, `environment` | Intención de onboarding (*`is_signed_in` solo en el wizard; en `/transmontana` se dispara al validar "Crear moto" y `checklist_done` cuenta los ítems tachados) |
+| `checklist_item_toggled` | Cliente (`/transmontana`) | `item`, `checked`, `source`, `environment` | Engagement con el checklist pre-carrera |
 | `wizard_step_completed` | Cliente | `step`, `source`, `environment` | Avance en el wizard |
 | `account_created` | Cliente (verificación de guest) | `source`, `environment` | Sign-up |
 | `wizard_completed` | Server (`createVehicleAction`) | `vehicle_type`, `has_usage_rate`, `has_engine`, `source`, `environment` | Vehículo creado |

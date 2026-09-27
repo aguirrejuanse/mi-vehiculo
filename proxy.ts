@@ -22,6 +22,10 @@ const isPublicRoute = createRouteMatcher([
   // whole point of the page, and middleware runs before everything.
   "/transmontana",
   "/transmontana/opengraph-image",
+  // ñ-variant: next.config redirects it to /transmontana, but middleware
+  // runs first — cover both the decoded and percent-encoded forms.
+  "/transmontaña",
+  "/transmonta%C3%B1a",
   SIGN_IN_PATH,
   "/sitemap.xml",
   "/robots.txt",
