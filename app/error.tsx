@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { trackError } from "@/lib/analytics/client";
 
 export default function Error({
   error,
@@ -17,6 +18,7 @@ export default function Error({
     // Log server-side; never render error.message in production (it can
     // leak sensitive details from Server Component errors).
     console.error(error);
+    trackError(error, { digest: error.digest });
   }, [error]);
 
   return (
