@@ -42,15 +42,13 @@ export default async function Image({
     (
       <div
         style={{
-          width: "100%",
-          height: "100%",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
           gap: 64,
-          padding: 80,
+          width: "100%",
+          height: "100%",
           background: BRAND_BOX,
-          color: "#f1eefb",
+          padding: "0 80px",
           fontFamily: "sans-serif",
         }}
       >
@@ -58,45 +56,80 @@ export default async function Image({
           <img
             src={logo}
             alt={race.name}
-            width={320}
-            height={320}
+            width={340}
+            height={340}
             style={{ borderRadius: 40 }}
           />
         ) : null}
+        <div style={{ display: "flex", flexDirection: "column", width: 700 }}>
+          <p
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              letterSpacing: "0.35em",
+              color: BRAND_PRIMARY,
+              textTransform: "uppercase",
+              margin: 0,
+            }}
+          >
+            Checklist pre-carrera
+          </p>
+          <h1
+            style={{
+              fontSize: 76,
+              fontWeight: 900,
+              lineHeight: 0.95,
+              color: "#f1eefb",
+              textTransform: "uppercase",
+              margin: "24px 0 0",
+            }}
+          >
+            ¿Vas al
+          </h1>
+          <h1
+            style={{
+              fontSize: 76,
+              fontWeight: 900,
+              lineHeight: 0.95,
+              color: "#f1eefb",
+              textTransform: "uppercase",
+              margin: 0,
+            }}
+          >
+            {race.name}?
+          </h1>
+          <p
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              color: BRAND_PRIMARY,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              margin: "24px 0 0",
+            }}
+          >
+            {race.dateLine}
+          </p>
+          <p
+            style={{
+              fontSize: 22,
+              color: "#a49dc4",
+              margin: "20px 0 0",
+            }}
+          >
+            {race.detailLine}
+          </p>
+        </div>
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 24,
-            maxWidth: 720,
+            position: "absolute",
+            left: 0,
+            bottom: 0,
+            width: "100%",
+            height: 14,
+            background: BRAND_PRIMARY,
           }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              fontSize: 72,
-              fontWeight: 800,
-              letterSpacing: -2,
-              lineHeight: 1.1,
-            }}
-          >
-            ¿Vas al{" "}
-            <span style={{ color: BRAND_PRIMARY, marginLeft: 18 }}>
-              {race.name}?
-            </span>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 32,
-              color: "#a49dc4",
-              lineHeight: 1.3,
-            }}
-          >
-            Dejá tu moto lista para la carrera — checklist pre-carrera
-          </div>
-        </div>
+        />
       </div>
     ),
     { ...size },
