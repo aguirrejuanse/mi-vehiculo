@@ -51,6 +51,14 @@ export const vehicles = pgTable(
     // Nullable: only moto/bicicleta have a subtype taxonomy; auto/monopatin
     // store null. Immutable after creation (see vehicleUpdateSchema).
     subtype: vehicleSubtypeEnum("subtype"),
+    // Engine spec per type ("2t"/"4t" for moto, "nafta"/"diesel" for auto;
+    // null for bici/monopatin or when the user doesn't know). Plain text —
+    // the allowed set per type lives in ENGINE_OPTIONS_BY_TYPE
+    // (lib/validation/vehicle.ts), same convention as subtype.
+    engine: text("engine"),
+    // Displacement in cc (moto/auto only). Stored for future catalog
+    // refinement — the suggested-maintenance catalog does not branch on it.
+    displacementCc: integer("displacement_cc"),
     metricUnit: metricUnitEnum("metric_unit").notNull(),
     currentValue: numeric("current_value").notNull().default("0"),
     // How much the metric advances per week on average (nullable: unknown until the user sets it)

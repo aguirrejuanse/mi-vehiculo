@@ -73,6 +73,7 @@ export async function createMaintenanceTypeAction(
       has_calendar_interval:
         parsed.data.intervalCalendarValue != null &&
         parsed.data.intervalCalendarUnit != null,
+      source: "manual",
     },
     { userId },
   );
