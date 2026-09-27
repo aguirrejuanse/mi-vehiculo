@@ -4,12 +4,7 @@ import { withPostHogConfig } from "@posthog/nextjs-config";
 const nextConfig: NextConfig = {
   // The sign-in page moved to a Spanish path; keep old links working.
   async redirects() {
-    return [
-      { source: "/sign-in", destination: "/ingresar", permanent: true },
-      // The event's name carries the ñ — catch people typing/sharing it
-      // literally; the canonical route stays ASCII.
-      { source: "/transmontaña", destination: "/transmontana", permanent: true },
-    ];
+    return [{ source: "/sign-in", destination: "/ingresar", permanent: true }];
   },
 
   // Proxy PostHog ingestion through our own domain to avoid ad blockers.
