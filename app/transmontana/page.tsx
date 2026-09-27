@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { VehicleWizard } from "@/app/nuevo/vehicle-wizard";
 import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 import { FinalCta } from "@/components/landing/final-cta";
 import { Footer } from "@/components/landing/footer";
@@ -86,36 +85,13 @@ export default async function TransmontanaPage() {
           o las cubiertas vencen por horas de uso: cuando creés tu moto, el
           plan lo cuenta solo.
         </p>
-        <CreateVehicleLink />
+        <CreateVehicleLink hash="#checklist" />
       </section>
 
-      <HowItWorks />
-
-      {/* Same structure as the #crear section in landing-page.tsx —
-          initialType="moto" pre-selects the type for this audience (the
-          step still renders so the choice can be changed). */}
-      <section
-        id="crear"
-        tabIndex={-1}
-        aria-labelledby="crear-title"
-        className="mx-auto flex min-h-screen w-full max-w-md scroll-mt-20 snap-start flex-col justify-center gap-6 px-4 py-12 outline-none sm:px-6 md:py-16"
-      >
-        <div className="flex flex-col gap-2 text-center">
-          <h2
-            id="crear-title"
-            className="text-3xl font-black tracking-tight uppercase sm:text-4xl"
-          >
-            Creá tu <span className="text-primary">moto</span>
-          </h2>
-          <p className="text-lg text-muted">
-            Ponele nombre e indicá cuánto lleva usada.
-          </p>
-        </div>
-        <VehicleWizard initialType="moto" />
-      </section>
+      <HowItWorks hash="#checklist" />
 
       <FounderQuote />
-      <FinalCta />
+      <FinalCta hash="#checklist" />
       <Footer />
     </div>
   );

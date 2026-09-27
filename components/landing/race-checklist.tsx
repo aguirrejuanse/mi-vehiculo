@@ -1,8 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
+import {
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
+import { useAuth } from "@clerk/nextjs";
+import { createVehicleAction } from "@/app/nuevo/actions";
+import {
+  GuestAuthStep,
+  type ConfirmPhase,
+} from "@/app/nuevo/guest-auth-step";
+import {
+  ENGINE_LABELS,
+  ENGINE_OPTIONS_BY_TYPE,
+  validateVehicleFields,
+  type VehicleEngine,
+  type VehicleInput,
+} from "@/lib/validation/vehicle";
+import { useActionFormState } from "@/lib/hooks/use-action-form-state";
+import { track } from "@/lib/analytics/client";
 import { RACE_CHECKLIST } from "@/lib/landing/race-checklist";
+import { Card } from "@/components/ui/card";
+import { FieldError } from "@/components/ui/field-error";
+import { OptionCardGroup } from "@/components/ui/option-card-group";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { TextField } from "@/components/ui/text-field";
 
 const STORAGE_KEY = "mv:transmontana-checklist";
 
@@ -10,6 +36,18 @@ const KNOWN_KEYS = new Set(
   RACE_CHECKLIST.flatMap((group) => group.items.map((item) => item.key)),
 );
 const TOTAL = KNOWN_KEYS.size;
+
+// "No sé" submits "unknown" (→ engine null, same convention as the wizard's
+// motor step): the catalog drops engine-tagged rows rather than guess.
+const ENGINE_OPTIONS: { value: VehicleEngine | "unknown"; label: string }[] = [
+  ...ENGINE_OPTIONS_BY_TYPE.moto.map((option) => ({
+    value: option as VehicleEngine,
+    label: ENGINE_LABELS[option],
+  })),
+  { value: "unknown" as const, label: "No sé" },
+];
+
+type FieldErrors = Partial<Record<keyof VehicleInput, string>> | null;
 
 // Stored as a bare array of checked keys: compact, and items added to
 // RACE_CHECKLIST later simply start unchecked. Unknown keys from an older
@@ -30,11 +68,33 @@ function readStoredKeys(): Set<string> {
   }
 }
 
+// The checklist card doubles as the create-moto surface for /transmontana
+// (the page has no separate wizard section): a compact fixed moto_enduro
+// form — name + engine + horas — leads the card, the checklist follows, and
+// "Crear moto" at the bottom dispatches createVehicleAction. Guests get the
+// same email+code sub-phase as the wizard's "confirmar" step before the
+// dispatch (pendingSave/dispatchedRef pattern — see vehicle-wizard.tsx).
 export function RaceChecklist() {
+  const { state, formAction, isPending, handleSubmit, fieldErrors } =
+    useActionFormState(createVehicleAction, validateVehicleFields);
+
+  const { isLoaded, isSignedIn } = useAuth();
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const guestPrimaryActionRef = useRef<(() => void) | null>(null);
+
   // Starts empty on server AND first client render (a localStorage-seeded
   // initial state would be a hydration mismatch); the persisted keys hydrate
   // in the effect below.
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
+  // "" means nothing picked yet — "No sé" is the explicit "unknown" option,
+  // so the form can gate on an explicit pick like the wizard's motor step.
+  const [engine, setEngine] = useState<VehicleEngine | "unknown" | "">("");
+  // Client-side errors from our own validation runs (the guest submit path
+  // and the engine gate). Server/hook errors arrive via `fieldErrors`.
+  const [submitErrors, setSubmitErrors] = useState<FieldErrors>(null);
+  const [confirmPhase, setConfirmPhase] = useState<ConfirmPhase>("review");
+  const [pendingSave, setPendingSave] = useState(false);
 
   useEffect(() => {
     // queueMicrotask like top-loader.tsx: a synchronous setState inside an
@@ -42,6 +102,83 @@ export function RaceChecklist() {
     // cascading render.
     queueMicrotask(() => setChecked(readStoredKeys()));
   }, []);
+
+  // Dispatch the vehicle-creation action once the guest's Clerk session is
+  // actually active — mirrors the wizard (design D4): `dispatchedRef`
+  // guards the double dispatch without a synchronous setState in the
+  // effect body. Covers the already-signed-in case too (pendingSave is
+  // simply never set there).
+  const dispatchedRef = useRef(false);
+  useEffect(() => {
+    if (!pendingSave || !isSignedIn || dispatchedRef.current) return;
+    dispatchedRef.current = true;
+    startTransition(() => {
+      formAction(new FormData(formRef.current!));
+    });
+  }, [pendingSave, isSignedIn, formAction]);
+
+  // Schema validation plus the explicit-engine pick: engine is optional in
+  // vehicleSchema ("unknown" → null is legitimate) but this form, like the
+  // wizard's motor step, demands a choice — otherwise the click-through
+  // default silently drops the plan's oil/piston rows.
+  function validateForm(formData: FormData): FieldErrors {
+    let errors = validateVehicleFields(formData);
+    if (formData.get("engine") == null) {
+      errors = { ...(errors ?? {}), engine: "Elegí una opción." };
+    }
+    return errors;
+  }
+
+  function errorFor(field: keyof VehicleInput) {
+    return submitErrors?.[field] ?? fieldErrors?.[field];
+  }
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    const errors = validateForm(new FormData(event.currentTarget));
+    if (errors) {
+      event.preventDefault();
+      setSubmitErrors(errors);
+      return;
+    }
+    setSubmitErrors(null);
+    track("wizard_started", { source: "transmontana" });
+    handleSubmit(event);
+  }
+
+  // Guests don't submit — a valid form swaps the button area for the
+  // email+code phase; the dispatch happens onVerified via pendingSave.
+  function handleGuestSubmit() {
+    if (!formRef.current) return;
+    const errors = validateForm(new FormData(formRef.current));
+    if (errors) {
+      setSubmitErrors(errors);
+      return;
+    }
+    setSubmitErrors(null);
+    track("wizard_started", { source: "transmontana" });
+    setConfirmPhase("email");
+  }
+
+  // Once the guest sub-phase is running, Enter must not trigger a bare form
+  // submit (no session yet) — route it to that phase's own action
+  // (send/verify code) instead. Same reasoning as the wizard's
+  // handleKeyDown (design D3). For signed-in users Enter falls through to
+  // implicit submission → onSubmit → validation; for guests in "review" it
+  // routes to the same validation+phase-flip the button runs.
+  function handleKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== "Enter") return;
+    const target = event.target as HTMLElement;
+    if (target.tagName === "TEXTAREA") return;
+    if (confirmPhase !== "review") {
+      event.preventDefault();
+      guestPrimaryActionRef.current?.();
+    } else if (needsGuestAuth) {
+      // Guests have no submit control (implicit submission is suppressed
+      // with two blocking inputs) — Enter would be a dead key without this.
+      event.preventDefault();
+      handleGuestSubmit();
+    }
+  }
 
   function toggle(key: string, next: boolean) {
     const updated = new Set(checked);
@@ -69,9 +206,57 @@ export function RaceChecklist() {
 
   const doneCount = checked.size;
   const percent = Math.round((doneCount / TOTAL) * 100);
+  const needsGuestAuth = isLoaded && !isSignedIn;
+  const inGuestPhase = needsGuestAuth && confirmPhase !== "review";
 
   return (
-    <Card padding="md" className="flex flex-col gap-6">
+    <Card
+      as="form"
+      ref={formRef}
+      action={formAction}
+      onSubmit={onSubmit}
+      onKeyDown={handleKeyDown}
+      noValidate
+      padding="md"
+      className="flex flex-col gap-6"
+    >
+      {/* Fixed identity for this surface: an enduro moto measured in horas.
+          `source` feeds the action's analytics, same as the wizard's. */}
+      <input type="hidden" name="type" value="moto" />
+      <input type="hidden" name="subtype" value="moto_enduro" />
+      <input type="hidden" name="metricUnit" value="horas" />
+      <input type="hidden" name="source" value="transmontana" />
+
+      {/* The create-moto form leads the card — this checklist IS the
+          creation surface now. */}
+      <div className="flex flex-col gap-4">
+        <TextField
+          label="Nombre"
+          name="name"
+          placeholder="Husqvarna TE 300"
+          autoComplete="off"
+          error={errorFor("name")}
+        />
+        <OptionCardGroup
+          label="Motor"
+          name="engine"
+          value={engine}
+          onChange={setEngine}
+          options={ENGINE_OPTIONS}
+          error={errorFor("engine")}
+        />
+        <TextField
+          label="Horas de la moto"
+          name="currentValue"
+          type="number"
+          inputMode="decimal"
+          step="any"
+          min={0}
+          placeholder="Ej: 45"
+          error={errorFor("currentValue")}
+        />
+      </div>
+
       {/* Same progress-bar vocabulary as WizardProgress (wizard-progress.tsx):
           uppercase muted count + thin surface-2 track + primary fill. */}
       <div className="flex flex-col gap-1.5">
@@ -119,7 +304,8 @@ export function RaceChecklist() {
             {group.title}
           </h3>
           {/* Row pattern mirrors plan-form.tsx: label wraps input + text so
-              the whole row toggles, rows separated by divide-y. */}
+              the whole row toggles, rows separated by divide-y. The inputs
+              carry no `name`, so they never enter the form's FormData. */}
           <ul className="flex flex-col divide-y divide-surface-border">
             {group.items.map((item) => {
               const isChecked = checked.has(item.key);
@@ -152,6 +338,36 @@ export function RaceChecklist() {
       <p className="text-xs text-muted">
         Tu progreso se guarda solo en este navegador — no hace falta cuenta.
       </p>
+
+      <FieldError
+        message={state.status === "error" ? state.message : undefined}
+      />
+
+      {inGuestPhase ? (
+        <GuestAuthStep
+          confirmPhase={confirmPhase}
+          actionRef={guestPrimaryActionRef}
+          onEmailSent={() => setConfirmPhase("code")}
+          onVerified={() => {
+            track("account_created", { source: "transmontana" });
+            setPendingSave(true);
+          }}
+        />
+      ) : needsGuestAuth ? (
+        <button
+          type="button"
+          onClick={handleGuestSubmit}
+          className="cursor-pointer rounded-xl bg-primary px-5 py-3 text-sm font-bold tracking-widest text-white uppercase transition duration-[var(--duration-quick)] enabled:active:scale-[0.98] hover:bg-primary-hover"
+        >
+          Crear moto
+        </button>
+      ) : (
+        <SubmitButton
+          isPending={isPending || !isLoaded}
+          label="Crear moto"
+          pendingLabel="Creando..."
+        />
+      )}
     </Card>
   );
 }

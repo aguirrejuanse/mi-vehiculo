@@ -5,9 +5,9 @@ import type { MouseEvent } from "react";
 import { scrollToHash } from "@/lib/landing/smooth-scroll";
 
 // Event hero for /transmontana — separate from the rotating Hero (this one
-// has a fixed message and its own CTAs: the checklist first, the wizard
-// second). "use client" only for the scrollToHash click handlers, same
-// reason footer.tsx is client.
+// has a fixed message and both CTAs scroll to #checklist: the checklist
+// card doubles as the create-moto form). "use client" only for the
+// scrollToHash click handlers, same reason footer.tsx is client.
 export function TransmontanaHero() {
   function scrollTo(hash: string) {
     return (event: MouseEvent<HTMLAnchorElement>) =>
@@ -40,8 +40,8 @@ export function TransmontanaHero() {
             Ver el checklist
           </a>
           <a
-            href="#crear"
-            onClick={scrollTo("#crear")}
+            href="#checklist"
+            onClick={scrollTo("#checklist")}
             className="cursor-pointer rounded-2xl border border-surface-border px-6 py-3 text-center text-base font-bold tracking-widest text-muted uppercase transition-colors hover:text-foreground"
           >
             Crear mi moto
