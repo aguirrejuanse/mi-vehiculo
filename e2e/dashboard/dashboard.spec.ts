@@ -80,7 +80,7 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
 
     // Próximos mantenimientos: the seed covers every status badge.
     const proximos = sectionByHeading(page, "Próximos mantenimientos");
-    await expect(proximos.getByText("Cambio de aceite")).toBeVisible();
+    await expect(proximos.getByText("Aceite de caja")).toBeVisible();
     await expect(proximos.getByText("Vencido").first()).toBeVisible();
     await expect(proximos.getByText("Pronto").first()).toBeVisible();
     await expect(proximos.getByText("Al día")).toBeVisible();
@@ -100,7 +100,8 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
     // Tipos de mantenimiento: management list, archived type included.
     const tipos = sectionByHeading(page, "Tipos de mantenimiento");
     await expect(tipos.getByText("Lavado general")).toBeVisible();
-    await expect(tipos.getByText("Bujía (tipo viejo)")).toBeVisible();
+    await expect(tipos.getByText("Pistón")).toBeVisible();
+    await expect(tipos.getByText("Archivado")).toBeVisible();
   });
 
   test("history paginates with Cargar más", async ({ page }) => {
@@ -114,12 +115,15 @@ test.describe("dashboard", { tag: "@e2e" }, () => {
       .locator("li")
       .filter({ has: page.getByRole("link", { name: "Editar" }) });
 
-    // The seed creates 20 logs for the Husky; the first page caps at 10.
+    // The seed creates 21 logs for the Husky (archived types keep their
+    // history); each page caps at 10.
     await expect(logs).toHaveCount(10);
 
     const loadMore = historial.getByRole("button", { name: "Cargar más" });
     await loadMore.click();
     await expect(logs).toHaveCount(20);
+    await loadMore.click();
+    await expect(logs).toHaveCount(21);
     await expect(loadMore).not.toBeVisible();
   });
 
