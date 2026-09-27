@@ -68,16 +68,34 @@ export class VehicleWizardPage {
 
   // After verifyCode the wizard auto-dispatches the pending save once Clerk's
   // session flips; if propagation lags, the action returns a retryable error
-  // and the signed-in submit button appears — retry once through it.
+  // and the signed-in submit button appears — retry once through it. Type/
+  // subtype combos the catalog covers land on the suggested-plan interstitial
+  // (/listo), so the match accepts that suffix — specs wanting the detail
+  // page call skipSuggestedPlan() next. The negative lookahead is NOT
+  // decorative: the signed-in wizard itself lives at /vehiculos/nuevo, which
+  // `[\w-]+` would otherwise match — and waitForURL resolves instantly when
+  // the CURRENT URL matches, so without it this never waits.
   async waitForVehicleRedirect() {
     const arrived = await this.page
-      .waitForURL(/\/dashboard\/vehiculos\/[\w-]+$/, { timeout: 30_000 })
+      .waitForURL(/\/dashboard\/vehiculos\/(?!nuevo(?:\/|$))[\w-]+(?:\/listo)?$/, {
+        timeout: 30_000,
+      })
       .then(() => true)
       .catch(() => false);
     if (!arrived) {
       await this.confirmSave();
-      await this.page.waitForURL(/\/dashboard\/vehiculos\/[\w-]+$/);
+      await this.page.waitForURL(
+        /\/dashboard\/vehiculos\/(?!nuevo(?:\/|$))[\w-]+(?:\/listo)?$/,
+      );
     }
+  }
+
+  // The /listo interstitial only exists while the vehicle has no types; specs
+  // that don't exercise the plan itself skip it via "Ahora no".
+  async skipSuggestedPlan() {
+    if (!new URL(this.page.url()).pathname.endsWith("/listo")) return;
+    await this.page.getByRole("link", { name: "Ahora no" }).click();
+    await this.page.waitForURL(/\/dashboard\/vehiculos\/[\w-]+$/);
   }
 
   async expectSummaryValue(value: string) {

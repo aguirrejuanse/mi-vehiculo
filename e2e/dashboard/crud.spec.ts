@@ -54,6 +54,10 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
     await wizard.expectSummaryValue("Renault 12 E2E");
     await wizard.confirmSave();
 
+    // autos have a catalog-backed plan → the redirect lands on /listo;
+    // this spec asserts the detail page, so skip it before capturing the URL.
+    await wizard.waitForVehicleRedirect();
+    await wizard.skipSuggestedPlan();
     // Capture the path as soon as the detail route resolves — BEFORE the
     // heading assert, so a post-commit flake still leaves vehiclePath set
     // and afterAll can delete the orphaned vehicle. The pattern requires a
