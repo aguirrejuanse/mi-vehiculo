@@ -113,6 +113,9 @@ export function VehicleWizard({
     // in FormData. See design ADR #10.
     setSubtype("");
     setEngine("");
+    // Same for the unit: a subtype-derived default (e.g. moto_enduro →
+    // horas) is meaningless after switching to a type with no subtype.
+    setMetricUnit("");
   }
 
   function handleSubtypeChange(nextSubtype: VehicleSubtype) {
@@ -229,7 +232,12 @@ export function VehicleWizard({
       <input type="hidden" name="source" value={source} />
       <WizardProgress current={currentIndex + 1} total={steps.length} />
 
+      {/* key={type}: remounts every fieldset on type change so uncontrolled
+          inputs (name, currentValue, usageRatePerWeek, displacementCc) go
+          back to empty — "Husqvarna 300" must not survive a switch to auto.
+          Controlled fields are reset in handleTypeChange. */}
       <WizardSteps
+        key={type}
         stepId={stepId}
         hasSubtypes={hasSubtypes}
         hasEngine={hasEngine}

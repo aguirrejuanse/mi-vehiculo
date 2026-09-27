@@ -201,11 +201,7 @@ export function WizardSteps({
           disabled={!hasEngine}
           error={errorFor("engine", stepErrors, fieldErrors)}
         />
-        {/* key={type}: uncontrolled field — without a remount a cc typed for
-            a moto would leak into FormData when switching to auto (the
-            fieldset stays enabled). */}
         <TextField
-          key={type}
           label="Cilindrada en cc (opcional)"
           name="displacementCc"
           type="number"
