@@ -35,7 +35,7 @@ function Toast({ className, ...props }: WithClassName<ToastPrimitive.Root.Props>
         "data-[type=success]:border-transparent data-[type=success]:bg-success data-[type=success]:text-white dark:data-[type=success]:text-background",
         "data-[type=error]:border-transparent data-[type=error]:bg-danger data-[type=error]:text-white dark:data-[type=error]:text-background",
         "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
-        "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
+        "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_var(--duration-very-slow)_var(--ease-smooth-out),opacity_var(--duration-very-slow),height_var(--duration-quick)]",
         "after:absolute after:top-full after:left-0 after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
         "data-expanded:h-(--toast-height) data-expanded:[transform:translateX(var(--toast-swipe-movement-x))_translateY(var(--offset-y))]",
         "data-limited:opacity-0 data-starting-style:[transform:translateY(150%)]",
@@ -95,7 +95,7 @@ function ToastList() {
     <Toast key={toastItem.id} toast={toastItem}>
       <ToastPrimitive.Content
         data-slot="toast-content"
-        className="flex h-full items-center gap-3 overflow-hidden p-4 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100"
+        className="flex h-full items-center gap-3 overflow-hidden p-4 transition-opacity duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)] data-behind:opacity-0 data-expanded:opacity-100"
       >
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">

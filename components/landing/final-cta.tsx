@@ -6,7 +6,7 @@ import { CreateVehicleLink } from "@/components/landing/create-vehicle-link";
 // text-background — see globals.css's --color-box* tokens. The section
 // itself uses bg-box-section, same fixed lavender-tinted off-white as
 // pain-banner.tsx and how-it-works.tsx.
-export function FinalCta() {
+export function FinalCta({ hash }: { hash?: string }) {
   return (
     <section
       id="empezar"
@@ -19,7 +19,7 @@ export function FinalCta() {
         <p className="max-w-md text-lg text-box-desc">
           Es gratis y solo arrancás con tu email.
         </p>
-        <CreateVehicleLink />
+        <CreateVehicleLink hash={hash} />
       </div>
     </section>
   );

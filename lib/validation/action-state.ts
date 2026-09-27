@@ -23,6 +23,10 @@ export function fieldErrorsFromZodError<T>(
   return fieldErrors;
 }
 
+// Disabled inputs are absent from FormData entirely, so `formData.get`
+// returns null for them — not "". Map both to undefined so an `.optional()`
+// field treats "control not submitted" the same as "left blank".
 export function emptyToUndefined(value: unknown): unknown {
+  if (value == null) return undefined;
   return typeof value === "string" && value.trim() === "" ? undefined : value;
 }

@@ -67,3 +67,26 @@ Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
   Metric y métricas de soporte.
 - `docs/analytics-events.md` — mapa de eventos PostHog y cómo alimentan
   las métricas de producto.
+- `docs/competidores/` — investigación de competencia (Mi Garage,
+  LookOver); alimenta las decisiones del roadmap.
+
+## Seguimiento del trabajo
+
+El backlog ejecutable vive en **GitHub Issues**, organizado por milestone:
+
+- [Milestone "v1 — Lanzamiento"](https://github.com/aguirrejuanse/mi-vehiculo/milestone/1)
+  — todo lo que falta para abrir el producto a usuarios reales.
+- Issues sin milestone = post-lanzamiento (horizontes 1+).
+
+División de responsabilidades:
+
+- **`docs/ROADMAP.md`** = estrategia y contexto (el *por qué* y el orden).
+- **GitHub Issues** = tasks accionables (el *qué* concreto, con criterios
+  de done). Cada issue del milestone referencia al ítem del roadmap que
+  lo origina.
+- **Engram (memoria de sesiones)** = decisiones, specs SDD y gotchas
+  técnicos (el *registro histórico* de lo que ya se pensó/discutió).
+
+Regla de uso: si una task se puede hacer, es un issue; si es una idea o
+decisión de producto, va al ROADMAP; si es contexto de una sesión, a
+engram.

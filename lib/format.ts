@@ -14,6 +14,17 @@ export function formatMetric(value: string | number): string {
   return Number(value).toLocaleString("es-AR");
 }
 
+// Spanish singular/plural labels for calendar intervals — "cada 1 mes" vs
+// "cada 3 meses". Shared by the vehicle-detail interval summary and the
+// suggested-plan checklist.
+export const CALENDAR_UNIT_LABEL: Record<
+  "dias" | "meses",
+  [singular: string, plural: string]
+> = {
+  dias: ["día", "días"],
+  meses: ["mes", "meses"],
+};
+
 // Formats a Date using UTC getters, not local ones. Use this for any date
 // that was computed in UTC (e.g. lib/maintenance/next-due.ts) or that was
 // parsed from a date-only string stored as UTC midnight. Local getters would

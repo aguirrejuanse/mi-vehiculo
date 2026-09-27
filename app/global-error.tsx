@@ -1,6 +1,7 @@
 "use client"; // Error boundaries must be Client Components
 
 import Link from "next/link";
+import { trackError } from "@/lib/analytics/client";
 
 // Root-level boundary: replaces the root layout on a crash there (e.g.
 // Clerk/PostHog provider), so it must render its own <html>/<body>. Global
@@ -13,6 +14,9 @@ export default function GlobalError({
   reset: () => void;
 }) {
   console.error(error);
+  // The root layout (and PostHogProvider inside it) may be what crashed —
+  // trackError no-ops when posthog.init never ran.
+  trackError(error, { digest: error.digest });
 
   return (
     <html lang="es">
