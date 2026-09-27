@@ -206,9 +206,14 @@ async function main() {
       .where(eq(maintenanceLogs.id, lastAceiteLog.id));
   }
 
+  // filtro-aire is interval-less (washed every ride) — it logs history but
+  // has no next-due. The PRONTO usage case moved to aceite-horquilla.
   const filtro = await addSuggested(husky.id, "filtro-aire");
   await addLog(husky.id, filtro.id, 104, daysAgo(30));
-  // due 124, remaining 4 → ratio 0.2 → PRONTO.
+
+  const horquilla = await addSuggested(husky.id, "aceite-horquilla");
+  await addLog(husky.id, horquilla.id, 94, daysAgo(60));
+  // due 124, remaining 4 → ratio ~0.13 → PRONTO.
 
   const transmision = await addSuggested(husky.id, "kit-transmision");
   await addLog(husky.id, transmision.id, 100, daysAgo(45), "DID ERT3");

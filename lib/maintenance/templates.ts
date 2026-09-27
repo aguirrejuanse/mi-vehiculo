@@ -35,7 +35,13 @@ const MOTO_ENDURO: SuggestedMaintenance[] = [
     name: "Aceite de motor (4T)",
     intervalValue: "10",
   },
-  { key: "filtro-aire", name: "Filtro de aire", intervalValue: "20" },
+  // Interval-less like "Lavado general": in enduro the filter gets washed
+  // after EVERY ride, there's no hour cadence to track.
+  {
+    key: "filtro-aire",
+    name: "Lavado de filtro de aire",
+    note: "Cada salida",
+  },
   {
     key: "aceite-horquilla",
     name: "Aceite de horquilla delantera",
