@@ -48,6 +48,34 @@ const ENGINE_OPTIONS: { value: VehicleEngine; label: string }[] =
 
 type FieldErrors = Partial<Record<keyof VehicleInput, string>> | null;
 
+// DOM order of the rendered inputs — used to pick the first invalid field
+// when scrolling a failed submit back into view.
+const FIELD_ORDER: (keyof VehicleInput)[] = [
+  "name",
+  "engine",
+  "currentValue",
+];
+
+// The card is long — the checklist sits between the fields and the submit
+// button, so failed validation renders its errors at the top, out of view,
+// and the submit looks dead. Scroll the first invalid field back into
+// view and focus it.
+function scrollToFirstError(form: HTMLFormElement, errors: FieldErrors) {
+  if (!errors) return;
+  const name = FIELD_ORDER.find((field) => errors[field]);
+  if (!name) return;
+  const input = form.querySelector<HTMLElement>(`[name="${name}"]`);
+  // The engine radios are sr-only — their fieldset is the visible target.
+  const target = input?.closest("fieldset") ?? input;
+  target?.scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth",
+    block: "center",
+  });
+  input?.focus({ preventScroll: true });
+}
+
 // Stored as a bare array of checked keys: compact, and items added to
 // RACE_CHECKLIST later simply start unchecked. Unknown keys from an older
 // list are dropped on read rather than resurrected.
@@ -132,11 +160,20 @@ export function RaceChecklist() {
     return submitErrors?.[field] ?? fieldErrors?.[field];
   }
 
+  // Server-returned field errors land out of view just like client-side
+  // ones — when the action answers with fieldErrors, scroll to the first.
+  const serverFieldErrors = state.status === "error" ? state.fieldErrors : null;
+  useEffect(() => {
+    const form = formRef.current;
+    if (form && serverFieldErrors) scrollToFirstError(form, serverFieldErrors);
+  }, [serverFieldErrors]);
+
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     const errors = validateForm(new FormData(event.currentTarget));
     if (errors) {
       event.preventDefault();
       setSubmitErrors(errors);
+      scrollToFirstError(event.currentTarget, errors);
       return;
     }
     setSubmitErrors(null);
@@ -154,6 +191,7 @@ export function RaceChecklist() {
     const errors = validateForm(new FormData(formRef.current));
     if (errors) {
       setSubmitErrors(errors);
+      scrollToFirstError(formRef.current, errors);
       return;
     }
     setSubmitErrors(null);
