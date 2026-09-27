@@ -30,8 +30,6 @@ import { OptionCardGroup } from "@/components/ui/option-card-group";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TextField } from "@/components/ui/text-field";
 
-const STORAGE_KEY = "mv:transmontana-checklist";
-
 const KNOWN_KEYS = new Set(
   RACE_CHECKLIST.flatMap((group) => group.items.map((item) => item.key)),
 );
@@ -79,10 +77,10 @@ function scrollToFirstError(form: HTMLFormElement, errors: FieldErrors) {
 // Stored as a bare array of checked keys: compact, and items added to
 // RACE_CHECKLIST later simply start unchecked. Unknown keys from an older
 // list are dropped on read rather than resurrected.
-function readStoredKeys(): Set<string> {
+function readStoredKeys(storageKey: string): Set<string> {
   try {
     const parsed: unknown = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) ?? "[]",
+      localStorage.getItem(storageKey) ?? "[]",
     );
     if (!Array.isArray(parsed)) return new Set();
     return new Set(
@@ -95,13 +93,21 @@ function readStoredKeys(): Set<string> {
   }
 }
 
-// The checklist card doubles as the create-moto surface for /transmontana
-// (the page has no separate wizard section): a compact fixed moto_enduro
+// The checklist card doubles as the create-moto surface on the race pages
+// (they have no separate wizard section): a compact fixed moto_enduro
 // form — name + engine + horas — leads the card, the checklist follows, and
 // "Crear moto" at the bottom dispatches createVehicleAction. Guests get the
 // same email+code sub-phase as the wizard's "confirmar" step before the
 // dispatch (pendingSave/dispatchedRef pattern — see vehicle-wizard.tsx).
-export function RaceChecklist() {
+export function RaceChecklist({
+  storageKey,
+  source,
+}: {
+  // Per-page localStorage key (checked items) and analytics `source` — see
+  // lib/landing/races.ts for the per-race values.
+  storageKey: string;
+  source: string;
+}) {
   const { state, formAction, isPending, handleSubmit, fieldErrors } =
     useActionFormState(createVehicleAction, validateVehicleFields);
 
@@ -127,8 +133,8 @@ export function RaceChecklist() {
     // queueMicrotask like top-loader.tsx: a synchronous setState inside an
     // effect body is flagged by react-hooks/set-state-in-effect as a
     // cascading render.
-    queueMicrotask(() => setChecked(readStoredKeys()));
-  }, []);
+    queueMicrotask(() => setChecked(readStoredKeys(storageKey)));
+  }, [storageKey]);
 
   // Dispatch the vehicle-creation action once the guest's Clerk session is
   // actually active — mirrors the wizard (design D4): `dispatchedRef`
@@ -178,7 +184,7 @@ export function RaceChecklist() {
     }
     setSubmitErrors(null);
     track("wizard_started", {
-      source: "transmontana",
+      source,
       checklist_done: checked.size,
     });
     handleSubmit(event);
@@ -196,7 +202,7 @@ export function RaceChecklist() {
     }
     setSubmitErrors(null);
     track("wizard_started", {
-      source: "transmontana",
+      source,
       checklist_done: checked.size,
     });
     setConfirmPhase("email");
@@ -233,10 +239,10 @@ export function RaceChecklist() {
     track("checklist_item_toggled", {
       item: key,
       checked: next,
-      source: "transmontana",
+      source,
     });
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([...updated]));
+      localStorage.setItem(storageKey, JSON.stringify([...updated]));
     } catch {
       // Storage unavailable/quota — the list still works for the session.
     }
@@ -245,7 +251,7 @@ export function RaceChecklist() {
 
   function reset() {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(storageKey);
     } catch {
       // Same as above — clearing state is enough.
     }
@@ -273,7 +279,7 @@ export function RaceChecklist() {
       <input type="hidden" name="type" value="moto" />
       <input type="hidden" name="subtype" value="moto_enduro" />
       <input type="hidden" name="metricUnit" value="horas" />
-      <input type="hidden" name="source" value="transmontana" />
+      <input type="hidden" name="source" value={source} />
 
       {/* The create-moto form leads the card — this checklist IS the
           creation surface now. */}
@@ -397,7 +403,7 @@ export function RaceChecklist() {
           actionRef={guestPrimaryActionRef}
           onEmailSent={() => setConfirmPhase("code")}
           onVerified={() => {
-            track("account_created", { source: "transmontana" });
+            track("account_created", { source });
             setPendingSave(true);
           }}
         />

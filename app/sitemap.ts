@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { HERO_VARIANTS } from "@/lib/landing/hero-variants";
+import { RACES } from "@/lib/landing/races";
 import { SITE_URL } from "@/lib/site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -11,11 +12,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${SITE_URL}/transmontana`,
+      url: `${SITE_URL}/moto-checklist`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    ...RACES.map((race) => ({
+      url: `${SITE_URL}/carreras/${race.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
     ...HERO_VARIANTS.map((variant) => ({
       url: `${SITE_URL}/${variant.slug}`,
       lastModified: new Date(),

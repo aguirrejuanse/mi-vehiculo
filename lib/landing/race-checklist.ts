@@ -8,10 +8,10 @@ export type RaceChecklistGroup = {
   items: readonly RaceChecklistItem[];
 };
 
-// Static pre-race checklist for the Transmontaña landing — ordered roughly by
-// how a rider works through the bike. Keys are stable: they're persisted in
-// localStorage (see components/landing/race-checklist.tsx), so renaming one
-// silently unchecks it for anyone mid-list.
+// Shared pre-race checklist for /carreras/[slug] and /moto-checklist —
+// ordered roughly by how a rider works through the bike. Keys are stable:
+// they're persisted in localStorage (see components/landing/race-checklist.tsx),
+// so renaming one silently unchecks it for anyone mid-list.
 export const RACE_CHECKLIST: readonly RaceChecklistGroup[] = [
   {
     title: "Ruedas",

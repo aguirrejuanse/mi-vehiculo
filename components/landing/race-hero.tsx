@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import type { MouseEvent } from "react";
+import type { Race } from "@/lib/landing/races";
 import { scrollToHash } from "@/lib/landing/smooth-scroll";
 
-// Event hero for /transmontana — separate from the rotating Hero (this one
-// has a fixed message and both CTAs scroll to #checklist: the checklist
+// Event hero for /carreras/[slug] — separate from the rotating Hero (this
+// one has a fixed message and both CTAs scroll to #checklist: the checklist
 // card doubles as the create-moto form). "use client" only for the
 // scrollToHash click handlers, same reason footer.tsx is client.
-export function TransmontanaHero() {
+export function RaceHero({ race }: { race: Race }) {
   function scrollTo(hash: string) {
     return (event: MouseEvent<HTMLAnchorElement>) =>
       scrollToHash(hash, event);
@@ -21,18 +22,16 @@ export function TransmontanaHero() {
           takes over and left-alignment is right again. */}
       <div className="flex flex-col items-center gap-6 text-center md:items-start md:text-left">
         <h1 className="text-3xl leading-tight font-black tracking-tight uppercase sm:text-4xl lg:text-5xl">
-          ¿Vas al <span className="text-primary">Transmontaña</span>?
+          ¿Vas al <span className="text-primary">{race.name}</span>?
         </h1>
         <p className="max-w-md text-lg text-muted">
           Dejá tu moto lista para la carrera.
         </p>
         <div className="flex flex-col gap-1">
           <p className="text-sm font-bold tracking-widest uppercase">
-            9 al 11 de octubre · San Salvador de Jujuy
+            {race.dateLine}
           </p>
-          <p className="text-sm text-muted">
-            Enduro en parejas · Circuitos de 110 km y 70 km
-          </p>
+          <p className="text-sm text-muted">{race.detailLine}</p>
         </div>
         <div className="flex flex-col items-center gap-3 sm:flex-row md:items-start">
           <a
@@ -59,8 +58,8 @@ export function TransmontanaHero() {
           leads, then the headline; from md it sits in the right column. */}
       <div className="relative order-first aspect-square w-full max-w-xs justify-self-center overflow-hidden rounded-[2rem] border border-surface-border sm:max-w-sm md:order-none md:justify-self-end">
         <Image
-          src="/transmontana.png"
-          alt="Transmontaña — enduro en parejas, San Salvador de Jujuy"
+          src={race.image}
+          alt={race.imageAlt}
           fill
           sizes="(min-width: 768px) 384px, 320px"
           className="object-cover"
