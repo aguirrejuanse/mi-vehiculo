@@ -39,10 +39,16 @@ function itemStateClasses(isActive: boolean) {
 export function Hero({ variants, activeIndex }: HeroProps) {
   return (
     <div className="grid min-h-screen snap-start content-center items-center gap-10 md:grid-cols-2">
-      <div className="flex flex-col items-start gap-6">
+      {/* Centered below md: single-column stack reads awkward hugging the
+          left edge. From md the two-column grid takes over and
+          left-alignment is right again — same call as transmontana-hero. */}
+      <div className="flex flex-col items-center gap-6 text-center md:items-start md:text-left">
         <h1 className="text-3xl leading-tight font-black tracking-tight uppercase sm:text-4xl lg:text-5xl">
           Todo lo que tu{" "}
-          <span className="inline-grid text-left text-primary">
+          {/* text-center below md mirrors the centered column; the cell is
+              sized to the widest variant so a shorter word centers instead
+              of hugging the cell's left edge mid-line. */}
+          <span className="inline-grid text-center text-primary md:text-left">
             {variants.map((variant, index) => (
               <span
                 key={variant.slug}
@@ -64,7 +70,7 @@ export function Hero({ variants, activeIndex }: HeroProps) {
 
       <Card
         padding="md"
-        className="flex w-full max-w-md flex-col gap-4 md:justify-self-end"
+        className="flex w-full max-w-md flex-col gap-4 justify-self-center md:justify-self-end"
       >
         {/* Stacked below md: side by side, the title and badge squeeze into
             a cramped two-column row at narrow widths. */}
