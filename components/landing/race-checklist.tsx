@@ -37,15 +37,14 @@ const KNOWN_KEYS = new Set(
 );
 const TOTAL = KNOWN_KEYS.size;
 
-// "No sé" submits "unknown" (→ engine null, same convention as the wizard's
-// motor step): the catalog drops engine-tagged rows rather than guess.
-const ENGINE_OPTIONS: { value: VehicleEngine | "unknown"; label: string }[] = [
-  ...ENGINE_OPTIONS_BY_TYPE.moto.map((option) => ({
+// No "No sé" option: same call as the wizard's motor step — at this point
+// everyone knows their engine, and an unforced guess would silently drop
+// the plan's engine-specific rows.
+const ENGINE_OPTIONS: { value: VehicleEngine; label: string }[] =
+  ENGINE_OPTIONS_BY_TYPE.moto.map((option) => ({
     value: option as VehicleEngine,
     label: ENGINE_LABELS[option],
-  })),
-  { value: "unknown" as const, label: "No sé" },
-];
+  }));
 
 type FieldErrors = Partial<Record<keyof VehicleInput, string>> | null;
 
@@ -87,9 +86,9 @@ export function RaceChecklist() {
   // initial state would be a hydration mismatch); the persisted keys hydrate
   // in the effect below.
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
-  // "" means nothing picked yet — "No sé" is the explicit "unknown" option,
-  // so the form can gate on an explicit pick like the wizard's motor step.
-  const [engine, setEngine] = useState<VehicleEngine | "unknown" | "">("");
+  // "" means nothing picked yet — the motor pick is required, so the form
+  // gates on it like the wizard's motor step.
+  const [engine, setEngine] = useState<VehicleEngine | "">("");
   // Client-side errors from our own validation runs (the guest submit path
   // and the engine gate). Server/hook errors arrive via `fieldErrors`.
   const [submitErrors, setSubmitErrors] = useState<FieldErrors>(null);

@@ -78,9 +78,9 @@ export function VehicleWizard({
 
   const [type, setType] = useState<VehicleType | "">(initialType ?? "");
   const [subtype, setSubtype] = useState<VehicleSubtype | "">("");
-  // "" means nothing picked yet (no option submits it) — "No sé" is the
-  // explicit "unknown" option, so the motor step can gate on null.
-  const [engine, setEngine] = useState<VehicleEngine | "unknown" | "">("");
+  // "" means nothing picked yet (no option submits it) — the motor step
+  // requires an explicit pick, so a blank gate check blocks progress.
+  const [engine, setEngine] = useState<VehicleEngine | "">("");
   const [metricUnit, setMetricUnit] = useState<"horas" | "km" | "">("");
   const [summary, setSummary] = useState({
     name: "",

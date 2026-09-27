@@ -16,7 +16,10 @@ export function TransmontanaHero() {
 
   return (
     <div className="grid min-h-screen snap-start content-center items-center gap-10 md:grid-cols-2">
-      <div className="flex flex-col items-start gap-6">
+      {/* Centered below md: single-column stack reads awkward hugging the
+          left edge next to the centered logo. From md the two-column grid
+          takes over and left-alignment is right again. */}
+      <div className="flex flex-col items-center gap-6 text-center md:items-start md:text-left">
         <h1 className="text-3xl leading-tight font-black tracking-tight uppercase sm:text-4xl lg:text-5xl">
           ¿Vas al <span className="text-primary">Transmontaña</span>?
         </h1>
@@ -31,7 +34,7 @@ export function TransmontanaHero() {
             Enduro en parejas · Circuitos de 110 km y 70 km
           </p>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-center gap-3 sm:flex-row md:items-start">
           <a
             href="#checklist"
             onClick={scrollTo("#checklist")}
