@@ -23,7 +23,7 @@ export async function signInSeededUser(page: Page): Promise<void> {
 export function sectionByHeading(page: Page, name: string): Locator {
   return page
     .locator("section")
-    .filter({ has: page.getByRole("heading", { name }) });
+    .filter({ has: page.getByRole("heading", { name, exact: true }) });
 }
 
 const CLERK_API = "https://api.clerk.com/v1";
@@ -108,9 +108,9 @@ export async function deleteUser(userId: string): Promise<void> {
   }
 }
 
-// E2E_DATABASE_URL exists so CI/scripts can point the suite at a dedicated
-// database explicitly — the suite DELETES rows (seed --fresh, teardown), so
-// it must never silently inherit a production URL.
+// The suite DELETES rows (seed --fresh, teardown). E2E_DATABASE_URL lets CI
+// pin the target explicitly; locally it falls back to DATABASE_URL from
+// .env.local — point that file at the dev Neon branch only.
 export function e2eDatabaseUrl(): string | undefined {
   return process.env.E2E_DATABASE_URL ?? process.env.DATABASE_URL;
 }
@@ -130,7 +130,10 @@ export async function deleteVehiclesForUsers(userIds: string[]): Promise<void> {
 
 export async function deleteVehicleById(vehicleId: string): Promise<void> {
   const databaseUrl = e2eDatabaseUrl();
-  if (!databaseUrl) return;
+  if (!databaseUrl) {
+    console.warn("e2e: no DATABASE_URL — vehicle left orphaned");
+    return;
+  }
   const sql = neon(databaseUrl);
   await sql`DELETE FROM vehicles WHERE id = ${vehicleId}`;
 }

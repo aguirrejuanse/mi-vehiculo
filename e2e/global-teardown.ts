@@ -21,12 +21,13 @@ export default async function globalTeardown() {
     );
     if (guests.length === 0) return;
 
-    await deleteVehiclesForUsers(guests.map((user) => user.id));
     for (const user of guests) {
       try {
+        // Vehicles first — deleting the user loses the link to their rows.
+        await deleteVehiclesForUsers([user.id]);
         await deleteUser(user.id);
       } catch (error) {
-        // One failed delete must not abort cleanup of the rest.
+        // One failed cleanup must not abort the rest.
         console.warn(`e2e teardown: could not delete ${user.id}:`, error);
       }
     }

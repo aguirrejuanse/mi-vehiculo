@@ -49,10 +49,11 @@ jobs:
     # GitHub Environments "dev" and "production" each hold their own
     # DATABASE_URL secret, pointing at the matching Neon branch.
     environment: ${{ github.ref_name == 'master' && 'production' || 'dev' }}
-    # Never run two migrations against the same database at once, and never
-    # cancel one halfway through.
+    # Shares the e2e group: the e2e job also runs `db:migrate` (on PRs and
+    # dispatches), and two concurrent `drizzle-kit migrate` executions on the
+    # same Neon database are not safe. Never cancel a migration halfway.
     concurrency:
-      group: migrate-${{ github.ref_name }}
+      group: e2e-shared-dev
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v7
@@ -73,13 +74,18 @@ jobs:
     # Smoke on every PR; the full suite on dev pushes and manual dispatches.
     # Master pushes are skipped on purpose: the suite seeds a test garage in
     # the dev database, it must never write to production.
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref_name == 'dev'
+    # On pushes, wait for the migrate job (skipped instantly on PRs —
+    # `always()` keeps this job alive when its need is skipped).
+    needs: migrate
+    if: always() && needs.migrate.result != 'failure' && needs.migrate.result != 'cancelled' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || github.ref_name == 'dev')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # The suite seeds and mutates ONE shared dev garage/Clerk instance —
     # serialize all e2e runs repo-wide (the workflow-level group is per-ref,
     # so a PR smoke could otherwise overlap a dev full-suite and both would
-    # reseed/delete each other's data mid-run).
+    # reseed/delete each other's data mid-run). Tradeoff: GitHub only keeps
+    # one pending job per group — a third queued run evicts the oldest
+    # pending one (rerun it manually if that happens).
     concurrency:
       group: e2e-shared-dev
       cancel-in-progress: false
@@ -116,9 +122,11 @@ jobs:
             echo "::notice::e2e secrets not configured — skipping Playwright run"
           fi
       # Apply the PR's pending migrations before testing — a schema-touching
-      # PR fails on missing columns otherwise. Idempotent when there's
-      # nothing to apply.
-      - if: steps.secrets.outputs.available == 'true'
+      # PR fails on missing columns otherwise. Skipped on pushes: the
+      # `migrate` job already applied them to the same database (this job
+      # waits on it via `needs`), and running it twice concurrently is what
+      # this avoids.
+      - if: github.event_name != 'push' && steps.secrets.outputs.available == 'true'
         run: pnpm db:migrate
       # Production build + `next start` (see playwright.config.ts webServer):
       # no per-route cold compiles, so the suite is faster and less flaky

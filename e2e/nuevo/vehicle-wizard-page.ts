@@ -19,11 +19,13 @@ export class VehicleWizardPage {
   // OptionCardGroup renders sr-only radios inside a styled <label> — the
   // input itself is not clickable (the label's span intercepts pointer
   // events), so the click has to land on the visible card label. Scoped to
-  // the visible fieldset: all six steps stay mounted (`hidden`), and the
-  // hidden "confirmar" summary echoes the same labels as exact text.
+  // the visible STEP fieldset: all six steps stay mounted (`hidden` on the
+  // outer .wizard-step fieldset — the nested OptionCardGroup fieldsets
+  // don't carry it) and the hidden "confirmar" summary echoes the same
+  // labels as exact text.
   async pickOption(label: string) {
     await this.page
-      .locator("fieldset:not([hidden])")
+      .locator("fieldset.wizard-step:not([hidden])")
       .getByText(label, { exact: true })
       .click();
   }

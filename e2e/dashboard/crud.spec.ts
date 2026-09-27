@@ -54,12 +54,15 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
     await wizard.expectSummaryValue("Renault 12 E2E");
     await wizard.confirmSave();
 
-    // "nuevo" also matches /vehiculos/[\w-]+ — wait on the vehicle heading
-    // (the wizard page's heading is "Nuevo vehículo") before capturing the URL.
+    // Capture the path as soon as the detail route resolves — BEFORE the
+    // heading assert, so a post-commit flake still leaves vehiclePath set
+    // and afterAll can delete the orphaned vehicle. The pattern requires a
+    // UUID: [\w-]+ alone would also match the /nuevo wizard URL.
+    await page.waitForURL(/\/dashboard\/vehiculos\/[\da-f-]{36}$/);
+    vehiclePath = new URL(page.url()).pathname;
     await expect(
       page.getByRole("heading", { name: "Renault 12 E2E" }),
     ).toBeVisible();
-    vehiclePath = new URL(page.url()).pathname;
     await expect(page.getByText("Auto", { exact: true })).toBeVisible();
     // The header metric: value and unit in sibling spans of one <p> (no
     // joining whitespace node, hence the flexible regex).
@@ -136,10 +139,12 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
 
     const repuestos = sectionByHeading(page, "Repuestos");
     const part = repuestos.locator("li").filter({ hasText: "Filtro E2E" });
-    await expect(part.getByText("Wishlist")).toBeVisible();
+    await expect(part.getByText("Wishlist", { exact: true })).toBeVisible();
 
     await part.getByRole("button", { name: "Marcar pendiente" }).click();
-    await expect(part.getByText("Pendiente")).toBeVisible();
+    // exact: the button label "Marcar pendiente" also contains "Pendiente" —
+    // without it this passes even when the advance action failed.
+    await expect(part.getByText("Pendiente", { exact: true })).toBeVisible();
   });
 
   test("edits the vehicle name", async ({ page }) => {
@@ -164,12 +169,14 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
   test("archives and restores the vehicle", async ({ page }) => {
     await page.goto(vehiclePath);
 
-    // Both the vehicle header and each maintenance-type row render an
-    // "Archivar" submit. The vehicle's form only carries vehicleId; the
-    // type rows' forms carry typeId too — that's the disambiguator.
+    // The vehicle header, each maintenance-type row and each part's advance
+    // button are all <form> submits. Vehicle's form carries only vehicleId —
+    // exclude both typeId (type rows) and partId (part actions) forms.
     const vehicleArchiveForm = page
       .locator("form")
-      .filter({ hasNot: page.locator('input[name="typeId"]') });
+      .filter({
+        hasNot: page.locator('input[name="typeId"], input[name="partId"]'),
+      });
     await vehicleArchiveForm
       .getByRole("button", { name: "Archivar" })
       .click();
