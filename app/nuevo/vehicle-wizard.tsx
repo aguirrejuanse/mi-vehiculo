@@ -61,7 +61,9 @@ export function VehicleWizard({
       ? "public"
       : pathname?.startsWith("/dashboard")
         ? "dashboard"
-        : "landing";
+        : pathname === "/transmontana"
+          ? "transmontana"
+          : "landing";
 
   const formRef = useRef<HTMLFormElement>(null);
   const guestPrimaryActionRef = useRef<(() => void) | null>(null);

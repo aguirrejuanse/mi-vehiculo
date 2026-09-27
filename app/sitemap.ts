@@ -10,6 +10,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+    {
+      url: `${SITE_URL}/transmontana`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     ...HERO_VARIANTS.map((variant) => ({
       url: `${SITE_URL}/${variant.slug}`,
       lastModified: new Date(),

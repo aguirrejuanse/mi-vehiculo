@@ -18,6 +18,10 @@ const isPublicRoute = createRouteMatcher([
   "/nuevo",
   "/terminos",
   "/privacidad",
+  // Transmontaña campaign landing + its OG image: anonymous traffic is the
+  // whole point of the page, and middleware runs before everything.
+  "/transmontana",
+  "/transmontana/opengraph-image",
   SIGN_IN_PATH,
   "/sitemap.xml",
   "/robots.txt",
