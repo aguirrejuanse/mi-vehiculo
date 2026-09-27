@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import { SIGN_IN_PATH } from "@/lib/auth/routes";
 import { HERO_VARIANTS } from "@/lib/landing/hero-variants";
 // Imported for its side effect: validates Clerk env vars eagerly so a
@@ -18,6 +19,10 @@ const isPublicRoute = createRouteMatcher([
   "/nuevo",
   "/terminos",
   "/privacidad",
+  // Transmontaña campaign landing + its OG image: anonymous traffic is the
+  // whole point of the page, and middleware runs before everything.
+  "/transmontana",
+  "/transmontana/opengraph-image",
   SIGN_IN_PATH,
   "/sitemap.xml",
   "/robots.txt",
@@ -32,6 +37,19 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(
   async (auth, req) => {
+    // /transmontaña → /transmontana: people type/share the event's name
+    // with the ñ, but a non-ASCII filesystem route doesn't resolve under
+    // Turbopack (dev 404s). Proxy runs before routing so the 308 lives
+    // here — nextUrl.pathname stays percent-encoded, decode it first.
+    let pathname = req.nextUrl.pathname;
+    try {
+      pathname = decodeURIComponent(pathname);
+    } catch {
+      // Malformed percent-encoding — nothing to match, fall through.
+    }
+    if (pathname === "/transmontaña") {
+      return NextResponse.redirect(new URL("/transmontana", req.url), 308);
+    }
     if (!isPublicRoute(req)) {
       await auth.protect();
     }

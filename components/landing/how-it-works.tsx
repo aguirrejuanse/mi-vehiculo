@@ -31,7 +31,7 @@ const STEPS: readonly Step[] = [
 // (Wizard sits between them), so repeating the pattern is fine. The section
 // itself uses bg-box-section, same fixed lavender-tinted off-white as
 // pain-banner.tsx and final-cta.tsx.
-export function HowItWorks() {
+export function HowItWorks({ hash }: { hash?: string }) {
   return (
     <section
       id="como-funciona"
@@ -56,7 +56,7 @@ export function HowItWorks() {
           ))}
         </div>
         <div className="self-center">
-          <CreateVehicleLink />
+          <CreateVehicleLink hash={hash} />
         </div>
       </div>
     </section>

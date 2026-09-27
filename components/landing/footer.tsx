@@ -46,15 +46,18 @@ function FooterColumn({
         {links.map((link) => (
           <li key={link.href}>
             {link.href.startsWith("#") ? (
-              <a
-                href={link.href}
+              // Absolute `/#hash` like HeaderNav: on pages where the section
+              // doesn't exist (e.g. /transmontana) the link still lands on
+              // the landing's section instead of silently dying.
+              <Link
+                href={`/${link.href}`}
                 onClick={(event: MouseEvent<HTMLAnchorElement>) =>
                   scrollToHash(link.href, event)
                 }
                 className="text-sm transition-colors hover:text-primary"
               >
                 {link.label}
-              </a>
+              </Link>
             ) : (
               <Link
                 href={link.href}

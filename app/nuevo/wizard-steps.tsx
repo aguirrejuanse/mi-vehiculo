@@ -97,11 +97,11 @@ type WizardStepsProps = {
   hasEngine: boolean;
   type: VehicleType | "";
   subtype: VehicleSubtype | "";
-  engine: VehicleEngine | "unknown" | "";
+  engine: VehicleEngine | "";
   metricUnit: "horas" | "km" | "";
   onTypeChange: (type: VehicleType) => void;
   onSubtypeChange: (subtype: VehicleSubtype) => void;
-  onEngineChange: (engine: VehicleEngine | "unknown") => void;
+  onEngineChange: (engine: VehicleEngine) => void;
   onMetricUnitChange: (metricUnit: "horas" | "km") => void;
   stepErrors: StepErrors;
   fieldErrors: StepErrors;
@@ -140,20 +140,15 @@ export function WizardSteps({
   summary,
 }: WizardStepsProps) {
   const subtypeOptions = type ? SUBTYPES_BY_TYPE[type] : [];
-  // "No sé" submits "unknown" (→ engine null): the catalog drops
-  // engine-tagged rows rather than guess — see getSuggestedMaintenances.
-  // It's a real value, not the "" default, so the step can distinguish
-  // "chose No sé" from "nothing picked" and gate on the latter.
-  const engineOptions: { value: VehicleEngine | "unknown"; label: string }[] =
-    type
-      ? [
-          ...ENGINE_OPTIONS_BY_TYPE[type].map((option) => ({
-            value: option as VehicleEngine,
-            label: ENGINE_LABELS[option],
-          })),
-          { value: "unknown" as const, label: "No sé" },
-        ]
-      : [];
+  // No "No sé" escape hatch: at this point everyone knows their engine,
+  // and the schema still accepts "unknown"→null for the API anyway. The
+  // motor step gates on an explicit pick either way.
+  const engineOptions: { value: VehicleEngine; label: string }[] = type
+    ? ENGINE_OPTIONS_BY_TYPE[type].map((option) => ({
+        value: option as VehicleEngine,
+        label: ENGINE_LABELS[option],
+      }))
+    : [];
 
   return (
     <>
@@ -276,12 +271,10 @@ export function WizardSteps({
             <SummaryRow
               label="Motor"
               value={
-                summary.engine === "unknown"
-                  ? "No sé"
-                  : summary.engine
-                    ? (ENGINE_LABELS[summary.engine as VehicleEngine] ??
-                      summary.engine)
-                    : "No especificado"
+                summary.engine
+                  ? (ENGINE_LABELS[summary.engine as VehicleEngine] ??
+                    summary.engine)
+                  : "No especificado"
               }
             />
           ) : null}
