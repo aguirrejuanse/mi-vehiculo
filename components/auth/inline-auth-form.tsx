@@ -11,6 +11,7 @@ import {
 import { isValidEmail } from "@/lib/validation/email";
 import { FieldError } from "@/components/ui/field-error";
 import { inputClassName } from "@/components/ui/field-styles";
+import { track } from "@/lib/analytics/client";
 
 const RESEND_SECONDS = 30;
 const CODE_LENGTH = 6;
@@ -115,6 +116,12 @@ export function InlineAuthForm({ redirectTo = "/dashboard" }: { redirectTo?: str
       if (finalizeError) {
         toast.add({ type: "error", title: mapGuestAuthError(finalizeError) });
         return;
+      }
+
+      // The guest wizard and race checklist fire this on their own flows —
+      // sign-ups through /ingresar would otherwise never reach the funnel.
+      if (mode === "signup") {
+        track("account_created", { source: "ingresar" });
       }
 
       router.push(redirectTo);
