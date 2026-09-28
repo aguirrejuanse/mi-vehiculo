@@ -45,7 +45,9 @@ test.describe("suggested maintenance plan", { tag: "@e2e" }, () => {
     }
   });
 
-  // tipo → subtipo → apodo → estado → uso → confirmar, then land on /listo.
+  // tipo → subtipo → motor → apodo → estado → uso → confirmar, then land
+  // on /listo. The engine pick matters: rows like "Aceite de caja" are
+  // 2t-only in the catalog.
   async function createEnduro(
     page: Page,
     name: string,
@@ -56,6 +58,8 @@ test.describe("suggested maintenance plan", { tag: "@e2e" }, () => {
     await wizard.pickOption("Moto");
     await wizard.next();
     await wizard.pickOption("Enduro/MX");
+    await wizard.next();
+    await wizard.pickOption("2 tiempos");
     await wizard.next();
     await wizard.fillName(name);
     await wizard.next();
@@ -93,7 +97,7 @@ test.describe("suggested maintenance plan", { tag: "@e2e" }, () => {
     await expect(submit).toBeVisible();
 
     // Drop one usage-based row and one interval-less row.
-    await planRow(page, "Aceite de caja (2T)").getByRole("checkbox").uncheck();
+    await planRow(page, "Aceite de caja").getByRole("checkbox").uncheck();
     await planRow(page, "Lavado general").getByRole("checkbox").uncheck();
 
     await submit.click();
@@ -102,7 +106,7 @@ test.describe("suggested maintenance plan", { tag: "@e2e" }, () => {
     const tipos = sectionByHeading(page, "Tipos de mantenimiento");
     await expect(tipos.getByText("Filtro de aire")).toBeVisible();
     await expect(
-      tipos.getByText("Aceite de caja (2T)"),
+      tipos.getByText("Aceite de caja"),
     ).not.toBeVisible();
     await expect(tipos.getByText("Lavado general")).not.toBeVisible();
   });
@@ -130,7 +134,7 @@ test.describe("suggested maintenance plan", { tag: "@e2e" }, () => {
     await expect(planRow(page, "Líquido de frenos")).toBeVisible();
     await expect(planRow(page, "Líquido refrigerante")).toBeVisible();
     await expect(planRow(page, "Lavado general")).toBeVisible();
-    await expect(planRow(page, "Aceite de caja (2T)")).toHaveCount(0);
+    await expect(planRow(page, "Aceite de caja")).toHaveCount(0);
     await expect(planRow(page, "Kit de transmisión")).toHaveCount(0);
 
     // "Ahora no" skips the plan entirely.
