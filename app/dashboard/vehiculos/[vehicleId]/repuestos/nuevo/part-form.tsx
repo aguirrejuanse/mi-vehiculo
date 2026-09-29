@@ -4,7 +4,7 @@ import { createPartAction } from "@/app/dashboard/vehiculos/[vehicleId]/repuesto
 import { validatePartFields } from "@/lib/validation/part";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
-import { SelectField } from "@/components/ui/select-field";
+import { ComboboxField } from "@/components/ui/combobox-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
 import { Card } from "@/components/ui/card";
@@ -39,33 +39,33 @@ export function PartForm({
         error={fieldErrors?.name}
       />
 
-      <SelectField
+      <ComboboxField
         label="Para (opcional, mantenimiento)"
         name="maintenanceTypeId"
-        defaultValue=""
+        placeholder="Sin vincular"
+        options={[
+          { value: "", label: "Sin vincular" },
+          ...maintenanceTypes.map((type) => ({
+            value: type.id,
+            label: type.name,
+          })),
+        ]}
         error={fieldErrors?.maintenanceTypeId}
-      >
-        <option value="">Sin vincular</option>
-        {maintenanceTypes.map((type) => (
-          <option key={type.id} value={type.id}>
-            {type.name}
-          </option>
-        ))}
-      </SelectField>
+      />
 
-      <SelectField
+      <ComboboxField
         label="De (opcional, nota sobre un registro ya cargado)"
         name="maintenanceLogId"
-        defaultValue=""
+        placeholder="Sin vincular"
+        options={[
+          { value: "", label: "Sin vincular" },
+          ...maintenanceLogs.map((log) => ({
+            value: log.id,
+            label: log.label,
+          })),
+        ]}
         error={fieldErrors?.maintenanceLogId}
-      >
-        <option value="">Sin vincular</option>
-        {maintenanceLogs.map((log) => (
-          <option key={log.id} value={log.id}>
-            {log.label}
-          </option>
-        ))}
-      </SelectField>
+      />
 
       <TextField
         label="Notas (opcional)"
