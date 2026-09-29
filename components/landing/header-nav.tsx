@@ -14,7 +14,7 @@ type NavLink = {
 };
 
 // Below sm the whole nav is hidden: on mobile there's only room for
-// "Iniciar sesión" / "Crear tu vehículo". Every anchor points at a landing
+// "Ingresar" / "Crear tu vehículo". Every anchor points at a landing
 // section ("/#hash"); when already on "/" the click is intercepted for a
 // smooth scroll (see lib/landing/smooth-scroll), otherwise Link does a
 // normal navigation to "/#hash" and the browser jumps on load — this header
@@ -22,7 +22,7 @@ type NavLink = {
 const NAV_LINKS: readonly NavLink[] = [
   { label: "Cómo funciona", hash: "#como-funciona", visibleFrom: "sm" },
   // "Funcionalidades" is a long word: paired with "Cómo funciona" and
-  // "Iniciar sesión" it wrapped the header between 640–720px. Held back to
+  // "Ingresar" it wrapped the header between 640–720px. Held back to
   // lg alongside the other 3 links instead of its own sm slot.
   { label: "Funcionalidades", hash: "#funcionalidades", visibleFrom: "lg" },
   { label: "Casos de uso", hash: "#casos-de-uso", visibleFrom: "lg" },

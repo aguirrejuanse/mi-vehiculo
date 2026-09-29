@@ -33,7 +33,7 @@ export function SiteHeader({ signedOutOnly = false }: { signedOutOnly?: boolean 
             href={SIGN_IN_PATH}
             className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm"
           >
-            Iniciar sesión
+            Ingresar
           </Link>
           <HeaderCta />
         </nav>
@@ -67,7 +67,7 @@ export function SiteHeader({ signedOutOnly = false }: { signedOutOnly?: boolean 
             href={SIGN_IN_PATH}
             className="cursor-pointer text-center text-xs font-semibold tracking-wide text-muted transition-colors hover:text-foreground sm:text-sm"
           >
-            Iniciar sesión
+            Ingresar
           </Link>
           <HeaderCta />
         </Show>
