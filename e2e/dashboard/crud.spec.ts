@@ -113,9 +113,12 @@ test.describe("vehicle crud", { tag: "@e2e" }, () => {
     await page.getByRole("link", { name: "Nuevo registro" }).click();
     await expect(page).toHaveURL(/\/registros\/nuevo/);
 
+    // ComboboxField (Base UI): typing filters the option list — the native
+    // selectOption call doesn't apply to it.
+    await page.getByLabel("Mantenimiento realizado").fill("Cambio aceite");
     await page
-      .getByLabel("Mantenimiento realizado")
-      .selectOption({ label: "Cambio aceite E2E" });
+      .getByRole("option", { name: "Cambio aceite E2E" })
+      .click();
     await page.getByLabel(/valor al momento/i).fill("41000");
     await page
       .getByRole("button", { name: "Guardar registro" })

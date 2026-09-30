@@ -3,7 +3,9 @@ import { defineConfig } from "@playwright/test";
 
 loadEnv({ path: ".env.local", quiet: true });
 
-const PORT = 3100;
+// PLAYWRIGHT_PORT overrides the default so a local run doesn't collide with
+// another project's dev server already holding 3100.
+const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3100);
 const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
