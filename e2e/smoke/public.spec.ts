@@ -9,7 +9,7 @@ test.describe("public pages", { tag: "@smoke" }, () => {
       page.getByRole("heading", { level: 1 }),
     ).toContainText(/Todo lo que tu .* necesita en una app/);
     await expect(
-      page.getByRole("link", { name: "Iniciar sesión" }),
+      page.getByRole("link", { name: "Ingresar" }),
     ).toBeVisible();
     // The same CTA anchors to #crear from several landing sections.
     await expect(
@@ -38,7 +38,7 @@ test.describe("public pages", { tag: "@smoke" }, () => {
     await page.goto("/ingresar");
 
     await expect(
-      page.getByRole("heading", { name: /iniciar/i }),
+      page.getByRole("heading", { name: /ingresá o creá/i }),
     ).toBeVisible();
     await expect(page.getByLabel("Tu email")).toBeVisible();
     await expect(
@@ -108,7 +108,7 @@ test.describe("public pages", { tag: "@smoke" }, () => {
       await page.goto(path);
       await expect(page).toHaveURL(/\/ingresar/);
       await expect(
-        page.getByRole("heading", { name: /iniciar/i }),
+        page.getByRole("heading", { name: /ingresá o creá/i }),
       ).toBeVisible();
     }
   });
