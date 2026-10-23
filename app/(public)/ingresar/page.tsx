@@ -9,7 +9,7 @@ export default async function SignInPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <PageTitle highlight="sesión">Iniciar</PageTitle>
+      <PageTitle highlight="tu cuenta">Ingresá o creá</PageTitle>
       <InlineAuthForm />
     </div>
   );

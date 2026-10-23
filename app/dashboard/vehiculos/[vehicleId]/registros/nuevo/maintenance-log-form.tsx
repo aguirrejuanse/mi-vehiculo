@@ -4,7 +4,7 @@ import { createMaintenanceLogAction } from "@/app/dashboard/vehiculos/[vehicleId
 import { validateMaintenanceLogFields } from "@/lib/validation/maintenance-log";
 import { useActionFormState } from "@/lib/hooks/use-action-form-state";
 import { TextField } from "@/components/ui/text-field";
-import { SelectField } from "@/components/ui/select-field";
+import { ComboboxField } from "@/components/ui/combobox-field";
 import { DateField } from "@/components/ui/date-field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { FieldError } from "@/components/ui/field-error";
@@ -38,21 +38,16 @@ export function MaintenanceLogForm({
     >
       <input type="hidden" name="vehicleId" value={vehicleId} />
 
-      <SelectField
+      <ComboboxField
         label="Mantenimiento realizado"
         name="maintenanceTypeId"
-        defaultValue=""
+        placeholder="Elegí uno"
+        options={maintenanceTypes.map((type) => ({
+          value: type.id,
+          label: type.name,
+        }))}
         error={fieldErrors?.maintenanceTypeId}
-      >
-        <option value="" disabled>
-          Elegí uno
-        </option>
-        {maintenanceTypes.map((type) => (
-          <option key={type.id} value={type.id}>
-            {type.name}
-          </option>
-        ))}
-      </SelectField>
+      />
 
       <TextField
         label={`Valor al momento (${metricUnitLabel})`}
