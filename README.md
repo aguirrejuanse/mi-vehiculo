@@ -1,92 +1,65 @@
 # Mi Vehículo
 
-App para llevar el control del mantenimiento de tus vehículos (moto, auto,
-bicicleta, monopatín) según horas de uso o kilómetros recorridos.
+Vehicle maintenance tracker — register your car, motorcycle, bike or
+skateboard and keep every service up to date, tracked by kilometers or
+hours of use.
 
-Stack: Next.js 16 (App Router) + TypeScript, Drizzle ORM sobre Neon Postgres
-(vía `drizzle-orm/neon-http`), Clerk para autenticación, Tailwind CSS.
+**Live demo:** https://mi-vehiculo-chi.vercel.app
 
-## Setup
+## What it does
 
-1. Instalar dependencias:
+- **Vehicle garage** — multiple vehicles per account, each with its own
+  maintenance plan and history.
+- **Maintenance log** — record services (oil, brakes, tires, …) against
+  km or hours, with full edit history per log entry.
+- **Public onboarding wizard** — `/nuevo` lets a first-time visitor spec
+  their vehicle before signing up.
+- **Auth** — Clerk with inline email-code sign-in (`/ingresar`).
+- **Product analytics** — PostHog events proxied through `/_posthog` so
+  ad blockers don't drop them; gated per-environment so local traffic
+  never pollutes prod data.
 
-   ```bash
-   pnpm install
-   ```
+## Stack
 
-2. Completar `.env.local` (ya existe con placeholders, copiá `.env.local.example`
-   si lo recreás):
+Next.js 16 (App Router) · React 19 · TypeScript · Drizzle ORM + Neon
+Postgres · Clerk · Tailwind 4 · PostHog · Vitest + Playwright · pnpm
 
-   - `DATABASE_URL`: connection string de un proyecto en [neon.tech](https://neon.tech)
-     (Dashboard → tu proyecto → Connection Details → copiá el string con
-     `?sslmode=require`).
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` y `CLERK_SECRET_KEY`: desde
-     [dashboard.clerk.com](https://dashboard.clerk.com) → tu app → API Keys.
-   - `NEXT_PUBLIC_POSTHOG_KEY` y `NEXT_PUBLIC_POSTHOG_HOST` (opcional): desde
-     [app.posthog.com](https://app.posthog.com) → Project settings → API Keys.
-     Si no están, los eventos se ignoran silenciosamente; útil para no
-     contaminar analytics en desarrollo.
+## Getting started
 
-3. Generar y aplicar las migraciones contra tu base de Neon:
+Requires pnpm, a Neon database and a Clerk application.
 
-   ```bash
-   pnpm db:generate
-   pnpm db:migrate
-   ```
+```bash
+cp .env.local.example .env.local   # fill in DATABASE_URL + Clerk keys
+pnpm install
+pnpm db:migrate                    # apply drizzle migrations
+pnpm db:seed                       # optional: demo data covering all UI states
+pnpm dev                           # http://localhost:3000
+```
 
-   (`db:push` sincroniza el schema directo sin generar archivos de migración,
-   útil en desarrollo temprano. `db:studio` abre Drizzle Studio.)
+### Environment variables
 
-4. Levantar el servidor de desarrollo:
+| Variable | Required | Purpose |
+|---|---|---|
+| `DATABASE_URL` | yes | Neon Postgres connection string |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | yes | Clerk publishable key |
+| `CLERK_SECRET_KEY` | yes | Clerk secret key |
+| `NEXT_PUBLIC_SITE_URL` | no | Canonical origin for metadata (auto-resolved on Vercel) |
+| `NEXT_PUBLIC_POSTHOG_KEY` / `NEXT_PUBLIC_POSTHOG_HOST` | no | Product analytics — events are skipped silently if absent |
+| `NEXT_PUBLIC_POSTHOG_ENV` | no | `dev`/`preview`/`prod` tag on events |
 
-   ```bash
-   pnpm dev
-   ```
+Other useful scripts: `pnpm db:generate` (create migrations),
+`pnpm db:push` (sync schema without migration files), `pnpm db:studio`
+(Drizzle Studio), `pnpm test` (Vitest), `pnpm test:e2e` (Playwright).
 
-## Estructura
+## Project layout
 
-- `db/schema.ts` — tablas `vehicles`, `maintenanceTypes`, `maintenanceLogs` y
-  sus relaciones.
-- `db/index.ts` — cliente Drizzle (lazy, no rompe el build si falta
-  `DATABASE_URL`).
-- `proxy.ts` — protege todo excepto `/` con Clerk (en Next.js 16 reemplaza a `middleware.ts`).
-- `app/` — landing pública (`/` y `/[variante]`) y wizard público `/nuevo`.
-- `app/dashboard/` — área autenticada; lista los vehículos del usuario
-  (filtrados por `userId` de Clerk).
-- `app/dashboard/vehiculos/` — alta/edición de vehículos, tipos de
-  mantenimiento y registro de mantenimientos realizados, con historial de
-  ediciones.
-- `lib/analytics/` — helpers `client.ts` y `server.ts` para PostHog, con
-  proxy `/_posthog` para evitar bloqueadores.
-
-## Docs
-
-- `docs/ROADMAP.md` — qué falta de v1 y los horizontes futuros (grupos,
-  vehículo compartido, taller B2B, etc.).
-- `docs/PRODUCT.md` — análisis de producto: evento core, North Star
-  Metric y métricas de soporte.
-- `docs/analytics-events.md` — mapa de eventos PostHog y cómo alimentan
-  las métricas de producto.
-- `docs/competidores/` — investigación de competencia (Mi Garage,
-  LookOver); alimenta las decisiones del roadmap.
-
-## Seguimiento del trabajo
-
-El backlog ejecutable vive en **GitHub Issues**, organizado por milestone:
-
-- [Milestone "v1 — Lanzamiento"](https://github.com/aguirrejuanse/mi-vehiculo/milestone/1)
-  — todo lo que falta para abrir el producto a usuarios reales.
-- Issues sin milestone = post-lanzamiento (horizontes 1+).
-
-División de responsabilidades:
-
-- **`docs/ROADMAP.md`** = estrategia y contexto (el *por qué* y el orden).
-- **GitHub Issues** = tasks accionables (el *qué* concreto, con criterios
-  de done). Cada issue del milestone referencia al ítem del roadmap que
-  lo origina.
-- **Engram (memoria de sesiones)** = decisiones, specs SDD y gotchas
-  técnicos (el *registro histórico* de lo que ya se pensó/discutió).
-
-Regla de uso: si una task se puede hacer, es un issue; si es una idea o
-decisión de producto, va al ROADMAP; si es contexto de una sesión, a
-engram.
+- `db/schema.ts` — `vehicles`, `maintenanceTypes`, `maintenanceLogs` and
+  relations; `db/index.ts` holds a lazy Drizzle client that doesn't break
+  the build when `DATABASE_URL` is missing.
+- `proxy.ts` — protects everything except `/` with Clerk (Next.js 16's
+  replacement for `middleware.ts`).
+- `app/(landing)`, `app/(public)` — public landing and the `/nuevo` wizard.
+- `app/dashboard/` — authenticated area; vehicles are filtered by the
+  Clerk `userId`.
+- `lib/analytics/` — PostHog client/server helpers.
+- `scripts/seed.ts` — seeds every UI state for local development.
