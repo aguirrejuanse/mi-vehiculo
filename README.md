@@ -4,7 +4,7 @@ Vehicle maintenance tracker — register your car, motorcycle, bike or
 skateboard and keep every service up to date, tracked by kilometers or
 hours of use.
 
-**Live demo:** https://mi-vehiculo-chi.vercel.app
+**Live demo:** https://mi-vehiculo.com
 
 ## What it does
 
